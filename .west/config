@@ -1,0 +1,9 @@
+[manifest]
+path = application
+file = west.yml
+
+[zephyr]
+base = zephyr
+
+[build]
+generator = Ninja
