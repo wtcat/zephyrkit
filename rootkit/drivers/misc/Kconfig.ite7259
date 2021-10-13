@@ -1,0 +1,14 @@
+menuconfig TOUCH_PANEL
+	bool "TOUCH-PANEL Drivers"
+	help
+	  Enable options for touch-panel driver.
+
+if TOUCH_PANEL
+comment "TOUCH-PANEL Drivers"
+
+config TP_APOLLO3P
+	bool "ITE7259 for apollo3p driver"
+	help
+	  This option enables the touch-panel driver for APOLLO3P
+
+endif # TOUCH_PANEL

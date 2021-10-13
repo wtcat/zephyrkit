@@ -1,0 +1,195 @@
+/*
+ * Copyright (c) 2020 CKT
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ 
+/dts-v1/;
+#include <ambiq/apollo3p.dtsi>
+#include <ambiq/timer_clock.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	model = "AmbiqMicro apollo3p board";
+	compatible = "ambiq,apollo3p";
+	
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,flash = &flash0;
+		zephyr,sram = &sram0;
+		zephyr,ccm = &ccm0;
+		zephyr,flash-controller = &flash;
+		zephyr,code-partition = &slot0_partition;
+	};
+	
+	power-states {
+		normal_sleep: state0 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = <0>;
+			min-residency-us = <500>;
+		};
+		
+		deep_sleep: state1 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = <1>;
+			min-residency-us = <2000>;
+		};
+	};
+	
+	soc {
+		flash-controller@40018000 {
+			flash0: flash@00000000 {
+				reg = <0x00000000 DT_SIZE_K(2048)>;
+			};
+		};
+	};
+
+	mspi-nor {
+		compatible = "gd,mspi-nor";
+		label = "MSPI-NOR";
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			update_partition: partition@0 {
+				label = "update-img";
+				reg = <0x0 DT_SIZE_K(2048)>;
+			};
+			user_partition: partition@200000 {
+				label = "user-date";
+				reg = <0x200000 DT_SIZE_K(62*1024)>;
+			};
+		};
+	};
+	
+	channel: channel {
+		compatible = "ambiq,channel";
+		io-channels = <&adc1 16>;
+		io-channel-names = "ADCSE0";
+		status = "disabled";
+		label = "channel";		   
+	};
+
+	pwmmotor {
+		compatible = "pwm-motors";
+		label = "MOTOR";
+		motor: motor {
+	      pwms = <&pwm0 0 1 PWM_POLARITY_NORMAL>;
+		};
+	};
+};
+
+&cpu0 {
+	cpu-power-states = <&normal_sleep &deep_sleep>;
+};
+
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		otp_partition: partition@0 {
+			label = "otp";
+			reg = <0x0 DT_SIZE_K(48)>;
+		};
+		boot_partition: partition@c000 {
+			label = "mcuboot";
+			reg = <0x0000c000 DT_SIZE_K(192)>;
+		};
+		slot0_partition: partition@3c000 {
+			label = "image-0";
+			reg = <0x0003c000 DT_SIZE_K(1808)>;
+		};
+	};
+};
+
+&ctimer0 {
+	status = "okay";
+	clock_source = <RTC_100HZ>;
+	pwm0: pwm {
+	  ch0_pin = <25>;
+	  ch1_pin = <255>;
+      status = "okay";
+	};
+};
+
+&gpio0 {
+    status = "okay";
+};
+
+&gpio1 {
+    status = "okay";
+};
+
+&gpio2 {
+    status = "okay";
+};
+
+&uart0 {
+    status = "okay";
+};
+
+&uart1 {
+    status = "okay";
+};
+
+&rtc {
+    status = "okay";
+};
+
+&i2c0 {
+    status = "okay";
+};
+
+&i2c1 {
+    status = "okay";
+};
+
+&i2c2 {
+    status = "okay";
+};
+
+&i2c3 {
+    status = "okay";
+};
+
+&spi4 {
+    status = "okay";
+
+    lis2dh@1b {
+        compatible = "st,lis2dh";
+        label = "LIS2DH";
+        reg = <0x1b>;
+        spi-max-frequency = <1000000>;
+        /* irq-gpios = <&gpio 0 0>; */
+        /* disconnect-sdo-sa0-pull-up; */
+    };
+};
+
+&i2c5 {
+    status = "okay";
+};
+
+&mspi0 {
+    status = "okay";
+};
+
+&mspi1 {
+    status = "okay";
+};
+
+&adc1 {
+    status = "okay";
+};
+
+&channel {
+    status = "okay";
+};
+
+

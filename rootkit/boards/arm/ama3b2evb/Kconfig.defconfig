@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_AMA3B2EVB
+
+config BOARD
+	default "ama3b2evb"
+
+
+config HAS_APOLLO_LIB
+	bool "Use apollo SDK"
+	default y
+	
+config UART_0
+        bool
+	default n
+	depends on UART_CONSOLE
+
+config UART_1
+        bool
+	default n
+	depends on SERIAL
+
+endif # BOARD_APOLLO3P

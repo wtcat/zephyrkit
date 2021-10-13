@@ -1,0 +1,32 @@
+# BLE Testsuite
+
+menuconfig BLE_UNIT_TEST
+  bool "BLE testsuites"
+  depends on BT
+  
+if BLE_UNIT_TEST
+
+choice
+prompt "BLE test"
+
+config BLE_HR_TEST
+  bool "Heart rate test for BLE"
+  
+config BLE_PERIPHERAL_TEST
+  bool "Peripheral role"
+
+config BLE_SERIAL_TEST
+  bool "serial test for BLE"
+  depends on BT
+  
+config BLE_CONSOLE
+  bool "Enable BT console"
+  select BT_NUS
+  
+if BLE_SERIAL_TEST
+  rsource "Kconfig.serial"
+endif
+
+endchoice
+endif
+

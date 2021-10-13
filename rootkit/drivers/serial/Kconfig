@@ -1,0 +1,13 @@
+# Serial driver configuration options
+
+menuconfig SERIAL
+	bool "Serial Drivers"
+	help
+	  Enable options for serial drivers.
+
+if SERIAL
+comment "Serial Drivers"
+
+rsource "Kconfig.apollo3p"
+
+endif # SERIAL

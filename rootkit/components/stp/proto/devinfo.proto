@@ -1,0 +1,38 @@
+syntax = "proto2";
+package info;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message Device {
+    enum Type {
+        INVALID   = 0;
+        BAND      = 1;
+        WATCH     = 2;
+        EARPHONES = 3;
+    }
+    optional Type type = 1 [default = INVALID]; //Device type
+    
+    enum Model {
+        DM_INVALID   = 0;
+        DM_APOLLO3P  = 1; //AMBIQ apollo3p
+    }
+    optional Model model = 2 [default = DM_INVALID]; //Device model
+    
+    optional uint32 firmware_ver = 3; //Fireware version
+    optional uint32 hardware_ver = 4; //Hardware version
+    optional bytes sn = 7; //Serial number
+    optional bytes mac = 8; //MAC address
+}
+
+message Battery {
+    required uint32 level = 1; //Power level [0, 100]
+    enum Status {
+        IDLE             = 0;
+        CHARGING         = 1;
+        CHARGE_COMPLETED = 2;
+    }
+    optional uint32 status = 2; //Charge status
+}
+
+

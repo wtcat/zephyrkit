@@ -1,0 +1,14 @@
+menuconfig KSCAN
+	bool "Keyboard Scan Drivers"
+	help
+	  Include Keyboard scan drivers in system config.
+
+if KSCAN
+
+rsource "./Kconfig.cyttsp5"
+
+
+config GPIO_KEYS
+  bool "Standard gpio-key driver"
+
+endif

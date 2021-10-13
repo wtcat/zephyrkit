@@ -1,0 +1,31 @@
+menuconfig LCD
+	bool "LCD Drivers"
+	help
+	  Enable options for LCD driver.
+
+if LCD
+comment "LCD Drivers"
+
+choice LCD_DRV_CHOICE
+  prompt "lcd driver"
+  default LCD_RM69330
+
+config LCD_RM69330
+	bool "RM69330 for APOLLO3P driver"
+	help
+	  This option enables the LCD driver for APOLLO3P
+
+config LCD_RM69092
+	bool "RM69092 for APOLLO3P driver"
+	help
+	  This option enables the LCD driver for APOLLO3P
+
+endchoice
+
+
+
+
+config LCD_DOUBLE_BUFFER
+       bool "Enable double buffer for LCD driver"
+
+endif # LCD

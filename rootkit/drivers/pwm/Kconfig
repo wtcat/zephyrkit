@@ -1,0 +1,13 @@
+# PWM driver configuration options
+
+menuconfig PWM
+	bool "PWM Drivers"
+	help
+	  Enable options for PWM driver.
+
+if PWM
+comment "PWM Drivers"
+
+rsource "Kconfig.apollo3p"
+
+endif # PWM

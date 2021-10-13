@@ -1,0 +1,506 @@
+/dts-v1/;
+
+/ {
+	#address-cells = < 0x1 >;
+	#size-cells = < 0x1 >;
+	model = "AmbiqMicro apollo3p board";
+	compatible = "ambiq,apollo3p";
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,flash = &flash0;
+		zephyr,sram = &sram0;
+		zephyr,ccm = &ccm0;
+		zephyr,flash-controller = &flash;
+		zephyr,code-partition = &slot0_partition;
+		psram = &psram0;
+	};
+	aliases {
+	};
+	soc {
+		#address-cells = < 0x1 >;
+		#size-cells = < 0x1 >;
+		compatible = "simple-bus";
+		interrupt-parent = < &nvic >;
+		ranges;
+		nvic: interrupt-controller@e000e100 {
+			compatible = "arm,v7m-nvic";
+			reg = < 0xe000e100 0xc00 >;
+			interrupt-controller;
+			#interrupt-cells = < 0x2 >;
+			arm,num-irq-priority-bits = < 0x3 >;
+			phandle = < 0x1 >;
+		};
+		systick: timer@e000e010 {
+			compatible = "arm,armv7m-systick";
+			reg = < 0xe000e010 0x10 >;
+		};
+		ctimer0: timers@0 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x0 0x20 >;
+			status = "okay";
+			label = "CTIMER_0";
+			clock_source = < 0x1c >;
+			pwm0: pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "okay";
+				label = "PWM_0";
+				#pwm-cells = < 0x3 >;
+				ch0_pin = < 0x19 >;
+				ch1_pin = < 0xff >;
+			};
+		};
+		ctimer1: timers@1 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x1 0x20 >;
+			status = "disabled";
+			label = "CTIMER_1";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_1";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		ctimer2: timers@2 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x2 0x20 >;
+			status = "disabled";
+			label = "CTIMER_2";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_2";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		ctimer3: timers@3 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x3 0x20 >;
+			status = "disabled";
+			label = "CTIMER_3";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_3";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		ctimer4: timers@4 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x4 0x20 >;
+			status = "disabled";
+			label = "CTIMER_4";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_4";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		ctimer5: timers@5 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x5 0x20 >;
+			status = "disabled";
+			label = "CTIMER_5";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_5";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		ctimer6: timers@6 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x6 0x20 >;
+			status = "okay";
+			label = "CTIMER_6";
+			clock_source = < 0x4 >;
+			pwm6: pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "okay";
+				label = "PWM_6";
+				#pwm-cells = < 0x3 >;
+				ch0_pin = < 0x2d >;
+				ch1_pin = < 0xff >;
+				phandle = < 0x6 >;
+			};
+		};
+		ctimer7: timers@7 {
+			compatible = "ambiq,apollo3p-timers";
+			reg = < 0x7 0x20 >;
+			status = "disabled";
+			label = "CTIMER_7";
+			pwm {
+				compatible = "ambiq,apollo3p-pwm";
+				status = "disabled";
+				label = "PWM_7";
+				#pwm-cells = < 0x3 >;
+			};
+		};
+		flash: flash-controller@40018000 {
+			compatible = "ambiq,apollo3p-flash-controller";
+			label = "FLASH_CTRL";
+			reg = < 0x40018000 0x1000 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x1 >;
+			flash0: flash@00000000 {
+				compatible = "soc-nv-flash";
+				label = "FLASH_APOLLO3P";
+				reg = < 0x0 0x200000 >;
+				partitions {
+					compatible = "fixed-partitions";
+					#address-cells = < 0x1 >;
+					#size-cells = < 0x1 >;
+					otp_partition: partition@0 {
+						label = "otp";
+						reg = < 0x0 0xc000 >;
+					};
+					boot_partition: partition@c000 {
+						label = "mcuboot";
+						reg = < 0xc000 0x30000 >;
+					};
+					slot0_partition: partition@3c000 {
+						label = "image-0";
+						reg = < 0x3c000 0x1c4000 >;
+					};
+				};
+			};
+		};
+		pinctrl: pin-controller@40010000 {
+			compatible = "st,stm32-pinmux";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x1 >;
+			reg = < 0x40010000 0x400 >;
+			gpio0: gpio@40010000 {
+				compatible = "ambiq,apollo3p-gpio";
+				gpio-controller;
+				#gpio-cells = < 0x2 >;
+				reg = < 0x40010000 0x400 >;
+				label = "GPIO_0";
+				status = "okay";
+				phandle = < 0x2 >;
+			};
+			gpio1: gpio@40010400 {
+				compatible = "ambiq,apollo3p-gpio";
+				gpio-controller;
+				#gpio-cells = < 0x2 >;
+				reg = < 0x40010400 0x400 >;
+				label = "GPIO_1";
+				status = "okay";
+			};
+			gpio2: gpio@40010800 {
+				compatible = "ambiq,apollo3p-gpio";
+				gpio-controller;
+				#gpio-cells = < 0x2 >;
+				reg = < 0x40010800 0x400 >;
+				label = "GPIO_2";
+				status = "okay";
+				phandle = < 0x7 >;
+			};
+		};
+		uart0: serial@4001c000 {
+			compatible = "ambiq,apllo3p-usart";
+			reg = < 0x4001c000 0x400 >;
+			interrupts = < 0xf 0x0 >;
+			status = "okay";
+			label = "UART_0";
+		};
+		uart1: serial@4000c400 {
+			compatible = "ambiq,apllo3p-usart";
+			reg = < 0x4000c400 0x400 >;
+			interrupts = < 0x10 0x0 >;
+			status = "okay";
+			label = "UART_1";
+		};
+		i2c0: i2c@50004000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50004000 0x1000 >;
+			interrupts = < 0x6 0x0 >;
+			status = "disabled";
+			label = "I2C_0";
+		};
+		i2c1: i2c@50005000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50005000 0x1000 >;
+			interrupts = < 0x7 0x0 >;
+			status = "okay";
+			label = "I2C_1";
+			mmc5603@30 {
+				compatible = "memsic,mmc5603";
+				label = "MMC5603";
+				reg = < 0x30 >;
+				pwr-gpios = < &gpio0 0xd 0x0 >;
+			};
+		};
+		i2c2: i2c@50006000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50006000 0x1000 >;
+			interrupts = < 0x8 0x0 >;
+			status = "okay";
+			label = "I2C_2";
+		};
+		i2c3: i2c@50007000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50007000 0x1000 >;
+			interrupts = < 0x9 0x0 >;
+			status = "okay";
+			label = "I2C_3";
+			cw6305@0B {
+				compatible = "cellwise,cw6305";
+				label = "CW6305";
+				reg = < 0xb >;
+				int-gpios = < &gpio0 0x10 0x1 >;
+			};
+		};
+		i2c4: i2c@50008000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50008000 0x1000 >;
+			interrupts = < 0xa 0x0 >;
+			status = "okay";
+			label = "I2C_4";
+		};
+		i2c5: i2c@50009000 {
+			compatible = "ambiq,apollo3p-i2c";
+			clock-frequency = < 0x61a80 >;
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50009000 0x1000 >;
+			interrupts = < 0xb 0x0 >;
+			status = "okay";
+			label = "I2C_5";
+		};
+		spi0: spi@50004000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50004000 0x1000 >;
+			interrupts = < 0x6 0x0 >;
+			status = "okay";
+			label = "SPI_0";
+			cs-gpios = < &gpio0 0x3 0x1 >;
+			icm42607@0 {
+				compatible = "invensense,icm42607";
+				int-gpios = < &gpio0 0x11 0x1 >;
+				label = "ICM42607";
+				reg = < 0x0 >;
+				spi-max-frequency = < 0x989680 >;
+			};
+		};
+		spi1: spi@50005000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50005000 0x1000 >;
+			interrupts = < 0x7 0x0 >;
+			status = "disabled";
+			label = "SPI_1";
+		};
+		spi2: spi@50006000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50006000 0x1000 >;
+			interrupts = < 0x8 0x0 >;
+			status = "disabled";
+			label = "SPI_2";
+		};
+		spi3: spi@50007000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50007000 0x1000 >;
+			interrupts = < 0x9 0x0 >;
+			status = "disabled";
+			label = "SPI_3";
+		};
+		spi4: spi@50008000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50008000 0x1000 >;
+			interrupts = < 0xa 0x0 >;
+			status = "disabled";
+			label = "SPI_4";
+		};
+		spi5: spi@50009000 {
+			compatible = "ambiq,apollo3p-spi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50009000 0x1000 >;
+			interrupts = < 0xb 0x0 >;
+			status = "disabled";
+			label = "SPI_5";
+		};
+		rtc: rtc@40004200 {
+			compatible = "ambiq,apollo3p-rtc";
+			reg = < 0x40004200 0x400 >;
+			interrupts = < 0x2 0x0 >;
+			status = "okay";
+			label = "RTC_0";
+		};
+		adc1: adc@50010000 {
+			compatible = "ambiq,apollo3p-adc";
+			reg = < 0x50010000 0x400 >;
+			interrupts = < 0x12 0x0 >;
+			status = "okay";
+			label = "ADC_1";
+			#io-channel-cells = < 0x1 >;
+			phandle = < 0x5 >;
+		};
+		mspi0: mspi@50014000 {
+			compatible = "ambiq,apollo3p-mspi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50014000 0x1000 >;
+			interrupts = < 0x14 0x0 >;
+			status = "okay";
+			label = "MSPI_0";
+		};
+		mspi1: mspi@50015000 {
+			compatible = "ambiq,apollo3p-mspi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50015000 0x1000 >;
+			interrupts = < 0x20 0x0 >;
+			status = "okay";
+			label = "MSPI_1";
+		};
+		mspi2: mspi@50016000 {
+			compatible = "ambiq,apollo3p-mspi";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x0 >;
+			reg = < 0x50016000 0x1000 >;
+			interrupts = < 0x21 0x0 >;
+			status = "disabled";
+			label = "MSPI_2";
+		};
+	};
+	cpus {
+		#address-cells = < 0x1 >;
+		#size-cells = < 0x0 >;
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-m4f";
+			reg = < 0x0 >;
+			cpu-power-states = < &normal_sleep &deep_sleep >;
+		};
+	};
+	sram0: memory@10010000 {
+		compatible = "mmio-sram";
+		reg = < 0x10010000 0xb0000 >;
+	};
+	ccm0: memory@10000000 {
+		compatible = "ambiq,apollo3p";
+		reg = < 0x10000000 0x10000 >;
+	};
+	psram0: memory@55000000 {
+		compatible = "aps1604,psram";
+		label = "psram";
+		reg = < 0x56000000 0x200000 >;
+	};
+	power-states {
+		normal_sleep: state0 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = < 0x0 >;
+			min-residency-us = < 0x1f4 >;
+			phandle = < 0x3 >;
+		};
+		deep_sleep: state1 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = < 0x1 >;
+			min-residency-us = < 0x7d0 >;
+			phandle = < 0x4 >;
+		};
+	};
+	mspi-nor {
+		compatible = "gd,mspi-nor";
+		label = "MSPI-NOR";
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x1 >;
+			resource_partition: partition@0 {
+				label = "resource_img";
+				reg = < 0x0 0x800000 >;
+			};
+			watch_face_theme1_partition: partition@800000 {
+				label = "watch_face_1";
+				reg = < 0x800000 0x200000 >;
+			};
+			watch_face_theme2_partition: partition@A00000 {
+				label = "watch_face_2";
+				reg = < 0xa00000 0x200000 >;
+			};
+			watch_face_theme3_partition: partition@C00000 {
+				label = "watch_face_3";
+				reg = < 0xc00000 0x200000 >;
+			};
+			watch_face_theme4_partition: partition@E00000 {
+				label = "watch_face_4";
+				reg = < 0xe00000 0x200000 >;
+			};
+			watch_face_theme5_partition: partition@1000000 {
+				label = "watch_face_5";
+				reg = < 0x1000000 0x200000 >;
+			};
+			storage_partition: partition@1200000 {
+				label = "storage";
+				reg = < 0x1200000 0x200000 >;
+			};
+			update_partition: partition@1400000 {
+				label = "update_img";
+				reg = < 0x1400000 0x200000 >;
+			};
+			file_system: partition@1600000 {
+				label = "fs";
+				reg = < 0x1600000 0xa00000 >;
+			};
+		};
+	};
+	channel: channel {
+		compatible = "ambiq,channel";
+		io-channels = < &adc1 0x10 >;
+		io-channel-names = "ADCSE0";
+		status = "okay";
+		label = "channel";
+	};
+	pwmmotor {
+		compatible = "pwm-motors";
+		label = "MOTOR";
+		motor: motor {
+			pwms = < &pwm6 0x0 0x1 0x0 >;
+		};
+	};
+	gpio_keys {
+		compatible = "gpio-buttons";
+		label = "buttons";
+		control_button: button-1 {
+			label = "Control";
+			gpios = < &gpio2 0x7 0x1 >;
+			code = < 0x1b12 >;
+		};
+		home_button: button-2 {
+			label = "Home";
+			gpios = < &gpio0 0x10 0x1 >;
+			code = < 0x1b04 >;
+		};
+	};
+};

@@ -1,0 +1,11 @@
+# I2C driver configure options
+
+menuconfig I2C
+		bool "I2C Drivers"
+		help 
+		  Enable options for I2C driver
+		  
+if I2C
+rsource "Kconfig.apollo3p"
+
+endif #I2C

@@ -1,0 +1,9 @@
+
+zephyr_library_sources_ifdef(CONFIG_BLE_HR_TEST hr/ble_hr_unit_test.c)
+zephyr_library_sources_ifdef(CONFIG_BLE_SERIAL_TEST serial/ble_serial_unit_test.c)
+zephyr_library_sources_ifdef(CONFIG_BLE_PERIPHERAL_TEST
+  peripheral/cts.c
+  peripheral/ble_peripheral_unit_test.c
+)
+
+zephyr_library_sources_ifdef(CONFIG_BLE_CONSOLE console/bt_console.c)

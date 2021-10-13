@@ -1,0 +1,22 @@
+syntax = "proto2";
+package call;
+
+import "time.proto";
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message Notice {
+    required proto.time.UnixTimestamp timestamp = 1; //Time stamp
+    required string phone = 2; //Phone number
+    optional string people = 3; //Contact name
+}
+
+message CallState {
+    enum State {
+        ANSWER  = 1;
+        REJECT  = 2;
+        SPEAKER = 3;
+    }
+    required State state = 1;
+}

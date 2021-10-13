@@ -1,0 +1,23 @@
+
+description: APOLLO3P GPIO node
+
+compatible: "ambiq,apollo3p-gpio"
+
+include: [gpio-controller.yaml, base.yaml]
+
+properties:
+    reg:
+      required: true
+
+    label:
+      required: true
+
+    clocks:
+      required: false
+
+    "#gpio-cells":
+      const: 2
+
+gpio-cells:
+  - pin
+  - flags

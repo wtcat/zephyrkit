@@ -1,0 +1,41 @@
+menu "Flash Device"
+
+config APOLLO_MSPI_NOR
+  bool "Apollo mspi nor-flash"
+  select MSPI_APOLLO3P
+  help
+    Flash device model is mx25u512g or mx25u256
+
+if APOLLO_MSPI_NOR
+choice FLASH_DRV_CHOICE
+  prompt "flash driver"
+  default MX25U256
+
+config MX25U256
+	bool "MX25U256 select"
+	help
+	  This option select MX25U256
+
+config MX25U512
+	bool "MX25U512 select"
+	help
+	  This option select MX25U512
+endchoice
+endif
+
+menuconfig  APOLLO_SOC_FLAH
+	bool "apollo3 flash driver"
+	select FLASH_HAS_PAGE_LAYOUT
+	select FLASH_HAS_DRIVER_ENABLED
+	default y
+	help
+	  Enable options for soc flash drivers.
+
+if APOLLO_SOC_FLAH
+  #rsource "Kconfig.apoolo3p_soc_flash"
+endif
+
+config APOLLO_PSRAM
+  bool "APS1604 PSRAM"
+
+endmenu

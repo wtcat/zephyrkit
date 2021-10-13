@@ -1,0 +1,12 @@
+syntax = "proto2";
+package proto.time;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message UnixTimestamp {
+    required fixed32 time = 1;
+}
+
+
+

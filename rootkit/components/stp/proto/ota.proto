@@ -1,0 +1,25 @@
+syntax = "proto2";
+package ota;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message File {
+    required int32 maxno = 1; //Maximum packets 
+    required int32 no = 2; //Current packet sequence number
+    oneof field {
+    	fixed32 crc = 6;
+    	bytes data = 7;
+    }
+}
+
+message FileRequest {
+    required uint32 fmax_size = 1;
+    required uint32 battery = 2;
+}
+
+message FileCheck {
+    required uint32 crc = 1;
+}
+
+

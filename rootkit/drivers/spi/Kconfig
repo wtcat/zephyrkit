@@ -1,0 +1,13 @@
+# Serial driver configuration options
+
+menuconfig SPI
+	bool "SPI Drivers"
+	help
+	  Enable options for SPI drivers.
+
+if SPI
+comment "SPI Drivers"
+
+rsource "Kconfig.apollo3p"
+
+endif # SERIAL

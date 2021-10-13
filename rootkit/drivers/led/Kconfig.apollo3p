@@ -1,0 +1,4 @@
+config PWM_APOLLO3P
+	bool "APOLLO3P PWM driver"
+	help
+	  This option enables the PWM driver for APOLLO3P

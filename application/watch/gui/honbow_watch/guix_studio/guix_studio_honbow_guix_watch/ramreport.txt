@@ -1,0 +1,1832 @@
+[  1%] Generating misc/generated/syscalls.json, misc/generated/struct_tags.json
+[  1%] Built target parse_syscalls_target
+[  1%] Built target kobj_types_h_target
+[  1%] Built target syscall_list_h_target
+[  1%] Built target driver_validation_h_target
+[  1%] Built target offsets
+[  1%] Built target offsets_h
+[  1%] Built target zephyr_generated_headers
+[  3%] Built target kernel
+[  3%] Built target app
+[ 16%] Built target zephyr
+[ 16%] Built target linker_script_target
+[ 16%] Built target isr_tables
+[ 16%] Built target arch__common
+[ 16%] Built target arch__arm__core__aarch32
+[ 17%] Built target arch__arm__core__aarch32__cortex_m
+[ 17%] Built target arch__arm__core__aarch32__cortex_m__mpu
+[ 17%] Built target lib__libc__newlib
+[ 17%] Built target lib__posix
+[ 19%] Built target ..__..__bsps__soc__arm
+[ 19%] Built target ..__..__bsps__boards__arm__iwatchv0
+[ 19%] Built target subsys__bluetooth__common
+[ 20%] Built target subsys__bluetooth__host
+[ 20%] Built target subsys__fs
+[ 20%] Built target subsys__net
+[ 20%] Built target drivers__gpio
+[ 20%] Built target drivers__i2c
+[ 20%] Built target drivers__pwm
+[ 20%] Built target drivers__spi
+[ 20%] Built target drivers__kscan
+[ 21%] Built target drivers__flash
+[ 21%] Built target drivers__serial
+[ 22%] Built target ..__modules__fs__littlefs
+[ 22%] Built target unit_test
+[ 22%] Built target ..__..__bsps__drivers__zephyr__sensor__mmc5603
+[ 23%] Built target ..__..__bsps__drivers__zephyr__sensor__pah8112
+[ 23%] Built target ..__..__bsps__drivers__zephyr__sensor__icm42607
+[ 23%] Built target ..__..__bsps__drivers_ext__counter
+[ 23%] Built target ..__..__components__base__init
+[ 23%] Built target protobuf
+[ 23%] Built target magnet
+[ 23%] Built target ..__..__components__motion
+[ 99%] Built target guix
+[100%] Built target zephyr_prebuilt
+[100%] Built target linker_pass_final_script_target
+[100%] Built target zephyr_final
+Path                                                                                             Size    %  
+==============================================================================================================
+root                                                                                            43734 6.63%
+├── /                                                                                          580207 87.91%
+│   └── home                                                                                   580207 87.91%
+│       └── chao                                                                               580207 87.91%
+│           └── work                                                                           580207 87.91%
+│               └── git_test                                                                   580207 87.91%
+│                   ├── bsps                                                                    72156 10.93%
+│                   │   ├── drivers                                                             48571 7.36%
+│                   │   │   └── zephyr                                                          48571 7.36%
+│                   │   │       ├── bluetooth                                                    6609 1.00%
+│                   │   │       │   └── hci_apollo3p.c                                           6609 1.00%
+│                   │   │       │       ├── _k_mem_slab_buf_rx_pool                              2048 0.31%
+│                   │   │       │       ├── ble_handle                                              4 0.00%
+│                   │   │       │       ├── bt_sem                                                 24 0.00%
+│                   │   │       │       ├── bt_stat                                                44 0.01%
+│                   │   │       │       ├── drv_mon                                                16 0.00%
+│                   │   │       │       ├── radio_cold_boot                                         1 0.00%
+│                   │   │       │       ├── rx_pool                                                28 0.00%
+│                   │   │       │       ├── rx_queue                                               24 0.00%
+│                   │   │       │       ├── rx_thread_pcb                                         280 0.04%
+│                   │   │       │       ├── rx_thread_stack                                      4128 0.63%
+│                   │   │       │       ├── tx_buf_pending                                          4 0.00%
+│                   │   │       │       └── tx_queue                                                8 0.00%
+│                   │   │       ├── flash                                                       16672 2.53%
+│                   │   │       │   ├── apollo_mspi_nor.c                                        8340 1.26%
+│                   │   │       │   │   ├── __pm_dts_ord_19                                        88 0.01%
+│                   │   │       │   │   ├── dev_layout                                              8 0.00%
+│                   │   │       │   │   ├── gxres_norflash                                         20 0.00%
+│                   │   │       │   │   ├── log_dynamic_mspi_nor                                    4 0.00%
+│                   │   │       │   │   ├── mspi_dma_buffer                                      8192 1.24%
+│                   │   │       │   │   └── nor_data                                               28 0.00%
+│                   │   │       │   ├── aps1604m_psram.c                                         8208 1.24%
+│                   │   │       │   │   ├── log_dynamic_psram                                       4 0.00%
+│                   │   │       │   │   ├── mspi_dma_buffer                                      8192 1.24%
+│                   │   │       │   │   └── psram_driver                                           12 0.00%
+│                   │   │       │   └── soc_flash_apollo.c                                        124 0.02%
+│                   │   │       │       ├── __pm_dts_ord_52                                        88 0.01%
+│                   │   │       │       ├── dev_layout                                              8 0.00%
+│                   │   │       │       ├── log_dynamic_flash_apollo                                4 0.00%
+│                   │   │       │       └── sem_lock                                               24 0.00%
+│                   │   │       ├── gpio                                                          909 0.14%
+│                   │   │       │   └── gpio_apollo3p.c                                           909 0.14%
+│                   │   │       │       ├── __pm_dts_ord_15                                        88 0.01%
+│                   │   │       │       ├── __pm_dts_ord_17                                        88 0.01%
+│                   │   │       │       ├── __pm_dts_ord_62                                        88 0.01%
+│                   │   │       │       ├── apollo3p_gpio0_private                                 16 0.00%
+│                   │   │       │       ├── apollo3p_gpio1_private                                 16 0.00%
+│                   │   │       │       ├── apollo3p_gpio2_private                                 16 0.00%
+│                   │   │       │       ├── gpio_desc                                             592 0.09%
+│                   │   │       │       ├── gpio_irq_initialized                                    1 0.00%
+│                   │   │       │       └── log_dynamic_gpio_apollo3p                               4 0.00%
+│                   │   │       ├── i2c                                                           644 0.10%
+│                   │   │       │   └── i2c_apollo3p.c                                            644 0.10%
+│                   │   │       │       ├── __pm_i2c1_apollo3p                                     88 0.01%
+│                   │   │       │       ├── __pm_i2c2_apollo3p                                     88 0.01%
+│                   │   │       │       ├── __pm_i2c3_apollo3p                                     88 0.01%
+│                   │   │       │       ├── __pm_i2c4_apollo3p                                     88 0.01%
+│                   │   │       │       ├── __pm_i2c5_apollo3p                                     88 0.01%
+│                   │   │       │       ├── i2c1_apollo3p_cfg                                      12 0.00%
+│                   │   │       │       ├── i2c1_apollo3p_data                                     28 0.00%
+│                   │   │       │       ├── i2c2_apollo3p_cfg                                      12 0.00%
+│                   │   │       │       ├── i2c2_apollo3p_data                                     28 0.00%
+│                   │   │       │       ├── i2c3_apollo3p_cfg                                      12 0.00%
+│                   │   │       │       ├── i2c3_apollo3p_data                                     28 0.00%
+│                   │   │       │       ├── i2c4_apollo3p_cfg                                      12 0.00%
+│                   │   │       │       ├── i2c4_apollo3p_data                                     28 0.00%
+│                   │   │       │       ├── i2c5_apollo3p_cfg                                      12 0.00%
+│                   │   │       │       ├── i2c5_apollo3p_data                                     28 0.00%
+│                   │   │       │       └── log_dynamic_i2c_apollo3p                                4 0.00%
+│                   │   │       ├── kscan                                                        2389 0.36%
+│                   │   │       │   ├── cyttsp5_mcu                                              2117 0.32%
+│                   │   │       │   │   ├── pt_mcu_port.c                                         196 0.03%
+│                   │   │       │   │   │   ├── __pm_touch_cyttsp5                                 88 0.01%
+│                   │   │       │   │   │   ├── cd_prv                                             88 0.01%
+│                   │   │       │   │   │   ├── g_cdata                                             4 0.00%
+│                   │   │       │   │   │   ├── my_cyttsp5_data                                    12 0.00%
+│                   │   │       │   │   │   └── touch_handler                                       4 0.00%
+│                   │   │       │   │   └── pt_mcu_tma5xx.c                                      1921 0.29%
+│                   │   │       │   │       ├── cd                                                560 0.08%
+│                   │   │       │   │       ├── noise_wait_count                                    1 0.00%
+│                   │   │       │   │       ├── touch_sem                                          24 0.00%
+│                   │   │       │   │       ├── tp_stack                                         1056 0.16%
+│                   │   │       │   │       └── tp_thread                                         280 0.04%
+│                   │   │       │   └── gpio_keys.c                                               272 0.04%
+│                   │   │       │       ├── __pm_dts_ord_12                                        88 0.01%
+│                   │   │       │       ├── gpio_buttons0                                         160 0.02%
+│                   │   │       │       ├── gpio_key_device_0                                      20 0.00%
+│                   │   │       │       └── log_dynamic_kscan                                       4 0.00%
+│                   │   │       ├── led                                                            92 0.01%
+│                   │   │       │   └── motor_pwm.c                                                92 0.01%
+│                   │   │       │       ├── __pm_motor_pwm_0                                       88 0.01%
+│                   │   │       │       └── log_dynamic_motor_pwm                                   4 0.00%
+│                   │   │       ├── misc                                                        10657 1.61%
+│                   │   │       │   ├── mspi_apollo3p.c                                           232 0.04%
+│                   │   │       │   │   ├── log_dynamic_mspi                                        4 0.00%
+│                   │   │       │   │   ├── mspi_hdev_0                                            68 0.01%
+│                   │   │       │   │   ├── mspi_hdev_1                                            68 0.01%
+│                   │   │       │   │   ├── mspi_hdev_2                                            68 0.01%
+│                   │   │       │   │   ├── mspi_mmap_0                                             8 0.00%
+│                   │   │       │   │   ├── mspi_mmap_1                                             8 0.00%
+│                   │   │       │   │   └── mspi_mmap_2                                             8 0.00%
+│                   │   │       │   └── rm69092_lcd.c                                           10425 1.58%
+│                   │   │       │       ├── brightness                                              1 0.00%
+│                   │   │       │       ├── dma_tx_buffer                                       10240 1.55%
+│                   │   │       │       └── lcd_drv                                               184 0.03%
+│                   │   │       ├── pwm                                                           508 0.08%
+│                   │   │       │   ├── apollo3p_ctimer.c                                         256 0.04%
+│                   │   │       │   │   └── ctimer_irqdesc_table                                  256 0.04%
+│                   │   │       │   └── apollo3p_pwm.c                                            252 0.04%
+│                   │   │       │       ├── __pm_dts_ord_32                                        88 0.01%
+│                   │   │       │       ├── __pm_dts_ord_66                                        88 0.01%
+│                   │   │       │       ├── log_dynamic_pwm_apollo3p                                4 0.00%
+│                   │   │       │       ├── pwm_private_0                                          36 0.01%
+│                   │   │       │       └── pwm_private_1                                          36 0.01%
+│                   │   │       ├── sensor                                                       9679 1.47%
+│                   │   │       │   ├── cw6305                                                   2532 0.38%
+│                   │   │       │   │   └── cw6305.c                                             2532 0.38%
+│                   │   │       │   │       ├── __pm_dts_ord_61                                    88 0.01%
+│                   │   │       │   │       ├── cw6305_data0                                      360 0.05%
+│                   │   │       │   │       ├── cw6305_stack                                     2080 0.32%
+│                   │   │       │   │       └── log_dynamic_CW6305                                  4 0.00%
+│                   │   │       │   ├── icm42607                                                 3172 0.48%
+│                   │   │       │   │   ├── icm42607.c                                           3164 0.48%
+│                   │   │       │   │   │   ├── __pm_dts_ord_64                                    88 0.01%
+│                   │   │       │   │   │   ├── icm42607_driver_0                                3072 0.47%
+│                   │   │       │   │   │   └── log_dynamic_ICM42607                                4 0.00%
+│                   │   │       │   │   └── icm42607_spi.c                                          8 0.00%
+│                   │   │       │   │       ├── spi_cfg                                             4 0.00%
+│                   │   │       │   │       └── spi_dev                                             4 0.00%
+│                   │   │       │   ├── mmc5603                                                   128 0.02%
+│                   │   │       │   │   └── mmc5603.c                                             128 0.02%
+│                   │   │       │   │       ├── __pm_dts_ord_59                                    88 0.01%
+│                   │   │       │   │       ├── log_dynamic_MMC5603                                 4 0.00%
+│                   │   │       │   │       └── mmc5603_private0                                   36 0.01%
+│                   │   │       │   └── pah8112                                                  3847 0.58%
+│                   │   │       │       ├── PAH8112                                               703 0.11%
+│                   │   │       │       │   ├── pah_comm_i2c.c                                      1 0.00%
+│                   │   │       │       │   │   └── _curr_bank                                      1 0.00%
+│                   │   │       │       │   ├── pah_driver_8112.c                                 650 0.10%
+│                   │   │       │       │   │   ├── g_init                                          1 0.00%
+│                   │   │       │       │   │   ├── g_state                                       640 0.10%
+│                   │   │       │       │   │   ├── time_target_avg                                 4 0.00%
+│                   │   │       │       │   │   ├── time_target_back                                4 0.00%
+│                   │   │       │       │   │   └── time_target_init                                1 0.00%
+│                   │   │       │       │   └── pah_driver_8112_reg_array.c                        52 0.01%
+│                   │   │       │       │       └── g_state                                        52 0.01%
+│                   │   │       │       ├── PAH_MAIN                                             2481 0.38%
+│                   │   │       │       │   ├── pah_hrd_function.c                                712 0.11%
+│                   │   │       │       │   │   ├── Expo_time_backup                               12 0.00%
+│                   │   │       │       │   │   ├── LEDDAC_backup                                   3 0.00%
+│                   │   │       │       │   │   ├── _state                                        688 0.10%
+│                   │   │       │       │   │   ├── flags                                           4 0.00%
+│                   │   │       │       │   │   ├── hr                                              4 0.00%
+│                   │   │       │       │   │   └── need_log_header                                 1 0.00%
+│                   │   │       │       │   └── pah_spo2_function_v2.c                           1769 0.27%
+│                   │   │       │       │       ├── Expo_time_backup                               12 0.00%
+│                   │   │       │       │       ├── FirstSpO2                                       4 0.00%
+│                   │   │       │       │       ├── Frame_Cnt                                       1 0.00%
+│                   │   │       │       │       ├── Frame_Cnt_buf                                   1 0.00%
+│                   │   │       │       │       ├── HR_temp                                         4 0.00%
+│                   │   │       │       │       ├── LEDDAC_backup                                   3 0.00%
+│                   │   │       │       │       ├── _spo2_detect_item                              80 0.01%
+│                   │   │       │       │       ├── _spo2_state                                     8 0.00%
+│                   │   │       │       │       ├── _state                                        688 0.10%
+│                   │   │       │       │       ├── acc_buf_count                                   4 0.00%
+│                   │   │       │       │       ├── alg_cal_en                                      1 0.00%
+│                   │   │       │       │       ├── count_time                                      4 0.00%
+│                   │   │       │       │       ├── data_buf_count                                  4 0.00%
+│                   │   │       │       │       ├── data_buf_count_spo2_alg                         4 0.00%
+│                   │   │       │       │       ├── data_buf_num                                    4 0.00%
+│                   │   │       │       │       ├── data_buf_time                                   4 0.00%
+│                   │   │       │       │       ├── data_buf_time_all                               4 0.00%
+│                   │   │       │       │       ├── effective                                       4 0.00%
+│                   │   │       │       │       ├── first_falg                                      1 0.00%
+│                   │   │       │       │       ├── flags                                           4 0.00%
+│                   │   │       │       │       ├── hr_grader                                       4 0.00%
+│                   │   │       │       │       ├── mems_data_raw                                 900 0.14%
+│                   │   │       │       │       ├── myHR                                            4 0.00%
+│                   │   │       │       │       ├── myHR_opt                                        4 0.00%
+│                   │   │       │       │       ├── mySPO2_ReadyFlag                                1 0.00%
+│                   │   │       │       │       ├── mySPO2_ReadyFlag_out                            1 0.00%
+│                   │   │       │       │       ├── mySpO2                                          4 0.00%
+│                   │   │       │       │       ├── need_log_header                                 1 0.00%
+│                   │   │       │       │       ├── over_mems_flag                                  1 0.00%
+│                   │   │       │       │       ├── reset_flag                                      1 0.00%
+│                   │   │       │       │       ├── time_out_flag                                   1 0.00%
+│                   │   │       │       │       ├── timing_tuning_num                               4 0.00%
+│                   │   │       │       │       └── timing_tuning_time                              4 0.00%
+│                   │   │       │       ├── pah8112_entry.c                                       274 0.04%
+│                   │   │       │       │   ├── __pm_sensor_pah8112                                88 0.01%
+│                   │   │       │       │   ├── has_interrupt_button                                1 0.00%
+│                   │   │       │       │   ├── has_interrupt_pah                                   1 0.00%
+│                   │   │       │       │   ├── interrupt_pah_timestamp                             8 0.00%
+│                   │   │       │       │   ├── pah8112_data                                      152 0.02%
+│                   │   │       │       │   └── sem_lock                                           24 0.00%
+│                   │   │       │       └── zephyr_porting                                        389 0.06%
+│                   │   │       │           ├── accelerometer.c                                   385 0.06%
+│                   │   │       │           │   ├── acc_dev                                         4 0.00%
+│                   │   │       │           │   ├── acc_timer                                      56 0.01%
+│                   │   │       │           │   ├── cnt                                             1 0.00%
+│                   │   │       │           │   ├── mems_data                                     300 0.05%
+│                   │   │       │           │   └── sem_lock                                       24 0.00%
+│                   │   │       │           └── i2c.c                                               4 0.00%
+│                   │   │       │               └── i2c_dev                                         4 0.00%
+│                   │   │       ├── serial                                                        208 0.03%
+│                   │   │       │   └── apollo3p_serial.c                                         208 0.03%
+│                   │   │       │       ├── __pm_apollo3p_uart0                                    88 0.01%
+│                   │   │       │       ├── __pm_apollo3p_uart1                                    88 0.01%
+│                   │   │       │       ├── apollo3p_uart0_private                                 16 0.00%
+│                   │   │       │       └── apollo3p_uart1_private                                 16 0.00%
+│                   │   │       ├── spi                                                           196 0.03%
+│                   │   │       │   └── spi_apollo3p.c                                            196 0.03%
+│                   │   │       │       ├── __pm_spi_apollo3p_0                                    88 0.01%
+│                   │   │       │       ├── log_dynamic_spi_apollo3p                                4 0.00%
+│                   │   │       │       └── spi_apollo3p_dev_data_0                               104 0.02%
+│                   │   │       └── timer                                                           8 0.00%
+│                   │   │           └── apollo3_stimer.c                                            8 0.00%
+│                   │   │               ├── accum_stimer_cnt                                        4 0.00%
+│                   │   │               └── g_last_stimer_cnt                                       4 0.00%
+│                   │   ├── drivers_ext                                                           120 0.02%
+│                   │   │   └── counter                                                           120 0.02%
+│                   │   │       └── counter_apollo3p.c                                            120 0.02%
+│                   │   │           ├── __pm_apollo3p_rtc                                          88 0.01%
+│                   │   │           ├── counter_config                                             12 0.00%
+│                   │   │           ├── key                                                         4 0.00%
+│                   │   │           ├── log_dynamic_counter_rtc_apollo3p                            4 0.00%
+│                   │   │           └── rtc_data                                                   12 0.00%
+│                   │   ├── soc                                                                 22393 3.39%
+│                   │   │   └── arm                                                             22393 3.39%
+│                   │   │       └── ambiq_apollo3p                                              22393 3.39%
+│                   │   │           ├── apollo_mcu_lib                                          22389 3.39%
+│                   │   │           │   └── mcu                                                 22389 3.39%
+│                   │   │           │       └── apollo3p                                        22389 3.39%
+│                   │   │           │           └── hal                                         22389 3.39%
+│                   │   │           │               ├── am_hal_ble.c                              204 0.03%
+│                   │   │           │               │   ├── g_psPatchBuffer                       132 0.02%
+│                   │   │           │               │   └── g_sBLEState                            72 0.01%
+│                   │   │           │               ├── am_hal_ble_patch_b0.c                    1844 0.28%
+│                   │   │           │               │   ├── am_ble_buffer_nvds_data_b0            196 0.03%
+│                   │   │           │               │   ├── am_ble_buffer_patch_b0                 16 0.00%
+│                   │   │           │               │   ├── am_ble_performance_patch_data_b0     1620 0.25%
+│                   │   │           │               │   └── am_hal_ble_default_patch_array_b0      12 0.00%
+│                   │   │           │               ├── am_hal_burst.c                              1 0.00%
+│                   │   │           │               │   └── g_am_hal_burst_mode_available           1 0.00%
+│                   │   │           │               ├── am_hal_cmdq.c                             440 0.07%
+│                   │   │           │               │   └── gAmHalCmdq                            440 0.07%
+│                   │   │           │               ├── am_hal_ctimer.c                            16 0.00%
+│                   │   │           │               │   └── g_ui8ClkSrc                            16 0.00%
+│                   │   │           │               ├── am_hal_iom.c                            13272 2.01%
+│                   │   │           │               │   └── g_IOMhandles                        13272 2.01%
+│                   │   │           │               └── am_hal_mspi.c                            6612 1.00%
+│                   │   │           │                   └── g_MSPIState                          6612 1.00%
+│                   │   │           └── power.c                                                     4 0.00%
+│                   │   │               └── log_dynamic_soc                                         4 0.00%
+│                   │   └── subsys                                                               1072 0.16%
+│                   │       ├── nvs                                                              1056 0.16%
+│                   │       │   └── nvs.c                                                        1056 0.16%
+│                   │       │       ├── _k_mem_slab_buf_nvs_buff_pool                            1024 0.16%
+│                   │       │       ├── log_dynamic_fs_nvs                                          4 0.00%
+│                   │       │       └── nvs_buff_pool                                              28 0.00%
+│                   │       └── setting                                                            16 0.00%
+│                   │           └── settings_nvs.c                                                 16 0.00%
+│                   │               └── settings_nvs_itf                                           16 0.00%
+│                   ├── components                                                             111297 16.86%
+│                   │   ├── base                                                                 3928 0.60%
+│                   │   │   ├── event_manager.c                                                  2976 0.45%
+│                   │   │   │   ├── ev_mgr                                                        896 0.14%
+│                   │   │   │   └── ev_stack                                                     2080 0.32%
+│                   │   │   ├── init                                                              836 0.13%
+│                   │   │   │   └── fsinit.c                                                      836 0.13%
+│                   │   │   │       ├── fsmount_table                                              36 0.01%
+│                   │   │   │       ├── liitefs_storage                                           256 0.04%
+│                   │   │   │       ├── liitefs_storage_lookahead_buffer                           32 0.00%
+│                   │   │   │       ├── liitefs_storage_prog_buffer                               256 0.04%
+│                   │   │   │       └── liitefs_storage_read_buffer                               256 0.04%
+│                   │   │   └── vibration.c                                                       116 0.02%
+│                   │   │       ├── log_dynamic_base                                                4 0.00%
+│                   │   │       └── vib_instance                                                  112 0.02%
+│                   │   ├── gui                                                                 77728 11.78%
+│                   │   │   ├── gui                                                             10084 1.53%
+│                   │   │   │   └── common                                                      10084 1.53%
+│                   │   │   │       ├── inc                                                     10004 1.52%
+│                   │   │   │       │   └── gx_system.h                                         10004 1.52%
+│                   │   │   │       │       ├── _gx_system_active_theme                             4 0.00%
+│                   │   │   │       │       ├── _gx_system_active_timer_list                        4 0.00%
+│                   │   │   │       │       ├── _gx_system_animation_free_list                      4 0.00%
+│                   │   │   │       │       ├── _gx_system_animation_list                           4 0.00%
+│                   │   │   │       │       ├── _gx_system_animation_pool                         384 0.06%
+│                   │   │   │       │       ├── _gx_system_canvas_created_count                     4 0.00%
+│                   │   │   │       │       ├── _gx_system_canvas_created_list                      4 0.00%
+│                   │   │   │       │       ├── _gx_system_capture_count                            4 0.00%
+│                   │   │   │       │       ├── _gx_system_clipboard                                4 0.00%
+│                   │   │   │       │       ├── _gx_system_clipboard_size                           4 0.00%
+│                   │   │   │       │       ├── _gx_system_clock_delta                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_current_draw_context                     4 0.00%
+│                   │   │   │       │       ├── _gx_system_display_created_count                    4 0.00%
+│                   │   │   │       │       ├── _gx_system_display_created_list                     4 0.00%
+│                   │   │   │       │       ├── _gx_system_draw_context_stack                    1520 0.23%
+│                   │   │   │       │       ├── _gx_system_draw_context_stack_end                   4 0.00%
+│                   │   │   │       │       ├── _gx_system_error_count                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_focus_owner                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_free_timer_list                          4 0.00%
+│                   │   │   │       │       ├── _gx_system_free_views                               4 0.00%
+│                   │   │   │       │       ├── _gx_system_gradient_list                            4 0.00%
+│                   │   │   │       │       ├── _gx_system_horizontal_scrollbar_appearance         40 0.01%
+│                   │   │   │       │       ├── _gx_system_horizontal_scrollbar_style               4 0.00%
+│                   │   │   │       │       ├── _gx_system_input_capture_stack                     16 0.00%
+│                   │   │   │       │       ├── _gx_system_input_owner                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_last_clock                               4 0.00%
+│                   │   │   │       │       ├── _gx_system_last_error                               4 0.00%
+│                   │   │   │       │       ├── _gx_system_last_pen_point                           4 0.00%
+│                   │   │   │       │       ├── _gx_system_lock_nesting                             4 0.00%
+│                   │   │   │       │       ├── _gx_system_lock_thread                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_memory_allocator                         4 0.00%
+│                   │   │   │       │       ├── _gx_system_memory_free                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_pen_configuration                        8 0.00%
+│                   │   │   │       │       ├── _gx_system_pen_speed_x                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_pen_speed_y                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_rich_text_context_stack                204 0.03%
+│                   │   │   │       │       ├── _gx_system_rich_text_context_stack_save           204 0.03%
+│                   │   │   │       │       ├── _gx_system_root_window_created_list                 4 0.00%
+│                   │   │   │       │       ├── _gx_system_scratchpad                            6400 0.97%
+│                   │   │   │       │       ├── _gx_system_screen_stack                            12 0.00%
+│                   │   │   │       │       ├── _gx_system_theme_table                              4 0.00%
+│                   │   │   │       │       ├── _gx_system_theme_table_size                         4 0.00%
+│                   │   │   │       │       ├── _gx_system_timer_memory                           640 0.10%
+│                   │   │   │       │       ├── _gx_system_version_string                          16 0.00%
+│                   │   │   │       │       ├── _gx_system_vertical_scrollbar_appearance           40 0.01%
+│                   │   │   │       │       ├── _gx_system_vertical_scrollbar_style                 4 0.00%
+│                   │   │   │       │       └── _gx_system_view_memory                            384 0.06%
+│                   │   │   │       └── src                                                        80 0.01%
+│                   │   │   │           ├── gx_display_driver_generic_wide_line_points_calculate.c 40 0.01%
+│                   │   │   │           │   └── LinePoints                                         40 0.01%
+│                   │   │   │           ├── gx_image_reader_jpeg_decode.c                           8 0.00%
+│                   │   │   │           │   ├── _gx_jpg_bit_buffer                                  4 0.00%
+│                   │   │   │           │   └── _gx_jpg_bit_count                                   4 0.00%
+│                   │   │   │           ├── gx_image_reader_png_decode.c                            8 0.00%
+│                   │   │   │           │   ├── _bit_buffer                                         4 0.00%
+│                   │   │   │           │   └── _bit_count                                          4 0.00%
+│                   │   │   │           └── gx_system_font_8bpp.c                                  24 0.00%
+│                   │   │   │               └── _gx_system_font_8bpp                               24 0.00%
+│                   │   │   ├── guix_input_zephyr.c                                                 4 0.00%
+│                   │   │   │   └── guix_driver_list                                                4 0.00%
+│                   │   │   ├── guix_zephyr_init.c                                                 28 0.00%
+│                   │   │   │   ├── guix_driver_list                                                4 0.00%
+│                   │   │   │   ├── guix_resource_dev_list                                          4 0.00%
+│                   │   │   │   └── gxres_null_device                                              20 0.00%
+│                   │   │   ├── guix_zephyr_spin.c                                              67608 10.24%
+│                   │   │   │   ├── guix_class                                                   1696 0.26%
+│                   │   │   │   ├── guix_lock                                                      20 0.00%
+│                   │   │   │   ├── guix_mpool                                                     20 0.00%
+│                   │   │   │   ├── guix_notifier_lock                                             20 0.00%
+│                   │   │   │   ├── guix_stack                                                   4128 0.63%
+│                   │   │   │   ├── guix_suspend_notifier_list                                      4 0.00%
+│                   │   │   │   ├── guix_thread                                                   280 0.04%
+│                   │   │   │   └── kheap_guix_mpool                                            61440 9.31%
+│                   │   │   └── gx_port.h                                                           4 0.00%
+│                   │   │       └── _guix_state__observer_list_head                                 4 0.00%
+│                   │   ├── motion                                                              14248 2.16%
+│                   │   │   ├── cywee_cmd.c                                                        16 0.00%
+│                   │   │   │   └── param_cfg                                                      16 0.00%
+│                   │   │   └── cywee_motion.c                                                  14232 2.16%
+│                   │   │       ├── Daily_data                                                     48 0.01%
+│                   │   │       ├── _k_thread_data_cywee_motiom                                    48 0.01%
+│                   │   │       ├── _k_thread_obj_cywee_motiom                                    280 0.04%
+│                   │   │       ├── _k_thread_stack_cywee_motiom                                 4128 0.63%
+│                   │   │       ├── cywee_mpool                                                    20 0.00%
+│                   │   │       ├── cywee_param                                                   124 0.02%
+│                   │   │       ├── kheap_cywee_mpool                                            9216 1.40%
+│                   │   │       ├── last_data                                                     124 0.02%
+│                   │   │       ├── m_req_sensor_state                                              4 0.00%
+│                   │   │       ├── sensor_dev                                                      4 0.00%
+│                   │   │       ├── sleep_data                                                     64 0.01%
+│                   │   │       ├── sleep_file_rec                                                 16 0.00%
+│                   │   │       ├── sport_cfg                                                      16 0.00%
+│                   │   │       ├── sport_data                                                    124 0.02%
+│                   │   │       └── sport_file_rec                                                 16 0.00%
+│                   │   ├── protobuf-c                                                           2084 0.32%
+│                   │   │   └── protobuf-c.c                                                     2084 0.32%
+│                   │   │       ├── kheap_protobuf_heap                                          2048 0.31%
+│                   │   │       ├── log_dynamic_protobuf_C                                          4 0.00%
+│                   │   │       ├── protobuf_c__allocator                                          12 0.00%
+│                   │   │       └── protobuf_heap                                                  20 0.00%
+│                   │   ├── services                                                             4588 0.70%
+│                   │   │   └── magnet                                                           4588 0.70%
+│                   │   │       └── magnet_svr.c                                                 4588 0.70%
+│                   │   │           ├── _k_thread_data_magnet                                      48 0.01%
+│                   │   │           ├── _k_thread_obj_magnet                                      280 0.04%
+│                   │   │           ├── _k_thread_stack_magnet                                   4128 0.63%
+│                   │   │           ├── log_dynamic_magnet                                          4 0.00%
+│                   │   │           └── magnet_svr                                                128 0.02%
+│                   │   ├── stp                                                                  8716 1.32%
+│                   │   │   ├── app                                                                28 0.00%
+│                   │   │   │   ├── call_service.h                                                  4 0.00%
+│                   │   │   │   │   └── _call__observer_list_head                                   4 0.00%
+│                   │   │   │   ├── camera_service.h                                                4 0.00%
+│                   │   │   │   │   └── _camera__observer_list_head                                 4 0.00%
+│                   │   │   │   ├── devinfo_service.c                                               4 0.00%
+│                   │   │   │   │   └── log_dynamic_stp_app                                         4 0.00%
+│                   │   │   │   ├── gps_service.h                                                   4 0.00%
+│                   │   │   │   │   └── _gps__observer_list_head                                    4 0.00%
+│                   │   │   │   ├── music_service.h                                                 4 0.00%
+│                   │   │   │   │   └── _music__observer_list_head                                  4 0.00%
+│                   │   │   │   ├── remind_service.h                                                4 0.00%
+│                   │   │   │   │   └── _remind__observer_list_head                                 4 0.00%
+│                   │   │   │   └── setting_service.h                                               4 0.00%
+│                   │   │   │       └── _setting__observer_list_head                                4 0.00%
+│                   │   │   ├── opc_proto.c                                                      2372 0.36%
+│                   │   │   │   ├── log_dynamic_stp_opc                                             4 0.00%
+│                   │   │   │   ├── net_buf_data_stp_pool                                        2104 0.32%
+│                   │   │   │   ├── net_buf_stp_pool                                              192 0.03%
+│                   │   │   │   ├── root                                                           12 0.00%
+│                   │   │   │   ├── stp_pool                                                       40 0.01%
+│                   │   │   │   └── tx_lock                                                        20 0.00%
+│                   │   │   ├── stp.c                                                              60 0.01%
+│                   │   │   │   └── proto_slot                                                     60 0.01%
+│                   │   │   ├── stp_bt.c                                                         1480 0.22%
+│                   │   │   │   ├── log_dynamic_stp_bt                                              4 0.00%
+│                   │   │   │   ├── net_buf_data_rx_pool                                         1280 0.19%
+│                   │   │   │   ├── net_buf_rx_pool                                                96 0.01%
+│                   │   │   │   ├── rx_pool                                                        40 0.01%
+│                   │   │   │   └── stp_btdev                                                      60 0.01%
+│                   │   │   └── stp_core.c                                                       4776 0.72%
+│                   │   │       ├── log_dynamic_stp_core                                            4 0.00%
+│                   │   │       ├── stp_device                                                     76 0.01%
+│                   │   │       ├── stp_rtn_pool                                                  288 0.04%
+│                   │   │       ├── stp_thread_data                                               280 0.04%
+│                   │   │       └── stp_thread_stack                                             4128 0.63%
+│                   │   └── xmodem                                                                  5 0.00%
+│                   │       ├── xmodem.c                                                            1 0.00%
+│                   │       │   └── need_erase                                                      1 0.00%
+│                   │       └── xmodem_porting.c                                                    4 0.00%
+│                   │           └── uart_dev                                                        4 0.00%
+│                   └── project_wkpace                                                         396754 60.11%
+│                       ├── empty.c                                                                 4 0.00%
+│                       │   └── log_dynamic_test                                                    4 0.00%
+│                       └── gui                                                                396750 60.11%
+│                           └── honbow_watch                                                   396750 60.11%
+│                               ├── app_alarm                                                   26076 3.95%
+│                               │   ├── app_alarm_edit_page.c                                    2929 0.44%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── prompt_edit_page                                      120 0.02%
+│                               │   │   ├── remind_late_switch_button                             220 0.03%
+│                               │   │   ├── remind_late_switch_checkbox                           112 0.02%
+│                               │   │   ├── rpt_edit_button                                       220 0.03%
+│                               │   │   ├── rpt_edit_button_icon                                   96 0.01%
+│                               │   │   ├── rpt_edit_button_info_tips                             120 0.02%
+│                               │   │   ├── rpt_prpmpt_buff                                        20 0.00%
+│                               │   │   ├── scrollable_alarm_page                                 120 0.02%
+│                               │   │   ├── scrollbar                                             448 0.07%
+│                               │   │   ├── scrollbar_properties                                   40 0.01%
+│                               │   │   ├── smart_awake_switch_button                             220 0.03%
+│                               │   │   ├── smart_awake_switch_checkbox                           112 0.02%
+│                               │   │   ├── time_edit_button                                      220 0.03%
+│                               │   │   ├── time_edit_button_icon                                  96 0.01%
+│                               │   │   ├── time_edit_button_info_tips                            120 0.02%
+│                               │   │   ├── time_prompt_buff                                       10 0.00%
+│                               │   │   ├── vib_du_edit_button                                    220 0.03%
+│                               │   │   ├── vib_du_edit_button_icon                                96 0.01%
+│                               │   │   ├── vib_du_edit_button_info_tips                          120 0.02%
+│                               │   │   └── vib_du_prpmpt_buff                                     10 0.00%
+│                               │   ├── app_alarm_main_page.c                                   18237 2.76%
+│                               │   │   ├── alarm_add_button                                      220 0.03%
+│                               │   │   ├── alarm_child_list                                    15840 2.40%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_info_mgr                                         72 0.01%
+│                               │   │   ├── alarm_info_size                                         1 0.00%
+│                               │   │   ├── alarm_widget_list                                     936 0.14%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── no_alarm_pixelmap                                     108 0.02%
+│                               │   │   ├── no_alarm_tips                                         120 0.02%
+│                               │   │   ├── scrollable_alarm_page                                 120 0.02%
+│                               │   │   ├── scrollbar                                             448 0.07%
+│                               │   │   ├── scrollbar_properties                                   40 0.01%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── title_prompt                                          120 0.02%
+│                               │   ├── app_alarm_page_mgr.c                                      135 0.02%
+│                               │   │   ├── alarm_screen_stack_buff                                40 0.01%
+│                               │   │   ├── alarm_screen_stack_control                             12 0.00%
+│                               │   │   ├── custom_screen_stack_list                               12 0.00%
+│                               │   │   ├── record_which_to_edit                                    4 0.00%
+│                               │   │   ├── s_alarm_info_tmp                                       26 0.00%
+│                               │   │   ├── s_alarm_page_info_update_func                          20 0.00%
+│                               │   │   ├── s_alarm_page_list                                      20 0.00%
+│                               │   │   └── s_edit_type                                             1 0.00%
+│                               │   ├── app_alarm_rpt_select.c                                   2877 0.44%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_rpt_sel_page                                     88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── lauguage_ch_element                                    32 0.00%
+│                               │   │   ├── lauguage_en_element                                    32 0.00%
+│                               │   │   ├── next_finish_button                                    220 0.03%
+│                               │   │   ├── prompt_rpt_select                                     120 0.02%
+│                               │   │   ├── rpt_sel_list                                          148 0.02%
+│                               │   │   ├── rpt_sel_list_row_memory                              1648 0.25%
+│                               │   │   ├── rpt_sel_list_scrollbar                                448 0.07%
+│                               │   │   └── rpt_sel_list_scrollbar_properties                      40 0.01%
+│                               │   ├── app_alarm_time_select.c                                  1025 0.16%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_time_select_page                                 88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── hour_scroll_wheel                                     248 0.04%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── min_scroll_wheel                                      248 0.04%
+│                               │   │   ├── next_finish_button                                    220 0.03%
+│                               │   │   └── prompt_time_select                                    120 0.02%
+│                               │   └── app_alarm_vib_duration.c                                  873 0.13%
+│                               │       ├── alarm_info                                              4 0.00%
+│                               │       ├── alarm_vib_duration_select_page                         88 0.01%
+│                               │       ├── background                                            120 0.02%
+│                               │       ├── edit_type                                               1 0.00%
+│                               │       ├── icon_tips                                              96 0.01%
+│                               │       ├── next_finish_button                                    220 0.03%
+│                               │       ├── prompt_vib_select                                     120 0.02%
+│                               │       └── vib_duration_scroll_wheel                             224 0.03%
+│                               ├── app_compass                                                     4 0.00%
+│                               │   └── app_compass_window.c                                        4 0.00%
+│                               │       └── angree                                                  4 0.00%
+│                               ├── app_list                                                     2420 0.37%
+│                               │   ├── app_list_define.c                                          24 0.00%
+│                               │   │   ├── app_id_pos_array                                       12 0.00%
+│                               │   │   └── root                                                   12 0.00%
+│                               │   └── app_list_style_grid_view.c                               2396 0.36%
+│                               │       ├── app_list                                              148 0.02%
+│                               │       ├── app_list_row_memory                                  1760 0.27%
+│                               │       ├── app_list_scrollbar                                    448 0.07%
+│                               │       └── app_list_scrollbar_properties                          40 0.01%
+│                               ├── app_music                                                     837 0.13%
+│                               │   └── app_music_main_page.c                                     837 0.13%
+│                               │       ├── curr_volume                                             1 0.00%
+│                               │       ├── curr_widget                                            88 0.01%
+│                               │       ├── next_button                                           108 0.02%
+│                               │       ├── play_pause_button                                     108 0.02%
+│                               │       ├── prev_button                                           108 0.02%
+│                               │       ├── song_title                                            120 0.02%
+│                               │       ├── volume_decrease_button                                108 0.02%
+│                               │       ├── volume_increase_button                                108 0.02%
+│                               │       └── volume_info                                            88 0.01%
+│                               ├── app_reminders                                               24924 3.78%
+│                               │   ├── app_reminders_edit_page.c                                1777 0.27%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── prompt_edit_page                                      120 0.02%
+│                               │   │   ├── rpt_edit_button                                       220 0.03%
+│                               │   │   ├── rpt_edit_button_icon                                   96 0.01%
+│                               │   │   ├── rpt_edit_button_info_tips                             120 0.02%
+│                               │   │   ├── rpt_prpmpt_buff                                        20 0.00%
+│                               │   │   ├── scrollable_alarm_page                                 120 0.02%
+│                               │   │   ├── time_edit_button                                      220 0.03%
+│                               │   │   ├── time_edit_button_icon                                  96 0.01%
+│                               │   │   ├── time_edit_button_info_tips                            120 0.02%
+│                               │   │   ├── time_prompt_buff                                       10 0.00%
+│                               │   │   ├── vib_du_edit_button                                    220 0.03%
+│                               │   │   ├── vib_du_edit_button_icon                                96 0.01%
+│                               │   │   ├── vib_du_edit_button_info_tips                          120 0.02%
+│                               │   │   └── vib_du_prpmpt_buff                                     10 0.00%
+│                               │   ├── app_reminders_main_page.c                               18237 2.76%
+│                               │   │   ├── alarm_child_list                                    15840 2.40%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_info_size                                         1 0.00%
+│                               │   │   ├── alarm_widget_list                                     936 0.14%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── no_alarm_pixelmap                                     108 0.02%
+│                               │   │   ├── no_alarm_tips                                         120 0.02%
+│                               │   │   ├── reminder_add_button                                   220 0.03%
+│                               │   │   ├── reminders_info_mgr                                     72 0.01%
+│                               │   │   ├── scrollable_alarm_page                                 120 0.02%
+│                               │   │   ├── scrollbar                                             448 0.07%
+│                               │   │   ├── scrollbar_properties                                   40 0.01%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── title_prompt                                          120 0.02%
+│                               │   ├── app_reminders_page_mgr.c                                  135 0.02%
+│                               │   │   ├── custom_screen_stack_list                               12 0.00%
+│                               │   │   ├── record_which_to_edit                                    4 0.00%
+│                               │   │   ├── reminders_screen_stack_buff                            40 0.01%
+│                               │   │   ├── reminders_screen_stack_control                         12 0.00%
+│                               │   │   ├── s_edit_type                                             1 0.00%
+│                               │   │   ├── s_reminders_info_tmp                                   26 0.00%
+│                               │   │   ├── s_reminders_page_info_update_func                      20 0.00%
+│                               │   │   └── s_reminders_page_list                                  20 0.00%
+│                               │   ├── app_reminders_rpt_select.c                               2877 0.44%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_rpt_sel_page                                     88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── lauguage_ch_element                                    32 0.00%
+│                               │   │   ├── lauguage_en_element                                    32 0.00%
+│                               │   │   ├── next_finish_button                                    220 0.03%
+│                               │   │   ├── prompt_rpt_select                                     120 0.02%
+│                               │   │   ├── rpt_sel_list                                          148 0.02%
+│                               │   │   ├── rpt_sel_list_row_memory                              1648 0.25%
+│                               │   │   ├── rpt_sel_list_scrollbar                                448 0.07%
+│                               │   │   └── rpt_sel_list_scrollbar_properties                      40 0.01%
+│                               │   ├── app_reminders_time_select.c                              1025 0.16%
+│                               │   │   ├── alarm_info                                              4 0.00%
+│                               │   │   ├── alarm_time_select_page                                 88 0.01%
+│                               │   │   ├── edit_type                                               1 0.00%
+│                               │   │   ├── hour_scroll_wheel                                     248 0.04%
+│                               │   │   ├── icon_tips                                              96 0.01%
+│                               │   │   ├── min_scroll_wheel                                      248 0.04%
+│                               │   │   ├── next_finish_button                                    220 0.03%
+│                               │   │   └── prompt_time_select                                    120 0.02%
+│                               │   └── app_reminders_vib_duration.c                              873 0.13%
+│                               │       ├── alarm_info                                              4 0.00%
+│                               │       ├── alarm_vib_duration_select_page                         88 0.01%
+│                               │       ├── background                                            120 0.02%
+│                               │       ├── edit_type                                               1 0.00%
+│                               │       ├── icon_tips                                              96 0.01%
+│                               │       ├── next_finish_button                                    220 0.03%
+│                               │       ├── prompt_vib_select                                     120 0.02%
+│                               │       └── vib_duration_scroll_wheel                             224 0.03%
+│                               ├── app_setting                                                 23886 3.62%
+│                               │   ├── app_setting_activity_detect_page.c                       1016 0.15%
+│                               │   │   ├── checkbox                                              164 0.02%
+│                               │   │   ├── checkbox_info                                          24 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── tips                                                  300 0.05%
+│                               │   │   └── wrist_raise_button                                    220 0.03%
+│                               │   ├── app_setting_bright_time.c                                 652 0.10%
+│                               │   │   ├── background                                            120 0.02%
+│                               │   │   ├── brightness_adjust_wheel                               224 0.03%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── disp_setting_brightness_page                           88 0.01%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   └── setting_prompt                                        120 0.02%
+│                               │   ├── app_setting_brightness_page.c                             652 0.10%
+│                               │   │   ├── background                                            120 0.02%
+│                               │   │   ├── brightness_adjust_wheel                               224 0.03%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── disp_setting_brightness_page                           88 0.01%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   └── setting_prompt                                        120 0.02%
+│                               │   ├── app_setting_disp_page.c                                  2576 0.39%
+│                               │   │   ├── app_disp_setting_list_scrollbar_properties             40 0.01%
+│                               │   │   ├── app_setting_list                                      148 0.02%
+│                               │   │   ├── app_setting_list_row_memory                          1560 0.24%
+│                               │   │   ├── app_setting_list_scrollbar                            448 0.07%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── disp_setting_child                                     20 0.00%
+│                               │   │   ├── disp_setting_main_page                                 88 0.01%
+│                               │   │   ├── disp_setting_menu_screen_list                          12 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_ch_disp_setting_element                       20 0.00%
+│                               │   │   ├── lauguage_en_disp_setting_element                       20 0.00%
+│                               │   │   └── setting_prompt                                        120 0.02%
+│                               │   ├── app_setting_dnd_mode.c                                   3797 0.58%
+│                               │   │   ├── animation_screen_list                                  12 0.00%
+│                               │   │   ├── button_confirm                                        220 0.03%
+│                               │   │   ├── curr_page                                            2812 0.43%
+│                               │   │   ├── hour_adjust_wheel                                     224 0.03%
+│                               │   │   ├── icon_title_time_select                                 96 0.01%
+│                               │   │   ├── min_adjust_wheel                                      224 0.03%
+│                               │   │   ├── prompt_time_select                                    120 0.02%
+│                               │   │   ├── time_select_pafe_type                                   1 0.00%
+│                               │   │   └── time_select_page                                       88 0.01%
+│                               │   ├── app_setting_eco_mode.c                                    716 0.11%
+│                               │   │   ├── checkbox                                              164 0.02%
+│                               │   │   ├── checkbox_info                                          24 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── eco_mode_button                                       220 0.03%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   └── setting_prompt                                        120 0.02%
+│                               │   ├── app_setting_list_style.c                                  960 0.15%
+│                               │   │   ├── curr_main_page                                         88 0.01%
+│                               │   │   ├── curr_page_content                                     640 0.10%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_ch_setting_element                             8 0.00%
+│                               │   │   ├── lauguage_en_setting_element                             8 0.00%
+│                               │   │   └── window_prompt                                         120 0.02%
+│                               │   ├── app_setting_main_page.c                                  2632 0.40%
+│                               │   │   ├── app_setting_list                                      148 0.02%
+│                               │   │   ├── app_setting_list_row_memory                          1560 0.24%
+│                               │   │   ├── app_setting_list_scrollbar                            448 0.07%
+│                               │   │   ├── app_setting_list_scrollbar_properties                  40 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── lauguage_ch_setting_element                            28 0.00%
+│                               │   │   ├── lauguage_en_setting_element                            28 0.00%
+│                               │   │   ├── setting_child                                          28 0.00%
+│                               │   │   ├── setting_main_page                                      88 0.01%
+│                               │   │   ├── setting_menu_screen_list                               12 0.00%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   ├── app_setting_music_control_page.c                         1012 0.15%
+│                               │   │   ├── checkbox                                              164 0.02%
+│                               │   │   ├── checkbox_info                                          24 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── tips                                                  300 0.05%
+│                               │   │   └── wrist_raise_button                                    220 0.03%
+│                               │   ├── app_setting_night_mode.c                                 3877 0.59%
+│                               │   │   ├── animation_screen_list                                  12 0.00%
+│                               │   │   ├── app_list_scrollbar                                    448 0.07%
+│                               │   │   ├── app_list_scrollbar_properties                          40 0.01%
+│                               │   │   ├── button_confirm                                        220 0.03%
+│                               │   │   ├── checkbox                                              164 0.02%
+│                               │   │   ├── checkbox2                                             164 0.02%
+│                               │   │   ├── checkbox_info                                          24 0.00%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── hour_adjust_wheel                                     224 0.03%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── icon_title_time_select                                 96 0.01%
+│                               │   │   ├── min_adjust_wheel                                      224 0.03%
+│                               │   │   ├── multiline                                             300 0.05%
+│                               │   │   ├── prompt_buff_for_end_time                                8 0.00%
+│                               │   │   ├── prompt_buff_for_start_time                              8 0.00%
+│                               │   │   ├── prompt_time_select                                    120 0.02%
+│                               │   │   ├── round_button                                          220 0.03%
+│                               │   │   ├── round_button2                                         220 0.03%
+│                               │   │   ├── round_button3                                         436 0.07%
+│                               │   │   ├── round_button4                                         436 0.07%
+│                               │   │   ├── scroll_page                                           120 0.02%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── time_select_page                                       88 0.01%
+│                               │   │   └── time_select_page_type                                   1 0.00%
+│                               │   ├── app_setting_system_factory_reset_page.c                   648 0.10%
+│                               │   │   ├── cacel_button                                          220 0.03%
+│                               │   │   ├── confirm_button                                        220 0.03%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   └── tips                                                  120 0.02%
+│                               │   ├── app_setting_system_page.c                                2576 0.39%
+│                               │   │   ├── app_disp_setting_list_scrollbar_properties             40 0.01%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── disp_setting_menu_screen_list                          12 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_ch_menu_element                               20 0.00%
+│                               │   │   ├── lauguage_en_menu_element                               20 0.00%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── system_list                                           148 0.02%
+│                               │   │   ├── system_list_row_memory                               1560 0.24%
+│                               │   │   ├── system_list_scrollbar                                 448 0.07%
+│                               │   │   └── system_setting_child                                   20 0.00%
+│                               │   ├── app_setting_system_reboot_page.c                          548 0.08%
+│                               │   │   ├── cacel_button                                          220 0.03%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   └── reboot_button                                         236 0.04%
+│                               │   ├── app_setting_system_shutdown_page.c                        548 0.08%
+│                               │   │   ├── cacel_button                                          220 0.03%
+│                               │   │   ├── curr_page                                              88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   └── reboot_button                                         236 0.04%
+│                               │   ├── app_setting_vibration_strength.c                          960 0.15%
+│                               │   │   ├── curr_main_page                                         88 0.01%
+│                               │   │   ├── curr_page_content                                     640 0.10%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_ch_setting_element                             8 0.00%
+│                               │   │   ├── lauguage_en_setting_element                             8 0.00%
+│                               │   │   └── window_prompt                                         120 0.02%
+│                               │   └── app_setting_wrist_raise.c                                 716 0.11%
+│                               │       ├── checkbox                                              164 0.02%
+│                               │       ├── checkbox_info                                          24 0.00%
+│                               │       ├── curr_page                                              88 0.01%
+│                               │       ├── delta_x                                                 2 0.00%
+│                               │       ├── gx_point_x_first                                        2 0.00%
+│                               │       ├── icon_title                                             96 0.01%
+│                               │       ├── setting_prompt                                        120 0.02%
+│                               │       └── wrist_raise_button                                    220 0.03%
+│                               ├── app_sports                                                  25328 3.84%
+│                               │   ├── app_gps_connect.c                                        2584 0.39%
+│                               │   │   ├── buffer                                                100 0.02%
+│                               │   │   ├── buffer1                                               100 0.02%
+│                               │   │   ├── confirm_child                                          88 0.01%
+│                               │   │   ├── confirm_widget                                         88 0.01%
+│                               │   │   ├── confirm_window_row                                    408 0.06%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── first_connect_gps                                       4 0.00%
+│                               │   │   ├── gps_child                                              88 0.01%
+│                               │   │   ├── gps_connecting_list_row_memory                        408 0.06%
+│                               │   │   ├── gps_title_prompt                                      120 0.02%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── multi_text                                            348 0.05%
+│                               │   │   ├── prompt_widget                                          88 0.01%
+│                               │   │   ├── text_input                                            348 0.05%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   ├── time_prompt_buff                                        8 0.00%
+│                               │   │   ├── widget0                                                88 0.01%
+│                               │   │   ├── widget1                                                88 0.01%
+│                               │   │   └── widget2                                                88 0.01%
+│                               │   ├── app_outdoor_run_window.c                                 2145 0.32%
+│                               │   │   ├── app_outdoor_run_list                                  148 0.02%
+│                               │   │   ├── app_outdoor_run_list_row_memory                      1632 0.25%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_en_setting_element                            16 0.00%
+│                               │   │   ├── outdoor_run_prompt                                    120 0.02%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   ├── time_prompt_buff                                        8 0.00%
+│                               │   │   └── type                                                    1 0.00%
+│                               │   ├── app_sport_data_window.c                                  3336 0.51%
+│                               │   │   ├── avg_pace_prompt                                       120 0.02%
+│                               │   │   ├── avg_pace_prompt_buff                                   10 0.00%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── distance_prompt                                       120 0.02%
+│                               │   │   ├── distance_prompt_buff                                   10 0.00%
+│                               │   │   ├── duration_prompt                                       120 0.02%
+│                               │   │   ├── duration_prompt_buff                                   14 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── heart_prompt                                          120 0.02%
+│                               │   │   ├── heart_prompt_buff                                       8 0.00%
+│                               │   │   ├── hr_bar                                                540 0.08%
+│                               │   │   ├── icon_heart                                             96 0.01%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_en_sport_data_element                         12 0.00%
+│                               │   │   ├── s_hr                                                    2 0.00%
+│                               │   │   ├── sporting_data_list                                    148 0.02%
+│                               │   │   ├── sporting_data_list_row_memory                        1788 0.27%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   ├── app_sport_paused_window.c                                 744 0.11%
+│                               │   │   ├── Paused_prompt                                         120 0.02%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── end_sport_ts                                           16 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_en_sport_data_element                          4 0.00%
+│                               │   │   ├── sport_paused_momery                                   376 0.06%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   ├── app_sport_start_window.c                                  728 0.11%
+│                               │   │   ├── count_down_icon                                         4 0.00%
+│                               │   │   ├── count_down_window_child                                88 0.01%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── sport_start_list_momery                               392 0.06%
+│                               │   │   ├── start_sport_ts                                         16 0.00%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   ├── app_sport_summary_window.c                              10988 1.66%
+│                               │   │   ├── HertPromptZone                                       1068 0.16%
+│                               │   │   ├── HertRateZone                                         1068 0.16%
+│                               │   │   ├── avg_hertrate_prompt                                   120 0.02%
+│                               │   │   ├── avg_hertrate_prompt_buff                               10 0.00%
+│                               │   │   ├── avg_pace_prompt                                       120 0.02%
+│                               │   │   ├── avg_pace_prompt_buff                                   10 0.00%
+│                               │   │   ├── avg_stride_prompt                                     120 0.02%
+│                               │   │   ├── avg_stride_prompt_buff                                 10 0.00%
+│                               │   │   ├── calorise_burned_prompt                                120 0.02%
+│                               │   │   ├── calorise_burned_prompt_buff                            10 0.00%
+│                               │   │   ├── date_buff                                              11 0.00%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── distance_prompt                                       120 0.02%
+│                               │   │   ├── distance_prompt_buff                                   10 0.00%
+│                               │   │   ├── duration_prompt                                       120 0.02%
+│                               │   │   ├── duration_prompt_buff                                   15 0.00%
+│                               │   │   ├── end_date_prompt                                       120 0.02%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── lauguage_en_sport_summary_element                      36 0.01%
+│                               │   │   ├── lauguage_en_sport_summary_unit                         36 0.01%
+│                               │   │   ├── list_icon                                              96 0.01%
+│                               │   │   ├── max_child                                               1 0.00%
+│                               │   │   ├── prompt_buf                                             25 0.00%
+│                               │   │   ├── sport_summary                                          72 0.01%
+│                               │   │   ├── start_to_end_prompt                                   120 0.02%
+│                               │   │   ├── summary_data_list                                     148 0.02%
+│                               │   │   ├── summary_data_list_row_memory                         6556 0.99%
+│                               │   │   ├── summary_prompt                                        120 0.02%
+│                               │   │   ├── summary_text_buffer                                   100 0.02%
+│                               │   │   ├── summary_text_input                                    348 0.05%
+│                               │   │   ├── temp_buff                                              16 0.00%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   ├── time_prompt_buff                                        8 0.00%
+│                               │   │   ├── total_steps_prompt                                    120 0.02%
+│                               │   │   └── total_steps_prompt_buff                                10 0.00%
+│                               │   ├── app_sports_window.c                                      2236 0.34%
+│                               │   │   ├── app_sport_list                                        148 0.02%
+│                               │   │   ├── app_sport_list_row_memory                            1224 0.19%
+│                               │   │   ├── app_sport_list_scrollbar                              448 0.07%
+│                               │   │   ├── app_sport_list_scrollbar_properties                    40 0.01%
+│                               │   │   ├── app_sport_menu_screen_list                             12 0.00%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── lauguage_en_setting_element                            56 0.01%
+│                               │   │   ├── sport_child                                            56 0.01%
+│                               │   │   ├── sport_prompt                                          120 0.02%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   ├── sport_goal_set_window.c                                  1855 0.28%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── goal_buff                                              15 0.00%
+│                               │   │   ├── goal_prompt                                           120 0.02%
+│                               │   │   ├── goal_setting_widget_momery                           1196 0.18%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon_title                                             96 0.01%
+│                               │   │   ├── lauguage_en_goal_units_element                         56 0.01%
+│                               │   │   ├── name_prompt                                           120 0.02%
+│                               │   │   ├── setting_prompt                                        120 0.02%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   └── time_prompt_buff                                        8 0.00%
+│                               │   └── sport_time_short_window.c                                 712 0.11%
+│                               │       ├── short_buffer1                                         100 0.02%
+│                               │       ├── short_multi_text                                      348 0.05%
+│                               │       ├── short_sport_widget0                                    88 0.01%
+│                               │       ├── short_sport_widget1                                    88 0.01%
+│                               │       └── short_sport_widget2                                    88 0.01%
+│                               ├── app_today                                                   19391 2.94%
+│                               │   ├── app_sleep_data_window.c                                  5607 0.85%
+│                               │   │   ├── Node_data                                             160 0.02%
+│                               │   │   ├── Seq_data                                               16 0.00%
+│                               │   │   ├── child_total_widget                                    572 0.09%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── detail_data_bar_memory                                332 0.05%
+│                               │   │   ├── end_buf                                                10 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── icon                                                   96 0.01%
+│                               │   │   ├── lauguage_en_sport_summary_element                      36 0.01%
+│                               │   │   ├── multi_line_memory                                     536 0.08%
+│                               │   │   ├── no_record_widget_memory                               300 0.05%
+│                               │   │   ├── seg_hour                                               40 0.01%
+│                               │   │   ├── seg_min                                                40 0.01%
+│                               │   │   ├── segment_data_widget_memory                           2400 0.36%
+│                               │   │   ├── sleep_data_list                                       148 0.02%
+│                               │   │   ├── sleep_data_list_row_memory                            644 0.10%
+│                               │   │   ├── sleep_prompt                                          120 0.02%
+│                               │   │   ├── start_buf                                              10 0.00%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   ├── time_prompt_buff                                        8 0.00%
+│                               │   │   ├── total_hour_buf                                         10 0.00%
+│                               │   │   └── total_min_buf                                           5 0.00%
+│                               │   ├── app_today_window.c                                      13136 1.99%
+│                               │   │   ├── active_buf                                             10 0.00%
+│                               │   │   ├── active_goal_buf                                        10 0.00%
+│                               │   │   ├── activety_icon_memory                                  276 0.04%
+│                               │   │   ├── activity_icon                                          44 0.01%
+│                               │   │   ├── app_today_list                                        148 0.02%
+│                               │   │   ├── app_today_list_row_memory                            2024 0.31%
+│                               │   │   ├── app_today_menu_screen_list                             12 0.00%
+│                               │   │   ├── cal_buf                                                10 0.00%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── dist_buf                                               10 0.00%
+│                               │   │   ├── exe_buf                                                10 0.00%
+│                               │   │   ├── exe_goal_buf                                           10 0.00%
+│                               │   │   ├── goal_steps_buf                                         10 0.00%
+│                               │   │   ├── gx_point_x_first                                        2 0.00%
+│                               │   │   ├── lauguage_en_sport_summary_element                      36 0.01%
+│                               │   │   ├── sleep_data                                             64 0.01%
+│                               │   │   ├── sleep_hour_buf                                         12 0.00%
+│                               │   │   ├── sleep_list_button_memory                             1752 0.27%
+│                               │   │   ├── sleep_min_buf                                          12 0.00%
+│                               │   │   ├── sleep_title                                           120 0.02%
+│                               │   │   ├── sport_list_button_memory                             5840 0.88%
+│                               │   │   ├── sport_title                                           120 0.02%
+│                               │   │   ├── step_icon                                              44 0.01%
+│                               │   │   ├── steps_buf                                              10 0.00%
+│                               │   │   ├── temp_black_page                                        88 0.01%
+│                               │   │   ├── time_prompt                                           120 0.02%
+│                               │   │   ├── time_prompt_buff                                        8 0.00%
+│                               │   │   ├── today_list_active_memory                              360 0.05%
+│                               │   │   ├── today_list_calorise_memory                            360 0.05%
+│                               │   │   ├── today_list_distance_memory                            360 0.05%
+│                               │   │   ├── today_list_exericise_memory                           360 0.05%
+│                               │   │   ├── today_list_widget_memory                              360 0.05%
+│                               │   │   ├── today_overview                                        268 0.04%
+│                               │   │   ├── today_prompt                                          120 0.02%
+│                               │   │   ├── work_out_icon                                          44 0.01%
+│                               │   │   └── workout_buf                                           100 0.02%
+│                               │   └── today_sport_data_window.c                                 648 0.10%
+│                               │       ├── delta_x                                                 2 0.00%
+│                               │       ├── gx_point_x_first                                        2 0.00%
+│                               │       ├── icon                                                   96 0.01%
+│                               │       ├── no_record_widget_memory                               300 0.05%
+│                               │       ├── sport_prompt                                          120 0.02%
+│                               │       ├── time_prompt                                           120 0.02%
+│                               │       └── time_prompt_buff                                        8 0.00%
+│                               ├── control_center                                               1340 0.20%
+│                               │   └── control_center_window.c                                  1340 0.20%
+│                               │       ├── children_module                                      1220 0.18%
+│                               │       └── prompt_for_brightness                                 120 0.02%
+│                               ├── data_service                                                    4 0.00%
+│                               │   └── data_service_custom.c                                       4 0.00%
+│                               │       └── log_dynamic_guix_data_service                           4 0.00%
+│                               ├── demo_guix_main.c                                               96 0.01%
+│                               │   ├── honbow_disp_theme_1_pixelmap_table                          4 0.00%
+│                               │   ├── log_dynamic_guix_log                                        4 0.00%
+│                               │   ├── p_main_screen                                               4 0.00%
+│                               │   ├── root                                                        4 0.00%
+│                               │   └── system_screen_stack                                        80 0.01%
+│                               ├── guix_language_resources_custom.c                                8 0.00%
+│                               │   └── honbow_disp_language_table                                  8 0.00%
+│                               ├── guix_simple_resources.c                                       148 0.02%
+│                               │   ├── honbow_disp_theme_1                                       112 0.02%
+│                               │   ├── honbow_disp_theme_1_font_table                             32 0.00%
+│                               │   └── honbow_disp_theme_table                                     4 0.00%
+│                               ├── guix_simple_specifications.c                               233656 35.40%
+│                               │   ├── app_alarm_window                                          116 0.02%
+│                               │   ├── app_alarm_window_properties                                 4 0.00%
+│                               │   ├── app_compass_window                                        116 0.02%
+│                               │   ├── app_compass_window_properties                               4 0.00%
+│                               │   ├── app_list_window                                           116 0.02%
+│                               │   ├── app_list_window_properties                                  4 0.00%
+│                               │   ├── app_music_window                                          116 0.02%
+│                               │   ├── app_music_window_properties                                 4 0.00%
+│                               │   ├── app_reminders_window                                      116 0.02%
+│                               │   ├── app_reminders_window_properties                             4 0.00%
+│                               │   ├── app_setting_window                                        116 0.02%
+│                               │   ├── app_setting_window_properties                               4 0.00%
+│                               │   ├── app_sport_window                                          116 0.02%
+│                               │   ├── app_sport_window_properties                                 4 0.00%
+│                               │   ├── app_today_window                                          116 0.02%
+│                               │   ├── app_today_window_properties                                 4 0.00%
+│                               │   ├── control_center_window                                     116 0.02%
+│                               │   ├── control_center_window_properties                            4 0.00%
+│                               │   ├── guix_simple_display_table                                  56 0.01%
+│                               │   ├── honbow_disp_canvas_control_block                          828 0.13%
+│                               │   ├── honbow_disp_canvas_memory                              230400 34.91%
+│                               │   ├── honbow_disp_control_block                                 288 0.04%
+│                               │   ├── honbow_disp_root_window                                   124 0.02%
+│                               │   ├── language_window                                           116 0.02%
+│                               │   ├── language_window_properties                                  4 0.00%
+│                               │   ├── message_window                                            116 0.02%
+│                               │   ├── message_window_properties                                   4 0.00%
+│                               │   ├── pairing_window                                            116 0.02%
+│                               │   ├── pairing_window_properties                                   4 0.00%
+│                               │   ├── root_window                                               348 0.05%
+│                               │   ├── root_window_home_window_properties                          4 0.00%
+│                               │   ├── root_window_properties                                      4 0.00%
+│                               │   ├── root_window_wf_window_properties                            4 0.00%
+│                               │   ├── wf_list                                                   148 0.02%
+│                               │   └── wf_list_properties                                         12 0.00%
+│                               ├── home                                                         5066 0.77%
+│                               │   ├── home_window.c                                             624 0.09%
+│                               │   │   ├── circle_tips                                           548 0.08%
+│                               │   │   ├── delta_x                                                 2 0.00%
+│                               │   │   ├── delta_y                                                 2 0.00%
+│                               │   │   ├── enter_slide_hor                                         1 0.00%
+│                               │   │   ├── enter_slide_ver                                         1 0.00%
+│                               │   │   ├── home_widget_mgr                                        28 0.00%
+│                               │   │   ├── home_window_enter_pen_down                              1 0.00%
+│                               │   │   ├── last_x                                                  2 0.00%
+│                               │   │   ├── last_y                                                  2 0.00%
+│                               │   │   ├── silde_hor_screen_list                                  24 0.00%
+│                               │   │   ├── slide_ver_screen_list                                  12 0.00%
+│                               │   │   └── wf_mirror_created                                       1 0.00%
+│                               │   ├── wf_list_window.c                                          900 0.14%
+│                               │   │   └── wf_list_row_memory                                    900 0.14%
+│                               │   └── widgets                                                  3542 0.54%
+│                               │       ├── compass_widget.c                                      221 0.03%
+│                               │       │   ├── angree                                              2 0.00%
+│                               │       │   ├── curr_widget                                        88 0.01%
+│                               │       │   ├── degree_info                                       120 0.02%
+│                               │       │   ├── degree_info_buff                                   10 0.00%
+│                               │       │   └── enter_silent_mode                                   1 0.00%
+│                               │       ├── countdown_widget.c                                   1748 0.26%
+│                               │       │   ├── child1                                            360 0.05%
+│                               │       │   ├── child2                                            360 0.05%
+│                               │       │   ├── child3                                            360 0.05%
+│                               │       │   ├── child4                                            360 0.05%
+│                               │       │   ├── child5                                            220 0.03%
+│                               │       │   └── curr_widget                                        88 0.01%
+│                               │       ├── music_widget.c                                        837 0.13%
+│                               │       │   ├── curr_volume                                         1 0.00%
+│                               │       │   ├── curr_widget                                        88 0.01%
+│                               │       │   ├── next_button                                       108 0.02%
+│                               │       │   ├── play_pause_button                                 108 0.02%
+│                               │       │   ├── prev_button                                       108 0.02%
+│                               │       │   ├── song_title                                        120 0.02%
+│                               │       │   ├── volume_decrease_button                            108 0.02%
+│                               │       │   ├── volume_increase_button                            108 0.02%
+│                               │       │   └── volume_info                                        88 0.01%
+│                               │       └── stopwatch_widget.c                                    736 0.11%
+│                               │           ├── count_and_reset_button                            220 0.03%
+│                               │           ├── curr_widget                                        88 0.01%
+│                               │           ├── splite_line                                        88 0.01%
+│                               │           ├── start_and_pause_button                            220 0.03%
+│                               │           └── stop_watch_value                                  120 0.02%
+│                               ├── popup                                                       20424 3.09%
+│                               │   ├── alarm_remind_widget.c                                     720 0.11%
+│                               │   │   └── alarm_remind_widget                                   720 0.11%
+│                               │   ├── charging_widget.c                                         220 0.03%
+│                               │   │   └── charging_widget                                       220 0.03%
+│                               │   ├── hrov_widget.c                                             460 0.07%
+│                               │   │   └── popup_widget                                          460 0.07%
+│                               │   ├── language_win.c                                            812 0.12%
+│                               │   │   ├── language_items                                        216 0.03%
+│                               │   │   └── language_list                                         596 0.09%
+│                               │   ├── message_widget.c                                        12208 1.85%
+│                               │   │   ├── _test_data_array                                      120 0.02%
+│                               │   │   ├── active_list                                             8 0.00%
+│                               │   │   ├── free_list                                               8 0.00%
+│                               │   │   ├── message_alpha_animation                                32 0.00%
+│                               │   │   ├── message_pool                                         7760 1.18%
+│                               │   │   └── message_win                                          4280 0.65%
+│                               │   ├── ota_widget.c                                              220 0.03%
+│                               │   │   └── popup_widget                                          220 0.03%
+│                               │   ├── pairing_win.c                                            4084 0.62%
+│                               │   │   ├── mod_window                                           1736 0.26%
+│                               │   │   └── qcode_buffer                                         2348 0.36%
+│                               │   ├── ringing_widget.c                                          584 0.09%
+│                               │   │   └── popup_widget                                          584 0.09%
+│                               │   ├── sedentary_widget.c                                        460 0.07%
+│                               │   │   └── sedentary_widget                                      460 0.07%
+│                               │   └── shutdown_widget.c                                         656 0.10%
+│                               │       └── popup_widget                                          656 0.10%
+│                               ├── setting_service                                               289 0.04%
+│                               │   └── setting_service_custom.c                                  289 0.04%
+│                               │       ├── log_dynamic_setting_service                             4 0.00%
+│                               │       ├── setting_misc_conf                                      24 0.00%
+│                               │       ├── setting_misc_total_size                                 4 0.00%
+│                               │       ├── setting_service_init_flag                               1 0.00%
+│                               │       └── store_buff                                            256 0.04%
+│                               ├── utils                                                         220 0.03%
+│                               │   ├── custom_animation.c                                        208 0.03%
+│                               │   │   ├── custom_anim_target1_event_process_function              4 0.00%
+│                               │   │   ├── custom_anim_target2_event_process_function              4 0.00%
+│                               │   │   ├── list_tmp                                                8 0.00%
+│                               │   │   └── slide_list                                            192 0.03%
+│                               │   └── custom_screen_stack.c                                      12 0.00%
+│                               │       └── custom_screen_stack_list                               12 0.00%
+│                               ├── view_service                                                 5156 0.78%
+│                               │   ├── view_service_alarm.c                                      258 0.04%
+│                               │   │   ├── alarm_info_list                                       234 0.04%
+│                               │   │   └── alarms_conf                                            24 0.00%
+│                               │   ├── view_service_custom.c                                    4640 0.70%
+│                               │   │   ├── handles                                                48 0.01%
+│                               │   │   ├── kheap_view_service_heap                              2048 0.31%
+│                               │   │   ├── log_dynamic_guix_view_service                           4 0.00%
+│                               │   │   ├── thread_view_service                                   280 0.04%
+│                               │   │   ├── thread_view_service_stack                            2080 0.32%
+│                               │   │   ├── view_service                                          160 0.02%
+│                               │   │   └── view_service_heap                                      20 0.00%
+│                               │   └── view_service_reminders.c                                  258 0.04%
+│                               │       ├── reminders_conf                                         24 0.00%
+│                               │       └── reminders_info_list                                   234 0.04%
+│                               ├── watch_face_theme                                             7425 1.12%
+│                               │   ├── watch_face_manager.c                                      344 0.05%
+│                               │   │   ├── drv_guix                                                4 0.00%
+│                               │   │   ├── sem_lock                                               24 0.00%
+│                               │   │   ├── using_theme                                            24 0.00%
+│                               │   │   ├── wf_conf                                                24 0.00%
+│                               │   │   └── wf_mgr                                                268 0.04%
+│                               │   ├── watch_face_port.c                                          96 0.01%
+│                               │   │   ├── func_array                                             60 0.01%
+│                               │   │   └── posix_time_now                                         36 0.01%
+│                               │   ├── watch_face_theme.c                                       6641 1.01%
+│                               │   │   ├── _element_cnts_actual                                    1 0.00%
+│                               │   │   ├── element_style_list                                   1440 0.22%
+│                               │   │   ├── kheap_wf_theme_mpool                                 5120 0.78%
+│                               │   │   ├── sem_lock                                               24 0.00%
+│                               │   │   ├── watch_face_header_curr                                 36 0.01%
+│                               │   │   └── wf_theme_mpool                                         20 0.00%
+│                               │   └── watch_face_theme_1_conf.c                                 344 0.05%
+│                               │       └── watch_face_theme_1                                    344 0.05%
+│                               └── windows_manager                                                52 0.01%
+│                                   └── windows_manager.c                                          52 0.01%
+│                                       ├── screen_stack_buff                                      40 0.01%
+│                                       └── screen_stack_control                                   12 0.00%
+├── ActAMH                                                                                          4 0.00%
+├── CWM_Pedometer                                                                                  56 0.01%
+├── Custom_Sensor                                                                                   4 0.00%
+├── FlagDebug                                                                                       4 0.00%
+├── InitStatus.5680                                                                                 4 0.00%
+├── Iv                                                                                              4 0.00%
+├── Key                                                                                             4 0.00%
+├── MS_1000_data                                                                                   32 0.00%
+├── MS_100_data                                                                                    32 0.00%
+├── MS_10_data                                                                                     32 0.00%
+├── MS_20_data                                                                                     32 0.00%
+├── MS_5_data                                                                                      32 0.00%
+├── PPGin_RLS.6424                                                                                  4 0.00%
+├── Rates                                                                                          32 0.00%
+├── RoundKey                                                                                      176 0.03%
+├── SystemCoreClock                                                                                 4 0.00%
+├── __compound_literal.0                                                                           92 0.01%
+├── __compound_literal.1                                                                          105 0.02%
+├── __compound_literal.10                                                                          24 0.00%
+├── __compound_literal.11                                                                          29 0.00%
+├── __compound_literal.12                                                                          20 0.00%
+├── __compound_literal.13                                                                          12 0.00%
+├── __compound_literal.14                                                                          12 0.00%
+├── __compound_literal.15                                                                           8 0.00%
+├── __compound_literal.16                                                                           4 0.00%
+├── __compound_literal.17                                                                           4 0.00%
+├── __compound_literal.18                                                                           8 0.00%
+├── __compound_literal.19                                                                           4 0.00%
+├── __compound_literal.2                                                                           20 0.00%
+├── __compound_literal.20                                                                           4 0.00%
+├── __compound_literal.21                                                                           4 0.00%
+├── __compound_literal.22                                                                           4 0.00%
+├── __compound_literal.23                                                                           8 0.00%
+├── __compound_literal.24                                                                           4 0.00%
+├── __compound_literal.25                                                                           4 0.00%
+├── __compound_literal.26                                                                           4 0.00%
+├── __compound_literal.27                                                                           8 0.00%
+├── __compound_literal.28                                                                           4 0.00%
+├── __compound_literal.3                                                                           33 0.00%
+├── __compound_literal.4                                                                           40 0.01%
+├── __compound_literal.5                                                                           33 0.00%
+├── __compound_literal.6                                                                           20 0.00%
+├── __compound_literal.7                                                                          116 0.02%
+├── __compound_literal.8                                                                           24 0.00%
+├── __compound_literal.9                                                                           29 0.00%
+├── __context                                                                                       4 0.00%
+├── __fdlib_version                                                                                 1 0.00%
+├── __global_locale                                                                               364 0.06%
+├── __malloc_free_list                                                                              4 0.00%
+├── __malloc_sbrk_start                                                                             4 0.00%
+├── _impure_ptr                                                                                     4 0.00%
+├── _kernel                                                                                       312 0.05%
+├── _open                                                                                           1 0.00%
+├── _spo2_s                                                                                         4 0.00%
+├── _sw_isr_table                                                                                 272 0.04%
+├── act_detected.9718                                                                               4 0.00%
+├── aet.0                                                                                         280 0.04%
+├── algoMemAddress                                                                                 60 0.01%
+├── am_ble_nvds_patch_b0                                                                           16 0.00%
+├── am_ble_performance_patch_b0                                                                    16 0.00%
+├── am_hal_ble_default_patches_b0                                                                   4 0.00%
+├── amh_main                                                                                        8 0.00%
+├── amhnotif                                                                                        4 0.00%
+├── arch                                                                                            5 0.00%
+│   └── arm                                                                                         5 0.00%
+│       └── core                                                                                    5 0.00%
+│           └── aarch32                                                                             5 0.00%
+│               └── cortex_m                                                                        5 0.00%
+│                   └── mpu                                                                         5 0.00%
+│                       ├── arm_core_mpu.c                                                          4 0.00%
+│                       │   └── log_dynamic_mpu                                                     4 0.00%
+│                       └── arm_mpu.c                                                               1 0.00%
+│                           └── static_regions_num                                                  1 0.00%
+├── arrYawFilter.5373                                                                             124 0.02%
+├── batt_cap.0                                                                                      1 0.00%
+├── brush_color.0                                                                                   4 0.00%
+├── bt_auth                                                                                         4 0.00%
+├── bt_dev                                                                                        312 0.05%
+├── calories.4                                                                                      2 0.00%
+├── count_down_window                                                                              88 0.01%
+├── count_timer.0                                                                                   8 0.00%
+├── current_screen                                                                                  4 0.00%
+├── curve_G                                                                                        48 0.01%
+├── curve_b                                                                                        24 0.00%
+├── curve_n                                                                                        24 0.00%
+├── curve_p                                                                                        24 0.00%
+├── custom_listen                                                                                   4 0.00%
+├── dAccVar                                                                                        12 0.00%
+├── dAccdata                                                                                       12 0.00%
+├── dAttMatrix.5614                                                                                36 0.01%
+├── dCalMagBuffer                                                                                 420 0.06%
+├── dCalMagdata                                                                                    12 0.00%
+├── dCalPDistLOne                                                                                   4 0.00%
+├── dCalPDistLTwo                                                                                   4 0.00%
+├── dCalPointDistance                                                                               4 0.00%
+├── dMagH                                                                                           4 0.00%
+├── dMagInc                                                                                         4 0.00%
+├── dMagLineY.5475                                                                                  4 0.00%
+├── dMagLineZ.5476                                                                                  4 0.00%
+├── dMagV                                                                                           4 0.00%
+├── dMagVar                                                                                        12 0.00%
+├── dMaxPiontsDistance                                                                              4 0.00%
+├── dMovAccVar                                                                                      4 0.00%
+├── dMovMagVar                                                                                      4 0.00%
+├── dOrientationVector                                                                             12 0.00%
+├── dPointToCenterHigh                                                                              4 0.00%
+├── dPointToCenterLow                                                                               4 0.00%
+├── dPreSphereOffset                                                                               12 0.00%
+├── dPreSphereRadius                                                                                4 0.00%
+├── dRawMagdata                                                                                    12 0.00%
+├── dRegMagdata                                                                                    12 0.00%
+├── dSIMatrix                                                                                      36 0.01%
+├── dSatAccVar                                                                                      4 0.00%
+├── dSatMagVar                                                                                      4 0.00%
+├── dSatQuaAccBuffer                                                                              360 0.05%
+├── dSatQuaMagBuffer                                                                              360 0.05%
+├── dSatRegMagBuffer                                                                              360 0.05%
+├── dSphereOffset                                                                                  12 0.00%
+├── dSphereRadius                                                                                   4 0.00%
+├── data_reset.0                                                                                    1 0.00%
+├── day_old.5                                                                                       1 0.00%
+├── default_settings_nvs.0                                                                         64 0.01%
+├── delta_x.0                                                                                      40 0.01%
+├── delta_x.2                                                                                       4 0.00%
+├── delta_y.1                                                                                       2 0.00%
+├── den_LPF                                                                                         8 0.00%
+├── disp.0                                                                                         20 0.00%
+├── disp.2                                                                                          4 0.00%
+├── drivers                                                                                      4420 0.67%
+│   ├── console                                                                                     4 0.00%
+│   │   └── uart_console.c                                                                          4 0.00%
+│   │       └── uart_console_dev                                                                    4 0.00%
+│   ├── flash                                                                                    4096 0.62%
+│   │   └── flash_shell.c                                                                        4096 0.62%
+│   │       └── test_arr                                                                         4096 0.62%
+│   ├── i2c                                                                                         8 0.00%
+│   │   ├── i2c_common.c                                                                            4 0.00%
+│   │   │   └── log_dynamic_i2c                                                                     4 0.00%
+│   │   └── i2c_shell.c                                                                             4 0.00%
+│   │       └── log_dynamic_i2c_shell                                                               4 0.00%
+│   ├── sensor                                                                                    224 0.03%
+│   │   └── sensor_shell.c                                                                        224 0.03%
+│   │       └── sensor_channel_name                                                               224 0.03%
+│   └── timer                                                                                      88 0.01%
+│       └── sys_clock_init.c                                                                       88 0.01%
+│           └── __pm_sys_init_z_clock_driver_init0                                                 88 0.01%
+├── dynamic_regions.0                                                                              12 0.00%
+├── enter_slide_flag.2                                                                              4 0.00%
+├── errno                                                                                           4 0.00%
+├── events.2                                                                                       40 0.01%
+├── evt_mgr                                                                                        16 0.00%
+├── evt_queue                                                                                       4 0.00%
+├── evt_queue_limit                                                                                 4 0.00%
+├── fMag_sim                                                                                       36 0.01%
+├── flag_LPF                                                                                        4 0.00%
+├── gAmHalResetStatus                                                                               4 0.00%
+├── g_ListSensor                                                                                  128 0.02%
+├── g_accData                                                                                      36 0.01%
+├── g_activitymode_cfg                                                                              4 0.00%
+├── g_axis_mode_acc                                                                                 4 0.00%
+├── g_axis_mode_mag                                                                                 4 0.00%
+├── g_baroData                                                                                     12 0.00%
+├── g_chip_vendor_cfg                                                                               4 0.00%
+├── g_customer_verify_key1                                                                          4 0.00%
+├── g_customer_verify_key2                                                                          4 0.00%
+├── g_drvListHead                                                                                   4 0.00%
+├── g_featureDbg                                                                                    4 0.00%
+├── g_featureLog                                                                                    4 0.00%
+├── g_fifo_sensors                                                                                 16 0.00%
+├── g_gnssData                                                                                     72 0.01%
+├── g_gyroData                                                                                     28 0.00%
+├── g_hrData                                                                                       16 0.00%
+├── g_hwSensorListHead                                                                              4 0.00%
+├── g_internalFeatureDbg                                                                            4 0.00%
+├── g_libCustomOption                                                                               4 0.00%
+├── g_magData                                                                                      28 0.00%
+├── g_maxRecords_Acc                                                                                4 0.00%
+├── g_next_expire_time                                                                              8 0.00%
+├── g_odrAcc                                                                                        4 0.00%
+├── g_offBodyData                                                                                   4 0.00%
+├── g_onChargingData                                                                                4 0.00%
+├── g_os_api_full                                                                                  56 0.01%
+├── g_reqSensorFlags                                                                                8 0.00%
+├── g_scl_log_2                                                                                     4 0.00%
+├── g_scl_log_3                                                                                     4 0.00%
+├── g_scl_log_5                                                                                     4 0.00%
+├── g_scl_log_6                                                                                     4 0.00%
+├── g_tempData                                                                                      4 0.00%
+├── go_wf_page_flag.1                                                                               1 0.00%
+├── gobj                                                                                           16 0.00%
+├── gparaA                                                                                         32 0.00%
+├── gps_confirm_window                                                                             88 0.01%
+├── gps_connecting_window                                                                          88 0.01%
+├── gps_not_connectd_window                                                                        88 0.01%
+├── gx_point_x_first.1                                                                             32 0.00%
+├── gx_point_x_first.2                                                                              6 0.00%
+├── gx_point_x_first.3                                                                              4 0.00%
+├── heart_rate.1                                                                                    2 0.00%
+├── hour_old.1                                                                                      4 0.00%
+├── hour_old.6                                                                                      1 0.00%
+├── iCalBufferCount                                                                                 4 0.00%
+├── iCalPointNumOne                                                                                 4 0.00%
+├── iCalPointNumThr                                                                                 4 0.00%
+├── iCalPointNumTwo                                                                                 4 0.00%
+├── iMagAccuracy                                                                                    4 0.00%
+├── iMagSaturation                                                                                  4 0.00%
+├── iSamplingRate                                                                                   4 0.00%
+├── iSatQuaBufferCount                                                                              4 0.00%
+├── iStableCount.5189                                                                               4 0.00%
+├── ident.1                                                                                         1 0.00%
+├── idle_state.0                                                                                    1 0.00%
+├── impure_data                                                                                    96 0.01%
+├── inited.0                                                                                        1 0.00%
+├── input_LPF_x                                                                                     8 0.00%
+├── input_LPF_y                                                                                     8 0.00%
+├── intFilterCount.5372                                                                             4 0.00%
+├── k_sys_work_q                                                                                  304 0.05%
+├── kernel                                                                                       9453 1.43%
+│   ├── init.c                                                                                   5285 0.80%
+│   │   ├── log_dynamic_os                                                                          4 0.00%
+│   │   ├── z_idle_stacks                                                                        1152 0.17%
+│   │   ├── z_main_stack                                                                         4128 0.63%
+│   │   └── z_sys_post_kernel                                                                       1 0.00%
+│   ├── sched.c                                                                                    12 0.00%
+│   │   ├── pending_current                                                                         4 0.00%
+│   │   ├── slice_max_prio                                                                          4 0.00%
+│   │   └── slice_time                                                                              4 0.00%
+│   ├── system_work_q.c                                                                          4128 0.63%
+│   │   └── sys_work_q_stack                                                                     4128 0.63%
+│   ├── thread.c                                                                                    8 0.00%
+│   │   └── threads_runtime_stats                                                                   8 0.00%
+│   └── timeout.c                                                                                  20 0.00%
+│       ├── announce_remaining                                                                      4 0.00%
+│       ├── curr_tick                                                                               8 0.00%
+│       └── timeout_list                                                                            8 0.00%
+├── kn.1                                                                                           16 0.00%
+├── lastYaw.5362                                                                                    4 0.00%
+├── last_sec.0                                                                                      1 0.00%
+├── lib                                                                                            56 0.01%
+│   ├── libc                                                                                       36 0.01%
+│   │   └── newlib                                                                                 36 0.01%
+│   │       └── libc-hooks.c                                                                       36 0.01%
+│   │           ├── _stdin_hook                                                                     4 0.00%
+│   │           ├── _stdout_hook                                                                    4 0.00%
+│   │           ├── heap_sem                                                                       24 0.00%
+│   │           └── heap_sz                                                                         4 0.00%
+│   ├── os                                                                                          4 0.00%
+│   │   └── printk.c                                                                                4 0.00%
+│   │       └── _char_out                                                                           4 0.00%
+│   └── posix                                                                                      16 0.00%
+│       └── clock.c                                                                                16 0.00%
+│           └── rt_clock_base                                                                      16 0.00%
+├── long_press_status.1                                                                             4 0.00%
+├── long_press_time.0                                                                               4 0.00%
+├── mTimerLowPower_data                                                                            32 0.00%
+├── m_BeforeActType                                                                                 4 0.00%
+├── m_actmode                                                                                       4 0.00%
+├── m_actmode_algo_cfg_tbl                                                                         16 0.00%
+├── m_actmode_cached                                                                                4 0.00%
+├── m_actmode_hw_cfg_last                                                                          12 0.00%
+├── m_algo_hw_apis                                                                                 36 0.01%
+├── m_amh_in                                                                                      200 0.03%
+├── m_bikingCfg_int1_enable_extra                                                                   1 0.00%
+├── m_cm                                                                                           36 0.01%
+├── m_cmdSleepReportNow                                                                             4 0.00%
+├── m_cmdSleepTerminate                                                                             4 0.00%
+├── m_custDrvPollingDataReady                                                                       4 0.00%
+├── m_cust_verify_key                                                                               4 0.00%
+├── m_cust_verify_key_backup                                                                        4 0.00%
+├── m_fnLogMask                                                                                     4 0.00%
+├── m_fnLogOutput                                                                                   4 0.00%
+├── m_fnLogOutputRaw                                                                                4 0.00%
+├── m_hr_max                                                                                        4 0.00%
+├── m_hr_min                                                                                        4 0.00%
+├── m_info                                                                                         36 0.01%
+├── m_isLibRunning                                                                                  4 0.00%
+├── m_isLowPowerMode                                                                                4 0.00%
+├── m_isLowPowerTimerRunning                                                                        4 0.00%
+├── m_isPowerModeCfgEnabled                                                                         4 0.00%
+├── m_libPostinit_done                                                                              4 0.00%
+├── m_maa                                                                                           4 0.00%
+├── m_memPtr                                                                                       12 0.00%
+├── m_pDutProtectStatus                                                                             4 0.00%
+├── m_pH                                                                                            4 0.00%
+├── m_pedoCfg_int4_enable_extra                                                                     1 0.00%
+├── m_phTask                                                                                        4 0.00%
+├── m_sensorPowerState                                                                              8 0.00%
+├── m_sn                                                                                            4 0.00%
+├── m_swimCfg_int2_enable_extra                                                                     1 0.00%
+├── m_tagIdMask                                                                                    16 0.00%
+├── m_timestamp_ms                                                                                  4 0.00%
+├── m_trigcount_fall                                                                                4 0.00%
+├── m_trigcount_no_motion                                                                           4 0.00%
+├── m_trigcount_sedentary                                                                           4 0.00%
+├── m_trigcount_shake                                                                               4 0.00%
+├── m_trigcount_sleeping                                                                            4 0.00%
+├── m_trigcount_watchhang                                                                           4 0.00%
+├── m_unix_time                                                                                     8 0.00%
+├── mdataqueue.9679                                                                                 4 0.00%
+├── mgrMEM                                                                                          8 0.00%
+├── min_old.0                                                                                       4 0.00%
+├── min_old.7                                                                                       1 0.00%
+├── minfo                                                                                          12 0.00%
+├── mlist.7024                                                                                      4 0.00%
+├── mobj_ar                                                                                         4 0.00%
+├── mobj_cust_algo1                                                                                 4 0.00%
+├── mobj_fallingdetection                                                                           4 0.00%
+├── mobj_handupdownwatch                                                                            4 0.00%
+├── mobj_rockingdetection                                                                           4 0.00%
+├── mobj_shake                                                                                      4 0.00%
+├── modules                                                                                         4 0.00%
+│   └── fs                                                                                          4 0.00%
+│       └── littlefs                                                                                4 0.00%
+│           └── lfs_util.h                                                                          4 0.00%
+│               └── log_dynamic_littlefs                                                            4 0.00%
+├── mon_old.4                                                                                       1 0.00%
+├── motionSensor                                                                                    4 0.00%
+├── moveFlag                                                                                        4 0.00%
+├── need_gen_evt.3                                                                                  4 0.00%
+├── net.1                                                                                         280 0.04%
+├── no_sport_record_window                                                                         88 0.01%
+├── notuse_msg                                                                                      4 0.00%
+├── notuse_queue                                                                                    4 0.00%
+├── num_LPF                                                                                         8 0.00%
+├── ops.0                                                                                          32 0.00%
+├── outdoor_run_window                                                                             88 0.01%
+├── output.6819                                                                                   256 0.04%
+├── output.9774                                                                                    68 0.01%
+├── output_LPF_x                                                                                    8 0.00%
+├── output_LPF_y                                                                                    8 0.00%
+├── pah_alg_buffer                                                                              28672 4.34%
+├── pen_down_valid.1                                                                               12 0.00%
+├── pen_down_valid.2                                                                                8 0.00%
+├── pm_idle_exit_notify                                                                             1 0.00%
+├── point_record.3                                                                                  8 0.00%
+├── pub_key_cb.0                                                                                    8 0.00%
+├── ready.0                                                                                         1 0.00%
+├── regCount                                                                                        4 0.00%
+├── s_actType.9739                                                                                  4 0.00%
+├── s_actmode_hw_last.9659                                                                          4 0.00%
+├── s_ar_isd.9766                                                                                 184 0.03%
+├── s_enable_count.9527                                                                             4 0.00%
+├── s_fifo_output_array.7052                                                                        4 0.00%
+├── s_isInit.9482                                                                                   8 0.00%
+├── s_isInit.9539                                                                                   4 0.00%
+├── s_isInit.9558                                                                                   4 0.00%
+├── s_isInit.9573                                                                                   4 0.00%
+├── s_isInit.9590                                                                                   4 0.00%
+├── s_isInit.9615                                                                                   4 0.00%
+├── s_isInit.9628                                                                                   4 0.00%
+├── s_metabolism_cfg.9538                                                                          16 0.00%
+├── s_mldtcfg.9557                                                                                 20 0.00%
+├── s_pLineStrMulti.7024                                                                            4 0.00%
+├── s_pedo_cfg.9588                                                                                20 0.00%
+├── s_pedo_tr_cfg.9589                                                                             16 0.00%
+├── s_power.10560                                                                                   4 0.00%
+├── s_power.10564                                                                                   4 0.00%
+├── s_power.10568                                                                                   4 0.00%
+├── s_power.10572                                                                                   4 0.00%
+├── s_power.10580                                                                                   4 0.00%
+├── s_power.10584                                                                                   4 0.00%
+├── s_power.10588                                                                                   4 0.00%
+├── s_power.10592                                                                                   4 0.00%
+├── s_randomOneHour.10560                                                                           4 0.00%
+├── s_rock_cfg.9481                                                                                16 0.00%
+├── s_running.10573                                                                                 4 0.00%
+├── s_sed_cfg.9572                                                                                 10 0.00%
+├── s_sensEvt.7232                                                                                 80 0.01%
+├── s_sizeTotal.6806                                                                                4 0.00%
+├── s_sleep_cfg.9627                                                                               16 0.00%
+├── s_sn.10530                                                                                      4 0.00%
+├── s_sn.10571                                                                                      4 0.00%
+├── s_sn.10635                                                                                      4 0.00%
+├── s_sn.7102                                                                                       4 0.00%
+├── s_sn.7110                                                                                       4 0.00%
+├── s_sn.7129                                                                                       4 0.00%
+├── s_sn.7170                                                                                       4 0.00%
+├── s_sn.7645                                                                                       4 0.00%
+├── s_swim_cfg.9614                                                                                 3 0.00%
+├── s_triggerCount.6801                                                                             4 0.00%
+├── s_triggerCount.6807                                                                             4 0.00%
+├── s_triggerCount.6813                                                                             4 0.00%
+├── s_ts_ns_last.10526                                                                              8 0.00%
+├── s_use_hr.9861                                                                                   4 0.00%
+├── s_use_hr_1001_last.9888                                                                         4 0.00%
+├── s_use_hr_2001_last.9895                                                                         4 0.00%
+├── s_whud_cfg.9481                                                                                12 0.00%
+├── saveFlag                                                                                        4 0.00%
+├── sec_old.0                                                                                       1 0.00%
+├── sec_old.8                                                                                       1 0.00%
+├── senMem                                                                                          4 0.00%
+├── sensorRates                                                                                    48 0.01%
+├── settings_handlers                                                                               8 0.00%
+├── settings_load_srcs                                                                              8 0.00%
+├── settings_save_dst                                                                               4 0.00%
+├── silent_mode_cnt.1                                                                               1 0.00%
+├── sleep_data_widget                                                                              88 0.01%
+├── slide_hor_animation                                                                            64 0.01%
+├── slide_ver_animation                                                                            64 0.01%
+├── sport_data_window                                                                              88 0.01%
+├── sport_goal_set_window                                                                          88 0.01%
+├── sport_main_page                                                                                88 0.01%
+├── sport_paused_window                                                                            88 0.01%
+├── sport_start_window                                                                             88 0.01%
+├── sport_summary_window                                                                           88 0.01%
+├── sport_time_count                                                                                4 0.00%
+├── sport_time_short_window                                                                        88 0.01%
+├── state                                                                                           4 0.00%
+├── steps.3                                                                                         4 0.00%
+├── str.1                                                                                          30 0.00%
+├── subsys                                                                                      20793 3.15%
+│   ├── bluetooth                                                                               12449 1.89%
+│   │   ├── common                                                                                 48 0.01%
+│   │   │   └── log.h                                                                              48 0.01%
+│   │   │       ├── log_dynamic_LOG_MODULE_NAME                                                     4 0.00%
+│   │   │       ├── log_dynamic_bt_att                                                              4 0.00%
+│   │   │       ├── log_dynamic_bt_buf                                                              4 0.00%
+│   │   │       ├── log_dynamic_bt_conn                                                             4 0.00%
+│   │   │       ├── log_dynamic_bt_crypto                                                           4 0.00%
+│   │   │       ├── log_dynamic_bt_dis                                                              4 0.00%
+│   │   │       ├── log_dynamic_bt_gatt                                                             4 0.00%
+│   │   │       ├── log_dynamic_bt_hci_core                                                         4 0.00%
+│   │   │       ├── log_dynamic_bt_keys                                                             4 0.00%
+│   │   │       ├── log_dynamic_bt_l2cap                                                            4 0.00%
+│   │   │       ├── log_dynamic_bt_rpa                                                              4 0.00%
+│   │   │       └── log_dynamic_bt_smp                                                              4 0.00%
+│   │   ├── host                                                                                12384 1.88%
+│   │   │   ├── att.c                                                                             604 0.09%
+│   │   │   │   ├── _k_mem_slab_buf_att_slab                                                       44 0.01%
+│   │   │   │   ├── _k_mem_slab_buf_chan_slab                                                     280 0.04%
+│   │   │   │   ├── _k_mem_slab_buf_req_slab                                                      168 0.03%
+│   │   │   │   ├── att_slab                                                                       28 0.00%
+│   │   │   │   ├── cancel                                                                         28 0.00%
+│   │   │   │   ├── chan_slab                                                                      28 0.00%
+│   │   │   │   └── req_slab                                                                       28 0.00%
+│   │   │   ├── buf.c                                                                            5615 0.85%
+│   │   │   │   ├── hci_rx_pool                                                                    40 0.01%
+│   │   │   │   ├── net_buf_data_hci_rx_pool                                                     5120 0.78%
+│   │   │   │   ├── net_buf_data_num_complete_pool                                                  7 0.00%
+│   │   │   │   ├── net_buf_hci_rx_pool                                                           384 0.06%
+│   │   │   │   ├── net_buf_num_complete_pool                                                      24 0.00%
+│   │   │   │   └── num_complete_pool                                                              40 0.01%
+│   │   │   ├── conn.c                                                                           3932 0.60%
+│   │   │   │   ├── acl_conns                                                                     192 0.03%
+│   │   │   │   ├── acl_tx_pool                                                                    40 0.01%
+│   │   │   │   ├── callback_list                                                                   4 0.00%
+│   │   │   │   ├── conn_change                                                                    16 0.00%
+│   │   │   │   ├── conn_tx                                                                        96 0.01%
+│   │   │   │   ├── frag_pool                                                                      40 0.01%
+│   │   │   │   ├── free_tx                                                                        24 0.00%
+│   │   │   │   ├── net_buf_acl_tx_pool                                                           144 0.02%
+│   │   │   │   ├── net_buf_data_acl_tx_pool                                                     1968 0.30%
+│   │   │   │   ├── net_buf_data_frag_pool                                                       1312 0.20%
+│   │   │   │   └── net_buf_frag_pool                                                              96 0.01%
+│   │   │   ├── crypto.c                                                                          312 0.05%
+│   │   │   │   └── prng                                                                          312 0.05%
+│   │   │   ├── gatt.c                                                                            310 0.05%
+│   │   │   │   ├── cf_cfg                                                                         32 0.00%
+│   │   │   │   ├── db_hash                                                                        16 0.00%
+│   │   │   │   ├── db_hash_work                                                                   48 0.01%
+│   │   │   │   ├── gatt_sc                                                                        88 0.01%
+│   │   │   │   ├── init                                                                            4 0.00%
+│   │   │   │   ├── last_static_handle                                                              2 0.00%
+│   │   │   │   ├── sc_ccc                                                                         36 0.01%
+│   │   │   │   ├── sc_cfg                                                                         24 0.00%
+│   │   │   │   ├── sc_restore_params                                                              24 0.00%
+│   │   │   │   ├── service_init                                                                    4 0.00%
+│   │   │   │   └── subscriptions                                                                  32 0.00%
+│   │   │   ├── hci_core.c                                                                        832 0.13%
+│   │   │   │   ├── cmd_data                                                                       24 0.00%
+│   │   │   │   ├── dh_key_cb                                                                       4 0.00%
+│   │   │   │   ├── hci_cmd_pool                                                                   40 0.01%
+│   │   │   │   ├── net_buf_data_hci_cmd_pool                                                     640 0.10%
+│   │   │   │   ├── net_buf_hci_cmd_pool                                                           48 0.01%
+│   │   │   │   ├── pub_key                                                                        64 0.01%
+│   │   │   │   ├── pub_key_cb                                                                      4 0.00%
+│   │   │   │   ├── ready_cb                                                                        4 0.00%
+│   │   │   │   └── scan_dev_found_cb                                                               4 0.00%
+│   │   │   ├── keys.c                                                                             92 0.01%
+│   │   │   │   └── key_pool                                                                       92 0.01%
+│   │   │   ├── l2cap.c                                                                           184 0.03%
+│   │   │   │   └── bt_l2cap_pool                                                                 184 0.03%
+│   │   │   └── smp.c                                                                             503 0.08%
+│   │   │       ├── bondable                                                                        1 0.00%
+│   │   │       ├── bt_smp_pool                                                                   472 0.07%
+│   │   │       ├── oobd_present                                                                    1 0.00%
+│   │   │       ├── sc_local_pkey_ready                                                            24 0.00%
+│   │   │       ├── sc_public_key                                                                   4 0.00%
+│   │   │       └── sc_supported                                                                    1 0.00%
+│   │   └── services                                                                               17 0.00%
+│   │       ├── bas.c                                                                               5 0.00%
+│   │       │   ├── battery_level                                                                   1 0.00%
+│   │       │   └── log_dynamic_bas                                                                 4 0.00%
+│   │       ├── dis.c                                                                               7 0.00%
+│   │       │   └── dis_pnp_id                                                                      7 0.00%
+│   │       └── hrs.c                                                                               5 0.00%
+│   │           ├── hrs_blsc                                                                        1 0.00%
+│   │           └── log_dynamic_hrs                                                                 4 0.00%
+│   ├── fs                                                                                       1764 0.27%
+│   │   ├── fs.c                                                                                   48 0.01%
+│   │   │   ├── fs_mnt_list                                                                         8 0.00%
+│   │   │   ├── log_dynamic_fs                                                                      4 0.00%
+│   │   │   ├── mutex                                                                              20 0.00%
+│   │   │   └── registry                                                                           16 0.00%
+│   │   └── littlefs_fs.c                                                                        1716 0.26%
+│   │       ├── _k_mem_slab_buf_file_cache_slab                                                  1024 0.16%
+│   │       ├── _k_mem_slab_buf_file_data_pool                                                    400 0.06%
+│   │       ├── _k_mem_slab_buf_lfs_dir_pool                                                      208 0.03%
+│   │       ├── file_cache_slab                                                                    28 0.00%
+│   │       ├── file_data_pool                                                                     28 0.00%
+│   │       └── lfs_dir_pool                                                                       28 0.00%
+│   ├── logging                                                                                  2442 0.37%
+│   │   ├── log_core.c                                                                           1382 0.21%
+│   │   │   ├── backend_attached                                                                    1 0.00%
+│   │   │   ├── buffered_cnt                                                                        4 0.00%
+│   │   │   ├── dropped_cnt                                                                         4 0.00%
+│   │   │   ├── initialized                                                                         4 0.00%
+│   │   │   ├── list                                                                                8 0.00%
+│   │   │   ├── log_dynamic_log                                                                     4 0.00%
+│   │   │   ├── log_process_thread_sem                                                             24 0.00%
+│   │   │   ├── log_process_thread_timer                                                           56 0.01%
+│   │   │   ├── log_strdup_pool                                                                    28 0.00%
+│   │   │   ├── log_strdup_pool_buf                                                               160 0.02%
+│   │   │   ├── logging_stack                                                                     800 0.12%
+│   │   │   ├── logging_thread                                                                    280 0.04%
+│   │   │   ├── panic_mode                                                                          1 0.00%
+│   │   │   ├── proc_tid                                                                            4 0.00%
+│   │   │   └── timestamp_func                                                                      4 0.00%
+│   │   ├── log_msg.c                                                                            1052 0.16%
+│   │   │   ├── log_msg_pool                                                                       28 0.00%
+│   │   │   └── log_msg_pool_buf                                                                 1024 0.16%
+│   │   └── log_output.c                                                                            8 0.00%
+│   │       ├── freq                                                                                4 0.00%
+│   │       └── timestamp_div                                                                       4 0.00%
+│   ├── net                                                                                         4 0.00%
+│   │   └── buf.c                                                                                   4 0.00%
+│   │       └── log_dynamic_net_buf                                                                 4 0.00%
+│   ├── power                                                                                      63 0.01%
+│   │   ├── device.c                                                                               38 0.01%
+│   │   │   ├── all_devices                                                                         4 0.00%
+│   │   │   ├── num_pm                                                                              2 0.00%
+│   │   │   ├── num_susp                                                                            2 0.00%
+│   │   │   └── pm_devices                                                                         30 0.00%
+│   │   └── power.c                                                                                25 0.00%
+│   │       ├── log_dynamic_power                                                                   4 0.00%
+│   │       ├── pm_notifiers                                                                        8 0.00%
+│   │       ├── post_ops_done                                                                       4 0.00%
+│   │       ├── z_forced_power_state                                                                1 0.00%
+│   │       └── z_power_state                                                                       8 0.00%
+│   ├── settings                                                                                   25 0.00%
+│   │   └── src                                                                                    25 0.00%
+│   │       ├── settings.c                                                                         24 0.00%
+│   │       │   ├── log_dynamic_settings                                                            4 0.00%
+│   │       │   └── settings_lock                                                                  20 0.00%
+│   │       └── settings_init.c                                                                     1 0.00%
+│   │           └── settings_subsys_initialized                                                     1 0.00%
+│   ├── shell                                                                                    4042 0.61%
+│   │   └── shell_uart.c                                                                         4042 0.61%
+│   │       ├── _k_fifo_buf_shell_uart_msgq                                                        80 0.01%
+│   │       ├── _ring_buffer_data_shell_transport_uart_rx_ringbuf                                  64 0.01%
+│   │       ├── _ring_buffer_data_shell_transport_uart_tx_ringbuf                                   8 0.00%
+│   │       ├── backend_cb_shell_uart_backend                                                       8 0.00%
+│   │       ├── log_dynamic_shell_shell_uart                                                        4 0.00%
+│   │       ├── log_dynamic_shell_uart                                                              4 0.00%
+│   │       ├── shell_transport_uart                                                                8 0.00%
+│   │       ├── shell_transport_uart_ctrl_blk                                                      20 0.00%
+│   │       ├── shell_transport_uart_rx_ringbuf                                                    28 0.00%
+│   │       ├── shell_transport_uart_tx_ringbuf                                                    28 0.00%
+│   │       ├── shell_uart_control_block                                                            8 0.00%
+│   │       ├── shell_uart_ctx                                                                    772 0.12%
+│   │       ├── shell_uart_fprintf_shell_fprintf_ctx                                                8 0.00%
+│   │       ├── shell_uart_history                                                                 16 0.00%
+│   │       ├── shell_uart_history_ring_buf                                                        28 0.00%
+│   │       ├── shell_uart_history_ring_buf_data                                                  512 0.08%
+│   │       ├── shell_uart_log_output_control_block                                                12 0.00%
+│   │       ├── shell_uart_msgq                                                                    40 0.01%
+│   │       ├── shell_uart_out_buffer                                                              30 0.00%
+│   │       ├── shell_uart_stack                                                                 2080 0.32%
+│   │       ├── shell_uart_stats                                                                    4 0.00%
+│   │       └── shell_uart_thread                                                                 280 0.04%
+│   └── storage                                                                                     4 0.00%
+│       └── flash_map                                                                               4 0.00%
+│           └── flash_map_default.c                                                                 4 0.00%
+│               └── flash_map                                                                       4 0.00%
+├── target_id.0                                                                                     1 0.00%
+├── temp.2                                                                                          2 0.00%
+├── test_name                                                                                      60 0.01%
+├── tidMem                                                                                        320 0.05%
+├── time_set_count.5214                                                                             4 0.00%
+├── timerMem                                                                                       32 0.00%
+├── timestamp.10599                                                                                 8 0.00%
+├── timestamp.10604                                                                                 8 0.00%
+├── timestamp.10609                                                                                 8 0.00%
+├── timestamp.10614                                                                                 8 0.00%
+├── timestamp.10619                                                                                 8 0.00%
+├── tm_mday.1                                                                                       4 0.00%
+├── tm_min.0                                                                                        4 0.00%
+├── tmp.2                                                                                          24 0.00%
+├── today_main_page                                                                                88 0.01%
+├── touch_record.0                                                                                 16 0.00%
+├── value_old.1                                                                                     1 0.00%
+├── value_old.2                                                                                     1 0.00%
+├── value_old.3                                                                                     4 0.00%
+├── wait_q.0                                                                                        8 0.00%
+├── wf_mirror_mgr                                                                                   8 0.00%
+├── yawFilterTwoBuf.5416                                                                          120 0.02%
+├── yawFilterTwoCount.5418                                                                          4 0.00%
+├── yawFirstLen                                                                                     4 0.00%
+├── yawSecondLen                                                                                    4 0.00%
+├── z_idle_threads                                                                                280 0.04%
+├── z_interrupt_stacks                                                                           4224 0.64%
+└── z_main_thread                                                                                 280 0.04%
+==============================================================================================================
+                                                                                               660036
+[100%] Built target ram_report

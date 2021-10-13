@@ -1,0 +1,14 @@
+menuconfig TOUCH_CYTTSP5
+	bool "TOUCH_CYTTSP5 Drivers"
+	help
+	  Enable options for touch-panel driver.
+
+if TOUCH_CYTTSP5
+comment "cyttsp5 Drivers"
+
+config TP_CYTTSP5_APOLLO3P
+	bool "cyttsp5 for apollo3p driver"
+	help
+	  This option enables the touch-panel driver for APOLLO3P
+
+endif # TOUCH_PANEL

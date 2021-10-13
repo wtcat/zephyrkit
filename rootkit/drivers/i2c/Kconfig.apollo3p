@@ -1,0 +1,5 @@
+
+config I2C_APOLLO3P
+	bool "APOLLO3P i2c driver"
+	help
+	  This option enables the i2c driver for APOLLO3P

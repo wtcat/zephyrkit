@@ -1,0 +1,33 @@
+# charger driver configuration options
+
+menuconfig CW6305
+	bool "CW6305 charger driver"
+	help
+	  Enable options for POWER CHARGER driver.
+
+if CW6305
+config CW6305_CURRENT
+	int "Charging current"
+	range 0  6
+	default 1
+	help
+		Charging current map table as follow
+		0 -> 180mA
+		1 -> 200mA
+		2 -> 220mA
+		3 -> 250mA
+		4 -> 280mA
+		5 -> 300mA
+		6 -> 320mA
+
+config CW6305_TEMPERATURE
+	int "Charging protect temperature"
+	range 0  3
+	default 3
+	help
+		Charging temperature map table as follow
+		0 -> 60
+		1 -> 80
+		2 -> 100
+		3 -> 120
+endif #CW6305		

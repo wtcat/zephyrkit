@@ -1,0 +1,80 @@
+
+zephyr_include_directories(
+  att/
+  cfg/
+  dm/
+  hci/
+  l2c/
+  smp/
+)
+
+zephyr_library_sources(
+  att/att_main.c
+  att/atts_ccc.c
+  att/atts_csf.c
+  att/atts_dyn.c
+  att/atts_ind.c
+  att/att_uuid.c
+  att/attc_disc.c
+  att/attc_main.c
+  att/attc_proc.c
+  att/attc_read.c
+  att/attc_sign.c
+  att/atts_main.c
+  att/atts_proc.c
+  att/atts_read.c
+  att/atts_sign.c
+  att/attc_write.c
+  att/atts_write.c
+
+  cfg/cfg_stack.c
+  
+  dm/dm_adv.c
+  dm/dm_dev.c
+  dm/dm_phy.c
+  dm/dm_sec.c
+  dm/dm_conn.c
+  dm/dm_main.c
+  dm/dm_past.c
+  dm/dm_priv.c
+  dm/dm_scan.c
+  dm/dm_adv_ae.c
+  dm/dm_adv_leg.c
+  dm/dm_conn_sm.c
+  dm/dm_scan_ae.c
+  dm/dm_sync_ae.c
+  dm/dm_conn_cte.c
+  dm/dm_dev_priv.c
+  dm/dm_scan_leg.c
+  dm/dm_sec_lesc.c
+  dm/dm_sec_slave.c
+  dm/dm_conn_slave.c
+  dm/dm_sec_master.c
+  dm/dm_conn_master.c
+  dm/dm_conn_slave_ae.c
+  dm/dm_conn_master_ae.c
+  dm/dm_conn_slave_leg.c
+  dm/dm_conn_master_leg.c
+  
+  hci/hci_main.c
+  
+  l2c/l2c_coc.c
+  l2c/l2c_main.c
+  l2c/l2c_master.c
+  l2c/l2c_slave.c
+
+  smp/smp_db.c
+  smp/smp_act.c
+  smp/smpi_sm.c
+  smp/smp_non.c
+  smp/smpr_sm.c
+  smp/smpi_act.c
+  smp/smp_main.c
+  smp/smpr_act.c
+  smp/smpi_sc_sm.c
+  smp/smpr_sc_sm.c
+  smp/smp_sc_act.c
+  smp/smpi_sc_act.c
+  smp/smpr_sc_act.c
+  smp/smp_sc_main.c
+)

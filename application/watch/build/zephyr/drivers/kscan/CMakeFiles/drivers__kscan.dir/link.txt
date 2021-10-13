@@ -1,0 +1,2 @@
+ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc libdrivers__kscan.a  CMakeFiles/drivers__kscan.dir/__/__/misc/empty_file.c.obj
+ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib libdrivers__kscan.a

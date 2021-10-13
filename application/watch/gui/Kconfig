@@ -1,0 +1,28 @@
+menuconfig GUI_APP
+	bool "gui app"
+	help
+	  Enable gui app.
+
+if GUI_APP
+choice APP_CHOICE
+  prompt "gui app choice"
+  default WF_HONBOW
+
+config WF_TEST
+	bool "watch face test select"
+	help
+	  This option select watch face test.
+
+config WF_HONBOW
+	bool "honbow app select"
+	help
+	  This option select honbow app.
+
+config WF_GUIX_DEMO
+	bool "guix demo select"
+	help
+	  This option select guix demo.
+
+endchoice
+
+endif

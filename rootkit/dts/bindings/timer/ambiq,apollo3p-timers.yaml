@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: APOLLO3P timers
+
+compatible: "ambiq,apollo3p-timers"
+
+include: base.yaml
+
+properties:
+    label:
+      required: true
+
+    reg:
+      required: true
+
+    clocks:
+      required: false
+
+    interrupts:
+      required: false
+      
+    clock_source:
+        type: array
+        description: register space
+        required: false

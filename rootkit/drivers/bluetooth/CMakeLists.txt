@@ -1,0 +1,1 @@
+zephyr_sources_ifdef(CONFIG_BT_APOLLO3P hci_apollo3p.c)

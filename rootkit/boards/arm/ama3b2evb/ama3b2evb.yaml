@@ -1,0 +1,16 @@
+identifier: ambiq_apollo3p
+name: APOLLO3P
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 704
+
+supported:
+  - i2c
+  - spi
+  - gpio
+  - rtc
+

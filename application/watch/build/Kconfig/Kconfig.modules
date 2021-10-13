@@ -1,0 +1,36 @@
+menu "gui (/home/wt/zephyr-kit/project_wkpace/gui)"
+osource "/home/wt/zephyr-kit/project_wkpace/gui/Kconfig"
+config ZEPHYR_GUI_MODULE
+	bool
+	default y
+endmenu
+menu "subsys (/home/wt/zephyr-kit/project_wkpace/../bsps/subsys)"
+osource "/home/wt/zephyr-kit/bsps/subsys/Kconfig"
+config ZEPHYR_SUBSYS_MODULE
+	bool
+	default y
+endmenu
+menu "testsuite (/home/wt/zephyr-kit/project_wkpace/testsuite)"
+osource "/home/wt/zephyr-kit/project_wkpace/testsuite/Kconfig"
+config ZEPHYR_TESTSUITE_MODULE
+	bool
+	default y
+endmenu
+menu "drivers (/home/wt/zephyr-kit/project_wkpace/../bsps/drivers)"
+osource "/home/wt/zephyr-kit/bsps/drivers/zephyr/Kconfig"
+config ZEPHYR_DRIVERS_MODULE
+	bool
+	default y
+endmenu
+menu "drivers_ext (/home/wt/zephyr-kit/project_wkpace/../bsps/drivers_ext)"
+osource "/home/wt/zephyr-kit/bsps/drivers_ext/Kconfig"
+config ZEPHYR_DRIVERS_EXT_MODULE
+	bool
+	default y
+endmenu
+menu "components (/home/wt/zephyr-kit/project_wkpace/../components)"
+osource "/home/wt/zephyr-kit/components/Kconfig"
+config ZEPHYR_COMPONENTS_MODULE
+	bool
+	default y
+endmenu

@@ -1,0 +1,19 @@
+# GPIO driver configuration options
+
+menuconfig MISC
+	bool "No-standard driver"
+	help
+	  Enable options for MISC driver.
+
+if MISC
+comment "MISC Drivers"
+
+rsource "Kconfig.key"
+rsource "Kconfig.ite7259"
+rsource "Kconfig.cyttsp5"
+rsource "Kconfig.lcd"
+rsource "Kconfig.mspi"
+
+endif # MISC
+
+

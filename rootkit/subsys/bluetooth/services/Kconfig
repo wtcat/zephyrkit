@@ -1,0 +1,11 @@
+menu "Bluetooth Services"
+
+config BT_CUSTOM_SERVICES
+	bool
+	help
+	  Common Bluetooth GATT Services support modules
+
+rsource "Kconfig.nus"
+#rsource "Kconfig.nus_client"
+
+endmenu

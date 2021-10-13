@@ -1,0 +1,4 @@
+config GPIO_APOLLO3P
+	bool "APOLLO3P GPIO driver"
+	help
+	  This option enables the GPIO driver for APOLLO3P

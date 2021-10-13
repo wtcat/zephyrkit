@@ -1,0 +1,13 @@
+syntax = "proto2";
+package user;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+//User information
+message UserInformation {
+    required uint32 age = 1;
+    required uint32 height = 2;
+    required uint32 weight = 3;
+    required uint32 sex = 4;
+}

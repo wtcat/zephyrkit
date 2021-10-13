@@ -1,0 +1,22 @@
+menuconfig KSCAN_CYTTSP5
+	bool "CYTTSP5 capacitive touch panel driver"
+	depends on I2C
+	help
+	  Enable driver for multiple Focaltech capacitive touch panel
+	  controllers. This driver should support CYTTSP5.
+
+if KSCAN_CYTTSP5
+
+config KSCAN_CYTTSP5_INTERRUPT
+	bool "Enable interrupt"
+    default y
+	help
+	  Enable interrupt support (requires GPIO).
+
+config KSCAN_CYTTSP5_THREAD_PRIO
+	int "CYTTSP5 thread prio"
+	default 3
+	help
+	  Number of sectors used for the NVS settings area
+
+endif # KSCAN_FT5336

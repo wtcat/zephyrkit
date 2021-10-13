@@ -1,0 +1,33 @@
+syntax = "proto2";
+package weather;
+
+import "time.proto";
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+
+message Base {
+    required uint32 temp_low = 1;
+    required uint32 temp_high = 2;
+    enum Weather {
+        SUNNY   = 0;
+        CLOUDY  = 1;
+        RAINY   = 2;
+        SNOWY   = 3;
+    }
+    required Weather howday = 3 [default = SUNNY]; 
+}
+
+message Ultraviolet {
+    enum Level {
+        LOW    = 0;
+        MIDDLE = 1;
+        HIGH   = 2;
+    }
+    required uint32 level = 1;
+    required proto.time.UnixTimestamp timestamp = 2;
+}
+
+
+

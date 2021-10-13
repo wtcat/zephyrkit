@@ -1,0 +1,21 @@
+syntax = "proto2";
+package gps;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message Request {
+    enum StartMode {
+        ONESHOT = 0;
+        PERIOD  = 1;
+    }
+    required StartMode mode = 1 [default = ONESHOT];
+    optional uint32 period = 2; //[unit: seconds]
+}
+
+message Position {
+    required float longitude = 1;
+    required float latitude  = 2;
+    optional float height = 3;
+    optional float velocity = 4;
+}

@@ -1,0 +1,7 @@
+
+config UART_APOLLO3P
+	bool "APOLLO3P serial driver"
+	select SERIAL_HAS_DRIVER
+	select SERIAL_SUPPORT_INTERRUPT
+	help
+	  This option enables the UART driver for APOLLO3P

@@ -1,0 +1,36 @@
+# BLE menu
+
+menuconfig BLE_COMPONENT
+    bool "Bluetooth"
+    depends on !BT
+    
+if BLE_COMPONENT
+
+comment "BLE thread options"
+
+config BLE_THREAD_STACK
+  int "BLE thread stack size"
+  default 4096
+  
+config BLE_THREAD_PRIO
+  int "BLE thread priority"
+  default 10
+  
+config BLE_USERSPACE
+  bool "BLE run into user mode"
+  depends on USERSPACE
+  
+config NUMBER_EVENT_HANDLERS
+  int "Maximum number of event handlers per task"
+  range 9 32
+  default 9
+  
+config BLE_ASSERT
+  bool "Enable assert for BLE stack"
+  
+rsource "ble-host/sources/Kconfig"
+rsource "ble-profiles/sources/Kconfig"
+
+endif
+    
+

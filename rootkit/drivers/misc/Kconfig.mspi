@@ -1,0 +1,20 @@
+
+menuconfig MSPI_APOLLO3P
+  bool "Apollo3p MSPI bus device driver"
+  
+if MSPI_APOLLO3P
+module = MSPI
+module-str = mspi
+source "subsys/logging/Kconfig.template.log_config"
+
+config APOLLO3P_MSPI0
+  bool "MSPI_0"
+  
+config APOLLO3P_MSPI1
+  bool "MSPI_1"
+
+config APOLLO3P_MSPI2
+  bool "MSPI_2"
+  
+endif
+  

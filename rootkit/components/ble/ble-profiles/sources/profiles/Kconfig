@@ -1,0 +1,132 @@
+# BLE profiles
+
+menu "Profiles"
+
+config BLE_PROFILES_ATPS
+	bool "atps profile"
+	default y
+	
+config BLE_PROFILES_BAS
+	bool "bas profile"
+	default y
+
+config BLE_PROFILES_BLPC
+	bool "blpc profile"
+	default y
+
+config BLE_PROFILES_BLPS
+	bool "blps profile"
+	default y
+
+config BLE_PROFILES_CPP
+	bool "cpp profile"
+	default y
+
+config BLE_PROFILES_CSCP
+	bool "cscp profile"
+	default y
+
+config BLE_PROFILES_DIS
+	bool "dis profile"
+	default y
+
+config BLE_PROFILES_FMPL
+	bool "fmpl profile"
+	default y
+
+config BLE_PROFILES_GAP
+	bool "gap profile"
+	default y
+
+config BLE_PROFILES_GATT
+	bool "gatt profile"
+	default y
+
+config BLE_PROFILES_GLPC
+	bool "glpc profile"
+	default y
+
+config BLE_PROFILES_GLPS
+	bool "glps profile"
+	default y
+
+config BLE_PROFILES_HID
+	bool "hid profile"
+	default y
+
+config BLE_PROFILES_HRPC
+	bool "hrpc profile"
+	default y
+
+config BLE_PROFILES_HRPS
+	bool "hrps profile"
+	default y
+
+config BLE_PROFILES_HTPC
+	bool "htpc profile"
+	default y
+
+config BLE_PROFILES_HTPS
+	bool "htps profile"
+	default y
+
+config BLE_PROFILES_PASPC
+	bool "paspc profile"
+	default y
+
+config BLE_PROFILES_PLXPC
+	bool "plxpc profile"
+	default y
+
+config BLE_PROFILES_PLXPS
+	bool "plxps profile"
+	default y
+
+config BLE_PROFILES_RSCP
+	bool "rspc profile"
+	default y
+
+config BLE_PROFILES_SCPPS
+	bool "scpps profile"
+	default y
+
+config BLE_PROFILES_SENSOR
+	bool "sensor profile"
+	default y
+
+config BLE_PROFILES_TIPC
+	bool "tipc profile"
+	default y
+
+config BLE_PROFILES_UDSC
+	bool "udsc profile"
+	default y
+
+config BLE_PROFILES_URIBEACON
+	bool "uribeacon profile"
+	default y
+
+config BLE_PROFILES_WDXC
+	bool "wdxc profile"
+	default y
+
+config BLE_PROFILES_WDXS
+	bool "wdxs profile"
+	default y
+
+config BLE_PROFILES_WPC
+	bool "wpc profile"
+	default y
+
+config BLE_PROFILES_WSPC
+	bool "wspc profile"
+	default y
+
+config BLE_PROFILES_WSPS
+	bool "wsps profile"
+	default y
+
+endmenu
+
+    
+

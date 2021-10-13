@@ -1,0 +1,16 @@
+
+config SOC_APOLLO3P
+	bool "APOLLO3P Series MCU"
+	select ARM
+	select CPU_CORTEX_M4
+	select CPU_CORTEX_M_HAS_DWT
+	select CPU_HAS_FPU
+	select SOC_FAMILY_APOLLO
+	select CPU_HAS_ARM_MPU
+	select HAS_SWO
+        select HAS_APOLLO_LIB
+        select ARCH_HAS_CUSTOM_BUSY_WAIT
+        select ARMV7_M_ARMV8_M_MAINLINE
+        select HAS_SEGGER_RTT
+	help
+	  Enable support for APOLLO3P MCU series

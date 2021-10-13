@@ -1,0 +1,4 @@
+# Application
+add_subdirectory_ifdef(CONFIG_WF_TEST watch_face)
+add_subdirectory_ifdef(CONFIG_WF_HONBOW honbow_watch)
+add_subdirectory_ifdef(CONFIG_WF_GUIX_DEMO demo_guix_smart_watch)

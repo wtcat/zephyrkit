@@ -1,0 +1,6 @@
+# MOTOR PWM driver configuration options
+
+config MOTOR_PWM
+	bool "MOTOR PWM Drivers"
+	help
+	  Enable options for MOTOR PWM driver.

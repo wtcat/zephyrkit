@@ -1,0 +1,83 @@
+#include <zephyr.h>
+#include <drivers/sensor.h>
+
+#include "base/schedule_service.h"
+
+
+#define SENSOR_ATTR_EXT(n) (SENSOR_ATTR_PRIV_START + n)
+#define SENSOR_ATTR_START SENSOR_ATTR_EXT(1)
+#define SENSOR_ATTR_STOP  SENSOR_ATTR_EXT(2)
+
+struct magnet_private {
+    struct k_spinlock spin;
+    float x, y, z;
+    float angle;
+};
+ 
+static int magnet_svr_init(struct schedule_service *ss)
+{
+    return sensor_attr_set(ss->device, SENSOR_CHAN_MAGN_XYZ, 
+        SENSOR_ATTR_START, NULL);
+}
+
+static int magnet_svr_exit(struct schedule_service *ss)
+{
+    return sensor_attr_set(ss->device, SENSOR_CHAN_MAGN_XYZ, 
+        SENSOR_ATTR_STOP, NULL);
+}
+
+static int magnet_svr_exec(struct schedule_service *ss)
+{
+    struct magnet_private *priv = ss->private;
+    struct sensor_value axis[3];
+    k_spinlock_key_t key;
+    float x, y, z;
+    int ret;
+
+    ret = sensor_sample_fetch_chan(ss->device, SENSOR_CHAN_MAGN_XYZ);
+    if (ret)
+        goto _exit;
+
+    ret = sensor_channel_get(ss->device, SENSOR_CHAN_MAGN_XYZ, axis);
+    if (ret)
+        goto _exit;
+
+    x = (float)sensor_value_to_double(&axis[0]);
+    y = (float)sensor_value_to_double(&axis[1]);
+    z = (float)sensor_value_to_double(&axis[2]);
+
+    //TODO: filter
+
+    key = k_spin_lock(&priv->spin);
+    priv->x = x;
+    priv->y = y;
+    priv->z = z;
+    k_spin_unlock(&priv->spin, key);
+_exit:
+    return ret;
+}
+
+static ssize_t magnet_svr_read(struct schedule_service *ss, 
+    void *buffer, size_t n)
+{
+    struct magnet_private *priv = ss->private;
+    k_spinlock_key_t key;
+    float *pf = buffer;
+
+    key = k_spin_lock(&priv->spin);
+    pf[0] = priv->x;
+    pf[1] = priv->y;
+    pf[2] = priv->z;
+    k_spin_unlock(&priv->spin, key);
+    return 12;
+}
+
+static struct magnet_private magnet_data;
+static const struct schedule_operations magnet_ops = {
+    .init = magnet_svr_init,
+    .exit = magnet_svr_exit,
+    .exec = magnet_svr_exec,
+    .read = magnet_svr_read
+};
+
+SCHED_SERVICE(magnet, "MAGNET-SENSOR", &magnet_ops, &magnet_data);

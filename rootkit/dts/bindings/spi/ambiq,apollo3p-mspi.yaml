@@ -1,0 +1,13 @@
+
+description: APOLLO3P MSPI controller
+
+compatible: "ambiq,apollo3p-mspi"
+
+include: spi-controller.yaml
+
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true

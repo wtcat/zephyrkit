@@ -1,0 +1,18 @@
+# Copyright (c) 2018, Linaro Limited
+# SPDX-License-Identifier: Apache-2.0
+
+description: PWM MOTORs parent node
+
+compatible: "pwm-motors"
+
+child-binding:
+    description: PWM MOTOR child node
+    properties:
+        pwms:
+          type: phandle-array
+          required: true
+
+        label:
+          required: false
+          type: string
+          description: Human readable string describing the device (used as device_get_binding() argument)

@@ -1,0 +1,15 @@
+description: AMBIQ ADC node
+compatible: "ambiq,apollo3p-adc"
+include: adc-controller.yaml
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true
+
+    "#io-channel-cells":
+      const: 1
+
+io-channel-cells:
+    - input

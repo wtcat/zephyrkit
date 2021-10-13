@@ -1,0 +1,6 @@
+menuconfig GH3011
+	bool "GH3011 Pulse Oximeter and Heart Rate Sensor"
+	depends on I2C
+
+if GH3011
+endif

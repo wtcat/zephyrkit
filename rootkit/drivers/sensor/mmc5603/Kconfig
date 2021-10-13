@@ -1,0 +1,26 @@
+menuconfig MMC5603
+	bool "MMC5603 I2C magnetic sensor driver"
+	depends on I2C
+	help
+	  Enable driver for MMC5603 magnetic sensor driver
+
+if MMC5603
+config MMC5603_ENABLE_TEMP
+	bool "Enable temperature"
+	help
+	  Enable/disable temperature
+
+config MMC5603_ODR
+	int "Magnetic Output data rate frequency"
+	range 0 4
+	default 1
+	help
+	  Specify the default accelerometer output data rate expressed in
+	  samples per second (Hz).
+	  0: ODR selected at runtime
+	  1: 75Hz
+	  2: 150Hz
+	  3: 255Hz
+	  4: 1000Hz
+
+endif # MMC5603

@@ -1,0 +1,9 @@
+syntax = "proto2";
+package transfer;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message Packet {
+    required bool has_next = 1;
+}

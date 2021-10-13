@@ -1,0 +1,3 @@
+appBinFile "./signed-watch.bin"
+fullbin "full.bin"
+bootloader "./mcuboot.bin"

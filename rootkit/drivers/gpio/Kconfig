@@ -1,0 +1,13 @@
+# GPIO driver configuration options
+
+menuconfig GPIO
+	bool "GPIO Drivers"
+	help
+	  Enable options for GPIO driver.
+
+if GPIO
+comment "GPIO Drivers"
+
+rsource "Kconfig.apollo3p"
+
+endif # SERIAL

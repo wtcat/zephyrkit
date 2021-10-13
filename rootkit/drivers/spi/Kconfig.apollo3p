@@ -1,0 +1,12 @@
+
+menuconfig SPI_APOLLO3P
+  bool "APOLLO3P SPI driver"
+  help
+    This option enables the SPI driver for APOLLO3P
+    
+if SPI_APOLLO3P
+
+config SPI_APOLLO3P_INTERRUPT
+  bool "Enable SPI interrupt for APOLLO3P"
+
+endif

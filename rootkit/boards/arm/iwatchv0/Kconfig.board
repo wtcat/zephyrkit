@@ -1,0 +1,5 @@
+# APOLLO3P board configuration
+
+config BOARD_IWATCHV0
+	bool "APOLLO3P IWATCHV0"
+	depends on SOC_APOLLO3P

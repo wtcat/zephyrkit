@@ -1,0 +1,47 @@
+menuconfig STP
+  bool "Enable simple transmit protocol"
+  select PROTOBUF
+  
+if STP
+choice
+prompt "STP Driver"
+config STP_BT
+  bool "STP bluetooth driver"
+  
+config STP_UART
+  bool "STP uart driver"
+  
+config STP_LOOPBACK
+  bool "STP LOOPBACK driver"
+endchoice
+
+config STP_UART_DEV
+  string "STP UART device name"
+  default "UART_0"
+  depends on STP_UART
+
+config STP_RBTREE
+  bool "Use RB-tree match target node for STP protocol"
+
+config STP_DRIVER_THREAD_STACK_SIZE
+  int 
+  range 1024 4096
+  default 1024 if STP_UART
+  default 2048 if STP_LOOPBACK
+  default 4096
+  
+
+config STP_OTA
+  bool "OTA base STP protocol"
+  
+if STP_OTA
+module = STP_OTA
+module-str = STP_OTA
+source "subsys/logging/Kconfig.template.log_config"
+endif #STP_OTA
+
+module = STP_APP
+module-str = STP_APP
+source "subsys/logging/Kconfig.template.log_config"
+
+endif #STP

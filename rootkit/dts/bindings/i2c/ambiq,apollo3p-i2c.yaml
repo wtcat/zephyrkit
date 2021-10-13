@@ -1,0 +1,16 @@
+
+description: apollo3p I2C controller
+
+compatible: "ambiq,apollo3p-i2c"
+
+include: i2c-controller.yaml
+
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true
+      
+    clock-frequency:
+      required: true

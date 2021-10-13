@@ -1,0 +1,20 @@
+# Display drivers
+
+# Copyright (c) 2017 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig COUNTER_EXTRA
+	default y
+	depends on ! COUNTER
+	bool "Counter extra Drivers"
+	help
+	  Enable support for counter and timer.
+
+if COUNTER_EXTRA
+module = COUNTER_APOLLO
+module-str = counter_apollo
+source "subsys/logging/Kconfig.template.log_config"
+
+rsource "Kconfig.apollo3p"
+
+endif # COUNTER_EXTRA

@@ -1,0 +1,3 @@
+loadfile signed-watch.bin 0x24000
+r
+qc

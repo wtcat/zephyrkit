@@ -1,0 +1,35 @@
+
+zephyr_library_sources(
+    hal/am_hal_adc.c
+    hal/am_hal_ble.c
+    hal/am_hal_ble_patch_b0.c
+    hal/am_hal_burst.c
+    hal/am_hal_cachectrl.c
+    hal/am_hal_clkgen.c
+    hal/am_hal_cmdq.c
+    hal/am_hal_ctimer.c
+    hal/am_hal_debug.c
+    hal/am_hal_flash.c
+    hal/am_hal_global.c
+    hal/am_hal_gpio.c
+    hal/am_hal_interrupt.c
+    hal/am_hal_iom.c
+    hal/am_hal_ios.c
+    hal/am_hal_itm.c
+    hal/am_hal_mcuctrl.c
+    hal/am_hal_mspi.c
+    hal/am_hal_pdm.c
+    hal/am_hal_pwrctrl.c
+    hal/am_hal_queue.c
+    hal/am_hal_reset.c
+    hal/am_hal_rtc.c
+    hal/am_hal_scard.c
+    hal/am_hal_secure_ota.c
+    hal/am_hal_security.c
+    hal/am_hal_stimer.c
+    hal/am_hal_sysctrl.c
+    hal/am_hal_systick.c
+    hal/am_hal_tpiu.c
+    hal/am_hal_uart.c
+    hal/am_hal_wdt.c
+)

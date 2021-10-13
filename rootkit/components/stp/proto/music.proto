@@ -1,0 +1,34 @@
+syntax = "proto2";
+package music;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+// message Play {
+//     enum Action {
+//         INVALID     = 0;
+//         PLAY        = 1;
+//         PAUSE       = 2;
+//         NEXT        = 3;
+//         PREVIOUS    = 4;
+//     }
+//     optional Action action = 1;
+//     optional string song = 2;
+// }
+
+// message Volume {
+//     enum Action {
+//         INVALID      = 0;
+//         ADD_VOLUME   = 1;
+//         DEC_VOLUME   = 2;
+//         SYNC_VOLUME  = 3;
+//     }
+//     optional Action action = 1;
+//     optional uint32 value = 2; // range[0, 100]
+// }
+
+
+message Player {
+    optional string song = 1;
+    optional uint32 volume = 2; // range[0, 100]
+}

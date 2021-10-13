@@ -1,0 +1,21 @@
+# Sensor configuration options
+
+# Copyright (c) 2016 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig SENSOR
+	bool "Sensor Drivers"
+	help
+	  Include sensor drivers in system config
+
+if SENSOR
+
+comment "Device Drivers"
+
+rsource "mmc5603/Kconfig"
+rsource "icm42607/Kconfig"
+#rsource "pah8112/Kconfig"
+rsource "cw6305/Kconfig"
+rsource "gh3011/Kconfig"
+
+endif # SENSOR

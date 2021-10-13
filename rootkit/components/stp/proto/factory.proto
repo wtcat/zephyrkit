@@ -1,0 +1,15 @@
+syntax = "proto2";
+package factory;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message FactoryTest {
+    required bool enable = 1;
+}
+
+//Respond for heartrate test command
+message HeartRateTest {
+    required uint32 hr = 1; /* Heartrate */
+    required uint32 bo = 2; /* Blood oxygen */
+}

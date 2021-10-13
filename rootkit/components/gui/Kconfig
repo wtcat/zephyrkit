@@ -1,0 +1,50 @@
+# Device driver configure menu
+
+choice GUIX_ADAPT_IMPL
+prompt "GUIX for zephyr adapt layout"
+default GUIX_ZEPHYR_SPIN_BINDING
+
+config GUIX_ZEPHYR_SPIN_BINDING
+	bool "GUIX binding-zephyr implement by spin-lock"
+	
+config GUIX_ZEPHYR_POSIX_BINDING
+	bool "GUIX binding-zephyr implement by posix api"
+	select PTHREAD_IPC
+	
+config GUIX_ZEPHYR_KQUEUE_BINDING
+	bool "GUIX binding-zephyr implement by kernel queue"
+	
+endchoice #GUIX_ADAPT_IMPL
+
+config GUIX_USER_MODE
+       bool "GUI runs in user mode"
+       depends on USERSPACE
+
+config GUIX_THREAD_STACK_SIZE
+	int "GUIX thread stack"
+	default 4096
+	help
+	  GUIX thread stack size.
+
+config GUIX_THREAD_PRIORITY
+	int "GUIX thread priority"
+	default 5
+	help
+	  GUIX thread priority.
+	  
+config GUIX_MEMPOOL_SIZE
+	int "GUIX memory pool"
+	default 0
+	help
+	  Set the memory pool size for GUIX.
+	  
+config GUI_SPLIT_BINRES
+	bool "GUI split resource files and execute code"
+	#depends on GUIX_MEMPOOL_SIZE >= 61440
+
+config RGB565_SWAP_BYTEORDER
+	bool "GUI rgb565 driver swap byteorder"
+
+config GUIX_DISABLE_ERROR_CHECKING
+	bool "Don't check input paramters for GUI API so that improve speed"
+	

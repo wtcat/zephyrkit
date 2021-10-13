@@ -1,0 +1,13 @@
+syntax = "proto2";
+package heartrate;
+
+import "time.proto";
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+
+message Data {
+    proto.time.UnixTimestamp start = 1; //Start time
+    required uint32 interval = 2; //Sampling interval[unit: s]
+    required bytes data = 3;
+} 

@@ -1,0 +1,10 @@
+zephyr_sources(
+  ota.pb-c.c
+  devinfo.pb-c.c
+  remind.pb-c.c
+  setting.pb-c.c
+  time.pb-c.c
+  call.pb-c.c
+  music.pb-c.c
+  gps.pb-c.c
+)

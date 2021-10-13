@@ -1,0 +1,13 @@
+syntax = "proto2";
+package locate;
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message LocateBuddy {
+    enum Mode {
+        SHAKING  = 0x01;
+        RINGING  = 0x02;
+    }
+    required uint32 mode = 1;
+}

@@ -1,0 +1,8 @@
+# cywee
+
+
+menu "MOTION" 
+config MOTION
+  bool "cywee motion" 
+
+endmenu

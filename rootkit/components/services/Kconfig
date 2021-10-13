@@ -1,0 +1,13 @@
+#Service
+
+menuconfig SERVICE
+  bool "Application service"
+  
+if SERVICE
+
+config MAGNET_SVR
+	bool "Magnetic sensor service"
+	
+	
+endif
+

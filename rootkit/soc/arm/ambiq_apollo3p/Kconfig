@@ -1,0 +1,12 @@
+
+config SOC_FAMILY_APOLLO
+	bool
+	select BUILD_OUTPUT_HEX
+
+if SOC_FAMILY_APOLLO
+
+config SOC_FAMILY
+	string
+	default "ambiq_apollo3p"
+
+endif # SOC_FAMILY_APOLLO

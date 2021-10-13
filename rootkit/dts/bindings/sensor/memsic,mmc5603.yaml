@@ -1,0 +1,15 @@
+
+description: |
+    MEMSIC MMC5603 magnetic accessed through I2C bus
+
+compatible: "memsic,mmc5603"
+
+include: i2c-device.yaml
+
+properties:
+    pwr-gpios:
+      type: phandle-array
+      required: false
+      description: Power control pin
+        This pin defaults to active high.
+

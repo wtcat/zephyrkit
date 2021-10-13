@@ -1,0 +1,3 @@
+rsource "bluetooth/Kconfig"
+rsource "nvs/Kconfig"
+rsource "setting/Kconfig"

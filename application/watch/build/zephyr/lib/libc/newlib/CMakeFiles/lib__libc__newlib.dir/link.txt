@@ -1,0 +1,2 @@
+ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc liblib__libc__newlib.a  CMakeFiles/lib__libc__newlib.dir/libc-hooks.c.obj
+ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib liblib__libc__newlib.a

@@ -1,0 +1,25 @@
+# Display drivers
+
+# Copyright (c) 2017 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig RM69330
+	bool "RM69330 display driver"
+	#depends on MSPI
+	help
+	  Enable driver for RM69330 display driver.
+
+choice RM69330_PIXEL_FORMAT
+	prompt "Color pixel format"
+	default RM69330_RGB565
+	depends on RM69330
+	help
+	  Specify the color pixel format for the RM69330 display controller.
+
+config RM69330_RGB888
+	bool "RGB888"
+
+config RM69330_RGB565
+	bool "RGB565"
+
+endchoice

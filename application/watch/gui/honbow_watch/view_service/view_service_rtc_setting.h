@@ -1,0 +1,4 @@
+#ifndef __VIEW_SERVICE_RTC_SETTING_H__
+#define __VIEW_SERVICE_RTC_SETTING_H__
+void rtc_dev_setting_update(void);
+#endif

@@ -1,0 +1,15 @@
+# Timer driver configuration options
+
+# Copyright (c) 2014-2015 Wind River Systems, Inc.
+# Copyright (c) 2016 Cadence Design Systems, Inc.
+# Copyright (c) 2019 Intel Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig  TIMER
+	bool "TIMER Drivers"
+	help
+	  Enable options for stimer drivers.
+
+if TIMER
+rsource "Kconfig.apollo3_stimer"
+endif

@@ -1,0 +1,33 @@
+syntax = "proto2";
+package remind;
+
+import "time.proto";
+
+//SPEED/CODE_SIZE/LITE_RUNTIME
+option optimize_for=SPEED;
+
+message Message {
+    required proto.time.UnixTimestamp timestamp = 1; //Time stamp
+    enum Type {
+        TEXT      = 0; /* Text message */
+        FACEBOOK  = 1; /* Facebook message */
+        WECHAT    = 2;
+        QQ        = 3;
+        WHATSAPP  = 4;
+        MESSENGER = 5;
+        TWITTER   = 6;
+        LINKEDIN  = 7;
+        INSTAGRAM = 8;
+    }
+    required Type type = 2 [default = TEXT];
+    required uint32 maxno = 3; //Maximum package number
+    required uint32 curno = 4; //Current package number
+    required string chat = 6; //Text message
+    optional string user = 7; //User name
+    optional string phone = 8; //Phone numbers
+}
+
+message Battery {
+    required uint32 percent = 1; //Low power threshold
+}
+

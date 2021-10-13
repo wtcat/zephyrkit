@@ -1,0 +1,31 @@
+
+config ADC_APOLLO3P
+  bool "APOLLO3P ADC driver"
+  help
+    This option enables the ADC driver for APOLLO3P
+
+if ADC_APOLLO3P
+config ADC_CH0
+  bool "Enable ADC channel 0"
+
+config ADC_CH1
+  bool "Enable ADC channel 1"
+  
+config ADC_CH2
+  bool "Enable ADC channel 2"
+  
+config ADC_CH3
+  bool "Enable ADC channel 3"
+  
+config ADC_CH4
+  bool "Enable ADC channel 4"
+  
+config ADC_CH5
+  bool "Enable ADC channel 5"
+  
+config ADC_CH6
+  bool "Enable ADC channel 6"
+  
+config ADC_CH7
+  bool "Enable ADC channel 7"
+endif

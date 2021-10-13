@@ -1,0 +1,6 @@
+menuconfig PAH8112
+	bool "PAH8112 Pulse Oximeter and Heart Rate Sensor"
+	depends on I2C
+
+if PAH8112
+endif

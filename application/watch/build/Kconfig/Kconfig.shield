@@ -1,0 +1,2 @@
+osource "/home/wt/zephyr-kit/project_wkpace/../bsps/boards/shields/*/Kconfig.shield"
+osource "/home/wt/zephyr-kit/zephyr_pkg/zephyr/boards/shields/*/Kconfig.shield"

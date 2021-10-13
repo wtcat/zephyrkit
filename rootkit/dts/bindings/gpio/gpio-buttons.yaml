@@ -1,0 +1,21 @@
+# Copyright (c) 2018, Linaro Limited
+# SPDX-License-Identifier: Apache-2.0
+
+description: GPIO BUTTONS parent node
+
+compatible: "gpio-buttons"
+
+child-binding:
+    description: GPIO BUTTONS child node
+    properties:
+       label:
+          required: true
+          type: string
+          description: Human readable string describing the device (used as device_get_binding() argument)
+       gpios:
+          type: phandle-array
+          required: true
+       code:
+          type: int
+          required: true
+          description: GPIO pin code

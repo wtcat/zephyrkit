@@ -1,0 +1,21 @@
+# STM32 LPTIM configuration options
+
+# Copyright (c) 2019 STMicroelectronics
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig APOLLO3_STIMER
+	bool "APOLLO3P Low Power Timer [EXPERIMENTAL]"
+	depends on SOC_APOLLO3P
+	select TICKLESS_CAPABLE
+	default y
+	help
+	  This module implements a kernel device driver for the LowPower Timer
+	  and provides the standard "system clock driver" interfaces.
+
+if APOLLO3_STIMER  ##add private config if need
+
+config APOLLO3_STIMER_BACKUP
+  bool "apollo3 stimer compare b enable"
+  default y
+
+endif # APOLLO3_STIMER

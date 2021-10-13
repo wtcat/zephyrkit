@@ -1,0 +1,10 @@
+
+description: APOLLO3P RTC
+
+compatible: "ambiq,apollo3p-rtc"
+
+include: rtc.yaml
+
+properties:
+    reg:
+      required: true

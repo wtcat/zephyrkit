@@ -1,0 +1,15 @@
+
+description: |
+    CELLWISE CW6305 magnetic accessed through I2C bus
+
+compatible: "cellwise,cw6305"
+
+include: i2c-device.yaml
+
+properties:
+    int-gpios:
+      type: phandle-array
+      required: false
+      description: extern interrupt input
+  
+

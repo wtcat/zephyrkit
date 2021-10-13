@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC
+    default "ambiq_apollo3p"
+
+config NUM_IRQS
+	default 34
+
+config APOLLO3_STIMER
+	bool
+	default y
+
+config CORTEX_M_SYSTICK
+	default n
+
+config FLASH_LOAD_OFFSET
+	default 0xc000 if !USE_DT_CODE_PARTITION

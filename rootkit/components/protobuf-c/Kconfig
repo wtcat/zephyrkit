@@ -1,0 +1,10 @@
+menuconfig PROTOBUF
+  bool "Enable protobuf framework"
+
+if PROTOBUF
+
+config PROTOBUF_HEAP
+  int "Configure heap size for protobuf"
+  default 2048
+
+endif

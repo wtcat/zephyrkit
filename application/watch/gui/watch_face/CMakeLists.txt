@@ -1,0 +1,27 @@
+zephyr_library_include_directories(
+  .
+  watch_face_theme
+  pixelmap_mirror
+  alarm
+  utils
+)
+
+zephyr_library_sources(
+    demo_guix_main.c
+	guix_simple_specifications.c
+	guix_simple_resources.c
+	watch_face_theme/watch_face_port.c
+	watch_face_theme/watch_face_theme.c
+	watch_face_theme/watch_face_theme_draw.c
+	watch_face_theme/watch_face_theme_1_conf.c
+	watch_face_theme/watch_face_manager.c
+	watch_face_theme/watch_face_theme_customize.c
+	pixelmap_mirror/pixelmap_mirror.c
+	alarm/alarm_list_window.c
+	alarm/alarm_list_ctl.c
+	utils/custom_checkbox.c
+	utils/custom_util.c
+	utils/custom_pixelmap_button_draw.c
+	utils/custom_vertical_total_rows.c
+	utils/custom_binres_theme_load.c
+)

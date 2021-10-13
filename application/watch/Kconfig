@@ -1,0 +1,8 @@
+menu "Application Configuration"
+
+rsource "gui/Kconfig"
+rsource "testsuite/Kconfig"
+endmenu
+
+#zephyr
+osource "Kconfig.zephyr"

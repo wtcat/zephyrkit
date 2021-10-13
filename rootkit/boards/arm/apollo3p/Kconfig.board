@@ -1,0 +1,9 @@
+# APOLLO3P board configuration
+
+config BOARD_APOLLO3P
+	bool "APOLLO3P Development Board"
+	depends on SOC_APOLLO3P
+	
+config BOARD_AMA3B2_EVB
+	bool "APOLLO3P AMA3B2EVB"
+	depends on SOC_APOLLO3P

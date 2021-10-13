@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_IWATCHV0
+
+choice 
+prompt "Board Patch"
+config BOARD_PATCH_NONE
+  bool "iwatch-v0 without patch"
+  
+config BOARD_PATCH_V0
+  bool "iwatch-v0 small-board patch"
+endchoice
+
+config BOARD
+	default "ama3b2evb"
+
+config HAS_APOLLO_LIB
+	bool "Use apollo SDK"
+	default y
+	
+config UART_0
+        bool
+	default n
+	depends on UART_CONSOLE
+
+config UART_1
+        bool
+	default n
+	depends on SERIAL
+
+endif # BOARD_IWATCHV0

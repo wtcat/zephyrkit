@@ -1,0 +1,6 @@
+# RootKit configurations 
+
+rsource "components/Kconfig"
+rsource "subsys/Kconfig"
+rsource "drivers/Kconfig"
+rsource "drivers_ext/Kconfig"
