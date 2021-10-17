@@ -2,10 +2,10 @@
 
 zephyr_include_directories(.)
 
-add_subdirectory(base)
-add_subdirectory(stp)
-add_subdirectory(protobuf-c)
-add_subdirectory(services)
+#add_subdirectory(base)
+#add_subdirectory(stp)
+#add_subdirectory(protobuf-c)
+#add_subdirectory(services)
 
 add_subdirectory_ifdef(CONFIG_MOTION           motion)
 add_subdirectory_ifdef(CONFIG_GUIX             gui)

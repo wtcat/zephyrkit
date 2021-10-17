@@ -1,7 +1,6 @@
 
 config SOC_FAMILY_APOLLO
 	bool
-	select BUILD_OUTPUT_HEX
 
 if SOC_FAMILY_APOLLO
 

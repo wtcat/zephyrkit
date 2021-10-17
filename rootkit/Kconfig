@@ -2,5 +2,14 @@
 
 rsource "components/Kconfig"
 rsource "subsys/Kconfig"
+
+
+menuconfig III_DRIVERS
+    bool "Enable user drivers"
+    help
+      The user private drivers that out of source tree
+
+if III_DRIVERS
 rsource "drivers/Kconfig"
 rsource "drivers_ext/Kconfig"
+endif

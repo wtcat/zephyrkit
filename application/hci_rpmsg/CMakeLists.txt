@@ -6,4 +6,6 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(hci_rpmsg)
 
 include(debugger.cmake)
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE 
+    src/main.c
+    src/remote_rpmsg_hci.c)

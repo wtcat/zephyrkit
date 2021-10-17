@@ -4,6 +4,7 @@
 
 add_subdirectory(AmbiqMicro)
 add_subdirectory(apollo_mcu_lib)
+add_subdirectory(CMSIS)
 
 zephyr_library_sources(
   soc.c
