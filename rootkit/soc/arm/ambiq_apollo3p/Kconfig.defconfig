@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+if SOC_APOLLO3P
 
 config SOC
     default "ambiq_apollo3p"
@@ -15,3 +16,4 @@ config CORTEX_M_SYSTICK
 
 config FLASH_LOAD_OFFSET
 	default 0xc000 if !USE_DT_CODE_PARTITION
+endif #SOC_APOLLO3P

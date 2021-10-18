@@ -16,6 +16,6 @@ menuconfig XMODEM
 rsource "stp/Kconfig"
 rsource "protobuf-c/Kconfig"
 rsource "services/Kconfig"
-rsource "motion/Kconfig"
 rsource "cm_backtrace/Kconfig"
 rsource "ble/Kconfig"
+rsource "rpmsg_hci/Kconfig"

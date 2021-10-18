@@ -13,4 +13,5 @@ add_subdirectory_ifdef(CONFIG_BLE_COMPONENT    ble)
 add_subdirectory_ifdef(CONFIG_BLE_COMPONENT    uecc)
 add_subdirectory_ifdef(CONFIG_XMODEM           xmodem)
 add_subdirectory_ifdef(CONFIG_CPU_CORTEX_M     cm_backtrace)
+add_subdirectory_ifdef(CONFIG_RPMSG_HCI_REMOTE rpmsg_hci)
 

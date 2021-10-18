@@ -1,0 +1,19 @@
+
+menuconfig RPMSG_HCI_REMOTE
+    bool "RPMsg HCI driver remote node"
+    select RPMSG_SERVICE
+    select RPMSG_SERVICE_MODE_REMOTE
+    select BT
+    select BT_HCI_RAW
+    select BT_CTLR_ASSERT_HANDLER
+    help
+      Bluetooth controller hci driver implement by RPMsg
+
+if RPMSG_HCI_REMOTE
+
+config RPMSG_HCI_SMALL_FOOTPRINT
+    bool "Small memory cost"
+    default y
+
+endif #RPMSG_HCI_REMOTE
+      

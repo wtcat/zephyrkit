@@ -1,3 +1,0 @@
-loadfile full.bin 0xc000
-r
-qc

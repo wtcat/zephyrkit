@@ -1,3 +1,0 @@
-loadfile mcuboot.bin 0xc000
-r
-qc
