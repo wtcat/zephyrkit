@@ -1,0 +1,67 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config FPROTECT
+	bool "Write-protect flash regions"
+	depends on SOC_FAMILY_NRF
+	help
+	  Use hardware peripherals (BPROT, ACL, or SPU) to write-protect
+	  regions of flash until next reset.
+
+if !ARM
+config NRF_SPU_FLASH_REGION_SIZE
+	hex
+	default 0x1000
+	help
+	  Redefinition for the benefit of qemu_x86
+
+config NRF_MPU_FLASH_REGION_SIZE
+	hex
+	default 0x1000
+	help
+	  Redefinition for the benefit of qemu_x86
+
+config NRF_BPROT_FLASH_REGION_SIZE
+	hex
+	default 0x1000
+	help
+	  Redefinition for the benefit of qemu_x86
+
+config NRF_ACL_FLASH_REGION_SIZE
+	hex
+	default 0x1000
+	help
+	  Redefinition for the benefit of qemu_x86
+endif
+
+# Workaround for not being able to have commas in macro arguments
+DT_ZEPHYR_FLASH := zephyr,flash
+DT_CHOSEN_ZEPHYR_FLASH := $(dt_chosen_path,$(DT_ZEPHYR_FLASH))
+
+config FPROTECT_BLOCK_SIZE
+	hex
+	default NRF_SPU_FLASH_REGION_SIZE if CPU_HAS_NRF_IDAU
+	default NRF_MPU_FLASH_REGION_SIZE if HAS_HW_NRF_MPU
+	default NRF_BPROT_FLASH_REGION_SIZE if HAS_HW_NRF_BPROT
+	default NRF_ACL_FLASH_REGION_SIZE if HAS_HW_NRF_ACL
+	default $(dt_node_int_prop_hex,$(DT_CHOSEN_ZEPHYR_FLASH),erase-block-size)
+	help
+	  Block size of fprotect
+
+config FPROTECT_ENABLE_NO_ACCESS
+	bool
+	default y if HAS_HW_NRF_ACL
+	depends on FPROTECT
+	help
+	  Allows to protect flash pages both from reading and writing until the
+	  next reboot.
+
+config FPROTECT_ENABLE_IS_PROTECTED
+	bool
+	default y
+	depends on FPROTECT && HAS_HW_NRF_ACL
+	help
+	  Enable API to query if an address has been protected.

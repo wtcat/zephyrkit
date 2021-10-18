@@ -1,0 +1,23 @@
+# Copyright (c) 2018 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Application protocols"
+
+rsource "nrf_cloud/Kconfig"
+rsource "download_client/Kconfig"
+rsource "fota_download/Kconfig"
+rsource "aws_iot/Kconfig"
+rsource "aws_jobs/Kconfig"
+rsource "aws_fota/Kconfig"
+rsource "azure_fota/Kconfig"
+rsource "azure_iot_hub/Kconfig"
+rsource "cloud/Kconfig"
+rsource "zzhc/Kconfig"
+rsource "icalendar_parser/Kconfig"
+rsource "ftp_client/Kconfig"
+rsource "coap_utils/Kconfig"
+rsource "lwm2m_client_utils/Kconfig"
+
+endmenu

@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) 2021 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+#include <nrf_cc3xx_platform_kmu.h>
+#include <hw_unique_key.h>
+#include "hw_unique_key_internal.h"
+#include <nrfx.h>
+#include <mdk/nrf_erratas.h>
+
+#define KMU_KEYSLOT_SIZE_WORDS 4
+
+// Use 'copy_of_uicr_word_read' instead of 'nrfx_nvmc_uicr_word_read'
+// until it has become available everywhere. Everywhere consists of
+// TF-M's copy of nrfx, nrfx, hal_nordic in Zephyr and NCS.
+
+static uint32_t copy_of_uicr_word_read(uint32_t const volatile *address)
+{
+	uint32_t value = *address;
+
+#if NRF91_ERRATA_7_ENABLE_WORKAROUND
+	__DSB();
+#endif
+
+	return value;
+}
+
+/* Check whether a Hardware Unique Key has been written to the KMU. */
+static bool key_written(enum hw_unique_key_slot kmu_slot)
+{
+	uint32_t idx = kmu_slot;
+
+	NRF_KMU->SELECTKEYSLOT = KMU_SELECT_SLOT(kmu_slot);
+
+	if (copy_of_uicr_word_read(&NRF_UICR_S->KEYSLOT.CONFIG[idx].PERM) != 0xFFFFFFFF) {
+		NRF_KMU->SELECTKEYSLOT = 0;
+		return true;
+	}
+	if (copy_of_uicr_word_read(&NRF_UICR_S->KEYSLOT.CONFIG[idx].DEST) != 0xFFFFFFFF) {
+		NRF_KMU->SELECTKEYSLOT = 0;
+		return true;
+	}
+	for (int i = 0; i < KMU_KEYSLOT_SIZE_WORDS; i++) {
+		if (copy_of_uicr_word_read(&NRF_UICR_S->KEYSLOT.KEY[idx].VALUE[i]) != 0xFFFFFFFF) {
+			NRF_KMU->SELECTKEYSLOT = 0;
+			return true;
+		}
+	}
+	NRF_KMU->SELECTKEYSLOT = 0;
+	return false;
+}
+
+static int write_slot(enum hw_unique_key_slot kmu_slot, uint32_t target_addr, const uint8_t *key)
+{
+	return nrf_cc3xx_platform_kmu_write_key_slot(
+			kmu_slot, target_addr,
+			NRF_CC3XX_PLATFORM_KMU_DEFAULT_PERMISSIONS, key);
+}
+
+void hw_unique_key_write(enum hw_unique_key_slot kmu_slot, const uint8_t *key)
+{
+	int err = write_slot(kmu_slot, NRF_CC3XX_PLATFORM_KMU_AES_ADDR, key);
+
+#ifdef HUK_HAS_CC312
+	if (err == 0) {
+		err = write_slot(kmu_slot + 1, NRF_CC3XX_PLATFORM_KMU_AES_ADDR_2,
+				key + (HUK_SIZE_BYTES / 2));
+	}
+#endif
+
+	if (err != 0) {
+		HUK_PRINT("The HUK writing (%d) failed with error code: %d\n\r",
+			err, kmu_slot);
+		HUK_PANIC();
+	}
+}
+
+bool hw_unique_key_is_written(enum hw_unique_key_slot kmu_slot)
+{
+#ifdef HUK_HAS_CC312
+	return key_written(kmu_slot) || key_written(kmu_slot + 1);
+#else
+	return key_written(kmu_slot);
+#endif
+}

@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SMS
+	bool "SMS subscriber"
+	select AT_CMD_PARSER
+	select AT_NOTIF
+	help
+	  A library for managing SMS subscriptions.
+
+if SMS
+
+config SMS_AT_CMD
+	bool
+	default y
+	select AT_CMD
+	help
+	  Use the AT Command library with SMS subscriber library. This is
+	  separated here from other dependencies to allow disabling of
+	  AT Command library in tests for mocking purposes.
+
+config SMS_SUBSCRIBERS_MAX_CNT
+	int "Maximum number of subscribers"
+	default 2
+	help
+	  Maximum number of subscribers that can register to SMS library.
+
+module=SMS
+module-dep=LOG
+module-str= SMS library
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+endif # SMS

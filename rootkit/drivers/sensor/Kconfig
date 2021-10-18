@@ -18,4 +18,9 @@ rsource "icm42607/Kconfig"
 rsource "cw6305/Kconfig"
 rsource "gh3011/Kconfig"
 
+rsource "bh1749/Kconfig"
+rsource "sensor_sim/Kconfig"
+rsource "pmw3360/Kconfig"
+rsource "paw3212/Kconfig"
+
 endif # SENSOR

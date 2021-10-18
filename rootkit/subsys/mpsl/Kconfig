@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2019 - 2020 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Nordic MPSL"
+
+rsource "cx/Kconfig"
+rsource "fem/Kconfig"
+rsource "init/Kconfig"
+
+endmenu

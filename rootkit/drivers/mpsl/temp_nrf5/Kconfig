@@ -1,0 +1,12 @@
+#
+# Copyright (c) 2020 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+
+# nRF5 MPSL temperature API configuration options
+
+config TEMP_NRF5_MPSL
+	bool "nRF5 MPSL Temperature Sensor"
+	depends on HAS_HW_NRF_TEMP && MPSL
+	help
+	  Enable MPSL driver for nRF5 temperature sensor.

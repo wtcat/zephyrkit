@@ -1,0 +1,85 @@
+# Copyright (c) 2021 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig NRF_CLOUD_PGPS
+	bool "Enable nRF Cloud Predicted GPS (P-GPS)"
+	depends on MODEM_INFO
+	depends on MODEM_INFO_ADD_NETWORK
+	depends on DATE_TIME
+	imply DOWNLOAD_CLIENT
+	select STREAM_FLASH_ERASE
+	select SETTINGS
+
+if NRF_CLOUD_PGPS
+
+config NRF_CLOUD_PGPS_REQUEST_ALL_UPON_INIT
+	bool "Request all available P-GPS data upon initialization"
+	default y
+	help
+	  If this option is enabled, all available P-GPS data will be requested from cloud when
+	  the library is initialized given that no P-GPS data has previously been stored to flash.
+
+config NRF_CLOUD_PGPS_PREDICTION_PERIOD
+	int "Desired time in minutes between predictions."
+	range 60 480
+	default 240
+	help
+	  This value is used when requesting predicted GPS data from the
+	  cloud. More frequent predictions will result in more accurate
+	  ephemeris values for any given time, but will take more storage
+	  space in flash.
+
+config NRF_CLOUD_PGPS_NUM_PREDICTIONS
+	int "Desired number of predictions."
+	range 1 84
+	default 42
+	help
+	  This value, together with the prediction period, determines the
+	  overall timespan that the GPS predictions will cover. The
+	  default values allows for one week of predictions.
+
+config NRF_CLOUD_PGPS_REPLACEMENT_THRESHOLD
+	int "Number of predictions remaining before fetching more."
+	range 0 84
+	default 0
+	help
+	  When set to 0, no attempt will be made to update the prediction
+	  set from the cloud until all predictions have expired. When set
+	  to an even number less than or equal to
+	  NRF_CLOUD_PGPS_NUM_PREDICTIONS, any expired predictions will be
+	  replaced with predictions following the last remaining valid
+	  prediction. Odd numbers are not allowed.
+
+config NRF_CLOUD_PGPS_DOWNLOAD_FRAGMENT_SIZE
+	int "Fragment size for P-GPS downloads"
+	range 128 1500
+	default 1500
+	help
+	  Due to the finite size of the nrf9160 modem's TLS buffer, this
+	  value needs to be small enough to leave room for the HTTP
+	  headers.
+
+choice NRF_CLOUD_PGPS_TRANSPORT
+	prompt "nRF Cloud P-GPS transport"
+	default NRF_CLOUD_PGPS_TRANSPORT_MQTT if NRF_CLOUD_MQTT
+	default NRF_CLOUD_PGPS_TRANSPORT_NONE
+
+config NRF_CLOUD_PGPS_TRANSPORT_NONE
+	bool "No transport"
+	help
+	  Enabling this option will make the nRF Cloud P-GPS library not request
+	  data from nRF Cloud when its APIs are called. This will instead let
+	  it be up to the user to request, receive and process P-GPS data.
+
+config NRF_CLOUD_PGPS_TRANSPORT_MQTT
+	bool "MQTT transport"
+	depends on NRF_CLOUD_MQTT
+	help
+	  Use nRF Cloud library's MQTT implementation to send requests for P-GPS
+	  data and receive responses.
+
+endchoice # NRF_CLOUD_PGPS_TRANSPORT
+
+endif # NRF_CLOUD_PGPS

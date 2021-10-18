@@ -1,6 +1,0 @@
-
-rsource "apps/Kconfig"
-rsource "profiles/Kconfig"
-
-    
-

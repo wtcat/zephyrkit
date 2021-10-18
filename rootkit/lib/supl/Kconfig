@@ -1,0 +1,10 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config SUPL_CLIENT_LIB
+	bool "SUPL Client library"
+	help
+	  A library for accessing AGPS data using the SUPL protocol

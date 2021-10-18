@@ -1,0 +1,62 @@
+#
+# Copyright (c) 2020 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "nRF RPC (Remote Procedure Call) library"
+
+if NRF_RPC
+
+# Zephyr port dependencies selection
+
+config _NRF_RPC_DUMMY_SELECT
+	bool
+	default y
+	select THREAD_CUSTOM_DATA
+
+config NRF_RPC_TR_RPMSG
+	bool
+	select RPMSG_SERVICE
+
+config NRF_RPC_CBOR
+	bool
+	select TINYCBOR
+
+# End of Zephyr port dependencies selection
+
+config NRF_RPC_THREAD_STACK_SIZE
+	int "Stack size of thread from thread pool"
+	default 1024
+	help
+	  Stack size for each thread in local thread pool.
+
+config NRF_RPC_THREAD_PRIORITY
+	int "Priority of thread from thread pool"
+	default 2
+	help
+	  Thread priority of each thread in local thread pool.
+
+module = NRF_RPC
+module-str = NRF_RPC
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+module = NRF_RPC_TR
+module-str = NRF_RPC_TR
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+module = NRF_RPC_OS
+module-str = NRF_RPC_OS
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+if NRF_RPC_CBOR
+
+module = NRF_RPC_CBOR
+module-str = NRF_RPC_CBOR
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+endif # NRF_RPC_CBOR
+
+endif # NRF_RPC
+
+endmenu
