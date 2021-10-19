@@ -10,6 +10,9 @@ menuconfig RPMSG_HCI_REMOTE
       Bluetooth controller hci driver implement by RPMsg
 
 if RPMSG_HCI_REMOTE
+config RPMSG_HCI_ENDPOINT_NAME
+    string "RPMsg HCI remote endpoint name"
+    default "nrf_bt_hci"
 
 config RPMSG_HCI_SMALL_FOOTPRINT
     bool "Small memory cost"
