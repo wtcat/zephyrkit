@@ -108,7 +108,7 @@ config NRF_MODEM_LIB_HEAP_SIZE
 
 config NRF_MODEM_LIB_SHMEM_CTRL_SIZE
 	hex
-	default NRF_MODEM_SHMEM_CTRL_SIZE
+	default 0x400 #NRF_MODEM_SHMEM_CTRL_SIZE
 	help
 	  Size of the shared memory area used for control structures.
 	  This is a constant for a given library build, and is exported

@@ -2,7 +2,7 @@
 
 menuconfig APOLLO3P_DEVICE_PRIVATE
 	bool "Device Drivers private"
-	default y
+	default n
 	help
 	  Enable options for apollo3p device drivers.
 

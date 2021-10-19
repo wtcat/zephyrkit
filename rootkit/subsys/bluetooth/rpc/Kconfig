@@ -111,6 +111,7 @@ endif # BT_RPC_HOST
 endif # BT_RPC
 
 choice BT_STACK_SELECTION
+prompt "BT stack selection"
 
 config BT_RPC_STACK
 	bool "Bluetooth over RPC Client"
@@ -191,9 +192,9 @@ config BT_DATA_LEN_UPDATE
 
 endif # BT_CONN
 
-source "$(ZEPHYR_BASE)/subsys/bluetooth/Kconfig.adv"
-source "$(ZEPHYR_BASE)/subsys/bluetooth/services/Kconfig"
-source "$(ZEPHYR_BASE)/subsys/bluetooth/common/Kconfig"
-source "$(ZEPHYR_BASE)/subsys/bluetooth/host/Kconfig"
+#source "$(ZEPHYR_BASE)/subsys/bluetooth/Kconfig.adv"
+#  source "$(ZEPHYR_BASE)/subsys/bluetooth/services/Kconfig"
+#  source "$(ZEPHYR_BASE)/subsys/bluetooth/common/Kconfig"
+ source "$(ZEPHYR_BASE)/subsys/bluetooth/host/Kconfig"
 
 endif # BT_RPC_STACK

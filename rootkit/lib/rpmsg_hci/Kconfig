@@ -2,7 +2,7 @@
 menuconfig RPMSG_HCI_REMOTE
     bool "RPMsg HCI driver remote node"
     select RPMSG_SERVICE
-    select RPMSG_SERVICE_MODE_REMOTE
+ #   select RPMSG_SERVICE_MODE_REMOTE
     select BT
     select BT_HCI_RAW
     select BT_CTLR_ASSERT_HANDLER

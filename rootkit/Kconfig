@@ -1,15 +1,35 @@
 # RootKit configurations 
 
-rsource "components/Kconfig"
+#Subsystem
+menuconfig  USER_SUBSYSTEM
+  bool "Subsystem (out of sourcetree))"
+  help
+    User extension for zephyr subsystem
+
+if USER_SUBSYSTEM
 rsource "subsys/Kconfig"
+endif 
 
+#Device drivers
+menuconfig  USER_DEVICE_DRIVER
+  bool "Device drivers (out of sourcetree)"
+  help
+    User extension for zephyr device drivers
 
-menuconfig III_DRIVERS
-    bool "Enable user drivers"
-    help
-      The user private drivers that out of source tree
-
-if III_DRIVERS
+if USER_DEVICE_DRIVER
 rsource "drivers/Kconfig"
 rsource "drivers_ext/Kconfig"
-endif
+endif 
+
+
+#Libraries
+menuconfig  USER_LIBRARIES
+  bool "Libraries (out of sourcetree)"
+  help
+    User extension for zephyr libraries
+
+if USER_LIBRARIES
+rsource "lib/Kconfig"
+endif 
+
+
