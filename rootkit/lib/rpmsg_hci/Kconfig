@@ -15,5 +15,8 @@ config RPMSG_HCI_SMALL_FOOTPRINT
     bool "Small memory cost"
     default y
 
+config RPMSG_HCI_RX_API
+    bool "Export data receive API"
+
 endif #RPMSG_HCI_REMOTE
       

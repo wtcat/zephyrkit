@@ -206,7 +206,10 @@ static void bt_rpmsg_hci_tx_thread(void *p1, void *p2, void *p3) {
 }
 #endif /* CONFIG_RPMSG_HCI_SMALL_FOOTPRINT */
 
-static void bt_rpmsg_hci_rx_thread(void *p1, void *p2, void *p3) {
+#ifndef CONFIG_RPMSG_HCI_RX_API
+static inline
+#endif
+void bt_rpmsg_hci_rx_loop(void) {
 	struct net_buf *buf;
 	int err;
 
@@ -216,10 +219,19 @@ static void bt_rpmsg_hci_rx_thread(void *p1, void *p2, void *p3) {
 		if (err) {
 			LOG_ERR("Failed to send (err %d)", err);
 		}
-	}
+	}	
 }
 
-void bt_remote_rpmsg_hci_setup(void) {
+#ifndef CONFIG_RPMSG_HCI_RX_API
+static void bt_rpmsg_hci_rx_thread(void *p1, void *p2, void *p3) {
+	(void) p1;
+	(void) p2;
+	(void) p3;
+	bt_rpmsg_hci_rx_loop();
+}
+#endif
+
+static void bt_remote_rpmsg_hci_setup(const struct device *arg __unused) {
 	bt_enable_raw(&rx_queue);
 #ifndef CONFIG_RPMSG_HCI_SMALL_FOOTPRINT
 	k_thread_create(&tx_thread_data, tx_thread_stack,
@@ -227,11 +239,15 @@ void bt_remote_rpmsg_hci_setup(void) {
 			NULL, NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
 	k_thread_name_set(&tx_thread_data, "HCI rpmsg TX");
 #endif /* CONFIG_RPMSG_HCI_SMALL_FOOTPRINT */
+#ifndef CONFIG_RPMSG_HCI_RX_API
 	k_thread_create(&rx_thread_data, rx_thread_stack,
 			K_THREAD_STACK_SIZEOF(rx_thread_stack), bt_rpmsg_hci_rx_thread,
 			NULL, NULL, NULL, K_PRIO_COOP(1), 0, K_NO_WAIT);
 	k_thread_name_set(&rx_thread_data, "HCI rpmsg RX");
+#endif /* CONFIG_RPMSG_HCI_RX_API */
 }
+SYS_INIT(bt_remote_rpmsg_hci_setup, APPLICATION, 
+	CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
 
 static int hci_endpoint_cb(struct rpmsg_endpoint *ept, void *data, 
 	size_t len, uint32_t src, void *priv) {

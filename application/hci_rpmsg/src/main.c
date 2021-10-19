@@ -1,7 +1,6 @@
-#include "remote_rpmsg_hci.h"
-
+#include "ipc/rpmsg_hci.h"
 
 int main(void) {
-    bt_remote_rpmsg_hci_setup();
+    bt_rpmsg_hci_rx_loop();
     return 0;
 }
