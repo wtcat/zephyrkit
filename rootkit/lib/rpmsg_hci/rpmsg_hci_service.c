@@ -266,18 +266,5 @@ static int hci_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
 	return RPMSG_SUCCESS;
 }
 
-// static int bt_remote_register_endpoint(const struct device *arg __unused) {
-// 	int status;
-// 	status = rpmsg_service_register_endpoint(CONFIG_RPMSG_HCI_ENDPOINT_NAME, 
-// 		hci_endpoint_cb);
-// 	if (status < 0) {
-// 		LOG_ERR("Registering endpoint failed with %d", status);
-// 		return status;
-// 	}
-// 	bt_hci_endpoint_id = status;
-// 	return 0;
-// }
-
-// SYS_INIT(bt_remote_register_endpoint, POST_KERNEL, 
-// 	CONFIG_RPMSG_SERVICE_EP_REG_PRIORITY);
-RPMSG_ENDPOINT_DEFINE(nrf_bt_hci, hci_endpoint_cb, &bt_hci_endpoint_id);
+RPMSG_ENDPOINT_DEFINE(nrf_bt_hci, hci_endpoint_cb, 
+	&bt_hci_endpoint_id);
