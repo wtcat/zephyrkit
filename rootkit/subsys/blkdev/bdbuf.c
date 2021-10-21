@@ -2756,7 +2756,7 @@ static void bdbuf_read_ahead_task(void *arg) {
 }
 
 void k_bdbuf_get_device_stats(const struct k_disk_device *dd,
-  rtems_blkdev_stats *stats) {
+  struct k_blkdev_stats *stats) {
   z_bdbuf_lock_cache();
   *stats = dd->stats;
   z_bdbuf_unlock_cache();
