@@ -13,6 +13,7 @@
 #ifndef SUBSYS_K_BDBUF_H_
 #define SUBSYS_K_BDBUF_H_
 
+#include <sys/dlist.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +21,7 @@ extern "C" {
 
 struct k_bdbuf_group;
 
-enum k_bdbuf_state {
+enum k_bdbuf_buf_state {
 	K_BDBUF_STATE_FREE = 0,
 	K_BDBUF_STATE_EMPTY,
 	K_BDBUF_STATE_CACHED,
@@ -35,7 +36,7 @@ enum k_bdbuf_state {
 };
 
 struct k_bdbuf_buffer {
-	rtems_chain_node link;       /* Link the BD onto a number of lists. */
+	sys_dnode_t link;       /* Link the BD onto a number of lists. */
 	struct k_bdbuf_avl_node {
 		struct struct k_bdbuf_buffer* left;   /* Left Child */
 		struct struct k_bdbuf_buffer* right;  /* Right Child */
@@ -45,7 +46,7 @@ struct k_bdbuf_buffer {
 	struct k_disk_device *dd;               /* disk device */
 	rtems_blkdev_bnum block;                /* block number on the device */
 	unsigned char*    buffer;               /* Pointer to the buffer memory area */
-	enum k_bdbuf_state state;               /* State of the buffer. */
+	enum k_bdbuf_buf_state state;               /* State of the buffer. */
 	uint32_t waiters;                       /* The number of threads waiting on this buffer. */                       
 	struct k_bdbuf_group* group;            /* Pointer to the group of BDs this BD is part of. */                  
 	uint32_t hold_timer;                    /* Timer to indicate how long a buffer has been held in the cache modified. */
@@ -61,7 +62,7 @@ struct k_bdbuf_buffer {
  * number of buffers in a group is a multiple of 2, ie 1, 2, 4, 8, etc.
  */
 struct k_bdbuf_group {
-	rtems_chain_node    link;          /* Link the groups on a LRU list if they have no buffers in use. */            
+	sys_dnode_t    link;          /* Link the groups on a LRU list if they have no buffers in use. */            
 	size_t              bds_per_group; /* The number of BD allocated to this group. This value must be a multiple of 2. */          
 	uint32_t            users;         /* How many users the block has. */
 	struct k_bdbuf_buffer* bdbuf;      /* First BD this block covers. */
