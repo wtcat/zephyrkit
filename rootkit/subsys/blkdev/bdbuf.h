@@ -44,7 +44,7 @@ struct k_bdbuf_buffer {
 		signed char                bal;       /* The balance of the sub-tree */
 	} avl;
 	struct k_disk_device *dd;               /* disk device */
-	rtems_blkdev_bnum block;                /* block number on the device */
+	blkdev_bnum_t block;                /* block number on the device */
 	unsigned char*    buffer;               /* Pointer to the buffer memory area */
 	enum k_bdbuf_buf_state state;               /* State of the buffer. */
 	uint32_t waiters;                       /* The number of threads waiting on this buffer. */                       
@@ -62,29 +62,11 @@ struct k_bdbuf_buffer {
  * number of buffers in a group is a multiple of 2, ie 1, 2, 4, 8, etc.
  */
 struct k_bdbuf_group {
-	sys_dnode_t    link;          /* Link the groups on a LRU list if they have no buffers in use. */            
+	sys_dnode_t         link;          /* Link the groups on a LRU list if they have no buffers in use. */            
 	size_t              bds_per_group; /* The number of BD allocated to this group. This value must be a multiple of 2. */          
 	uint32_t            users;         /* How many users the block has. */
 	struct k_bdbuf_buffer* bdbuf;      /* First BD this block covers. */
 };
-
-struct k_bdbuf_config {
-	uint32_t            max_read_ahead_blocks;   /* Number of blocks to read ahead. */
-	uint32_t            max_write_blocks;        /* Number of blocks to write at once. */                                    
-	rtems_task_priority swapout_priority;        /* Priority of the swap out task. */                                           
-	uint32_t            swapout_period;          /* Period swap-out checks buf timers. */                                          
-	uint32_t            swap_block_hold;         /* Period a buffer is held. */
-	size_t              swapout_workers;         /* The number of worker threads for the swap-out task. */        
-	rtems_task_priority swapout_worker_priority; /* Priority of the swap out task. */                                
-	size_t              task_stack_size;         /* Task stack size for swap-out task and worker threads. */
-	size_t              size;                    /* Size of memory in the cache */                                        
-	uint32_t            buffer_min;              /* Minimum buffer size. */
-	uint32_t            buffer_max;              /* Maximum buffer size supported. It is also the allocation size. */                            
-	rtems_task_priority read_ahead_priority;     /* Priority of the read-ahead task. */                                               
-};
-
-
-extern const struct k_bdbuf_config k_bdbuf_configuration;
 
 /**
  * The default value for the maximum read-ahead blocks disables the read-ahead
@@ -151,11 +133,11 @@ extern const struct k_bdbuf_config k_bdbuf_configuration;
 
 
 int k_bdbuf_init(void);
-int k_bdbuf_get(struct k_disk_device *dd, rtems_blkdev_bnum block, 
+int k_bdbuf_get(struct k_disk_device *dd, blkdev_bnum_t block, 
 	struct k_bdbuf_buffer** bd);
-int k_bdbuf_read(struct k_disk_device *dd, rtems_blkdev_bnum block,
+int k_bdbuf_read(struct k_disk_device *dd, blkdev_bnum_t block,
 	struct k_bdbuf_buffer** bd);
-void k_bdbuf_peek(struct k_disk_device *dd, rtems_blkdev_bnum block,
+void k_bdbuf_peek(struct k_disk_device *dd, blkdev_bnum_t block,
 	uint32_t nr_blocks);
 int k_bdbuf_release(struct k_bdbuf_buffer* bd);
 int k_bdbuf_release_modified(struct k_bdbuf_buffer* bd);

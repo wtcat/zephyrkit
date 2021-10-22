@@ -23,11 +23,12 @@ enum k_blkdev_request_op {
 
 struct k_blkdev_request;
 
-/**
+/*
  * @brief Block device request done callback function type.
  */
-typedef void (*blkdev_request_cb_t)(
-  struct k_blkdev_request *req, int status);
+typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
+  int status);
+  
 
 struct k_blkdev_sg_buffer {
   blkdev_bnum_t block;
@@ -139,11 +140,6 @@ static inline int rtems_disk_fd_reset_device_stats(int fd)
 {
   return ioctl(fd, RTEMS_BLKIO_RESETDEVSTATS);
 }
-
-/**
- * @name Block Device Driver Capabilities
- */
-/**@{**/
 
 /**
  * @brief Only consecutive multi-sector buffer requests are supported.
