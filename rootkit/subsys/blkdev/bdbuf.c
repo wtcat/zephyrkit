@@ -19,8 +19,11 @@
  */
 #define CONFIG_BDBUF_TRACE 0
 
-#include <kernel.h>
+#include <errno.h>
 #include <sys/dlist.h>
+
+#include <kernel.h>
+#include <cache.h>
 
 #include "blkdev/bdbuf.h"
 
@@ -30,30 +33,30 @@
 struct k_bdbuf_config {
 	uint32_t            max_read_ahead_blocks;   /* Number of blocks to read ahead. */
 	uint32_t            max_write_blocks;        /* Number of blocks to write at once. */                                    
-	rtems_task_priority swapout_priority;        /* Priority of the swap out task. */                                           
+	int                 swapout_priority;        /* Priority of the swap out task. */                                           
 	uint32_t            swapout_period;          /* Period swap-out checks buf timers. */                                          
 	uint32_t            swap_block_hold;         /* Period a buffer is held. */
 	size_t              swapout_workers;         /* The number of worker threads for the swap-out task. */        
-	rtems_task_priority swapout_worker_priority; /* Priority of the swap out task. */                                
+	int                 swapout_worker_priority; /* Priority of the swap out task. */                                
 	size_t              task_stack_size;         /* Task stack size for swap-out task and worker threads. */
 	size_t              size;                    /* Size of memory in the cache */                                        
 	uint32_t            buffer_min;              /* Minimum buffer size. */
 	uint32_t            buffer_max;              /* Maximum buffer size supported. It is also the allocation size. */                            
-	rtems_task_priority read_ahead_priority;     /* Priority of the read-ahead task. */                                               
+	int                 read_ahead_priority;     /* Priority of the read-ahead task. */                                               
 };
 
 struct k_bdbuf_swapout_transfer {
-	sys_dlist_t           bds;         /* The transfer list of BDs. */
-	struct k_disk_device  *dd;         /* The device the transfer is for. */
-	bool                  syncing;     /* The data is a sync'ing. */
-	rtems_blkdev_request  write_req;   /* The write request. */
+	sys_dlist_t              bds;         /* The transfer list of BDs. */
+	struct k_disk_device     *dd;         /* The device the transfer is for. */
+	bool                     syncing;     /* The data is a sync'ing. */
+	struct k_blkdev_request  write_req;   /* The write request. */
 };
 
 struct k_bdbuf_swapout_worker {
-  struct k_sem            sync;
-	struct k_thread         id;       /* The id of the task so we can wake it. */
-	sys_dnode_t             link;     /* The threads sit on a chain when idle. */
-	bool                    enabled;  /* The worker is enabled. */
+  sys_dnode_t     link;     /* The threads sit on a chain when idle. */
+	struct k_thread task;     /* The id of the task so we can wake it. */
+  struct k_sem    sync;
+	bool            enabled;  /* The worker is enabled. */
 	struct k_bdbuf_swapout_transfer transfer; /* The transfer data for this thread. */
 };
 
@@ -63,7 +66,8 @@ struct k_bdbuf_waiters {
 };
 
 struct k_bdbuf_cache {
-	struct k_thread     *swapout;          /* Swapout task ID */
+	struct k_thread     swapout_task;          /* Swapout task ID */
+  struct k_sem        swapout_sem;
 	bool                swapout_enabled;   /* Swapout is only running if enabled. Set to false to kill the swap out task. 
 											    It deletes itself. */
 	sys_dlist_t swapout_free_workers; /* The work threads for the swapout task. */
@@ -75,25 +79,28 @@ struct k_bdbuf_cache {
 	struct k_mutex      lock;              /* The cache lock. It locks all cache data, BD and lists. */                                   
 	struct k_mutex      sync_lock;         /* Sync calls block writes. */
 	bool                sync_active;       /* True if a sync is active. */
-	rtems_id            sync_requester;    /* The sync requester. */
+	//rtems_id            sync_requester;    /* The sync requester. */
+  struct k_sem        *sync_requester;
 	struct k_disk_device  *sync_device;       /* The device to sync and BDBUF_INVALID_DEV not a device sync. */
 	struct k_bdbuf_buffer* tree;              /* Buffer descriptor lookup AVL tree root. There is only one. */               
-	sys_dlist_t lru;               /* Least recently used list */
-	sys_dlist_t modified;          /* Modified buffers list */
-	sys_dlist_t sync;              /* Buffers to sync list */
+	sys_dlist_t            lru;               /* Least recently used list */
+	sys_dlist_t            modified;          /* Modified buffers list */
+	sys_dlist_t            sync;              /* Buffers to sync list */
 	struct k_bdbuf_waiters access_waiters;    /* Wait for a buffer in ACCESS_CACHED, ACCESS_MODIFIED or
 	                                      	   ACCESS_EMPTY state. */                               
 	struct k_bdbuf_waiters transfer_waiters;  /* Wait for a buffer in TRANSFER state. */                            
 	struct k_bdbuf_waiters buffer_waiters;    /* Wait for a buffer and no one is available. */
 	struct k_bdbuf_swapout_transfer *swapout_transfer;
 	struct k_bdbuf_swapout_worker *swapout_workers;
-	size_t              group_count;       /* The number of groups. */
+	size_t                 group_count;       /* The number of groups. */
 	struct k_bdbuf_group*  groups;            /* The groups. */
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
 	struct k_thread        read_ahead_task;   /* Read-ahead task */
-	sys_dlist_t read_ahead_chain;  /* Read-ahead request chain */
-	bool                read_ahead_enabled; /* Read-ahead enabled */
-	rtems_status_code   init_status;       /* The initialization status */
-	pthread_once_t      once;
+  struct k_sem           read_ahead_sync;
+	sys_dlist_t            read_ahead_chain;  /* Read-ahead request chain */
+	bool                   read_ahead_enabled; /* Read-ahead enabled */
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
+  bool                   once;
 } ;
 
 enum k_bdbuf_fatal_code {
@@ -119,41 +126,28 @@ enum k_bdbuf_fatal_code {
 	K_BDBUF_FATAL_SWAPOUT_RE,
 	K_BDBUF_FATAL_TREE_RM,
 	K_BDBUF_FATAL_WAIT_EVNT,
-	K_BDBUF_FATAL_WAIT_TRANS_EVNT
+	K_BDBUF_FATAL_WAIT_TRANS_EVNT,
 };
 
-/**
- * The events used in this code. These should be system events rather than
- * application events.
- */
-#define RTEMS_BDBUF_SWAPOUT_SYNC   RTEMS_EVENT_2
-#define RTEMS_BDBUF_READ_AHEAD_WAKE_UP RTEMS_EVENT_1
+static void
+z_bdbuf_transfer_done(struct k_blkdev_request* req, int status);
+static void z_bdbuf_swapout_task(void *arg);
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+static void z_bdbuf_swapout_worker_task(void *arg);
+#endif /* CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0 */
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+static void z_bdbuf_read_ahead_task(void *arg);
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 
-static void bdbuf_swapout_task(void *arg);
-static void bdbuf_read_ahead_task(void *arg);
+static K_THREAD_STACK_DEFINE(swaptask_stack, 
+  CONFIG_BDBUF_TASK_STACK_SIZE);
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+static K_THREAD_STACK_DEFINE(readahead_task_stack, 
+  CONFIG_BDBUF_TASK_STACK_SIZE);
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 
-
-static K_SEM_DEFINE(sync_swapout_sem, 0, 1);
-static K_SEM_DEFINE(read_ahead_sem, 0, 1);
-static const struct k_bdbuf_config bdbuf_config = {
-  .max_read_ahead_blocks   = ,
-  .max_write_blocks        = ,                                  
-  .swapout_priority        = ,                                          
-  .swapout_period          = ,                                         
-  .swap_block_hold         = ,
-  .swapout_workers         = ,     
-  .swapout_worker_priority = ,                       
-  .task_stack_size         = ,
-  .size                    = ,                                      
-  .buffer_min              = ,
-  .buffer_max              = ,                           
-  .read_ahead_priority     = 
-};
-
-/*
- * The Buffer Descriptor cache.
- */
 static struct k_bdbuf_cache bdbuf_cache = {
+  .swapout_sem = Z_SEM_INITIALIZER(bdbuf_cache.swapout_sem, 0, 1),
   .lock = Z_MUTEX_INITIALIZER(bdbuf_cache),
   .sync_lock = Z_MUTEX_INITIALIZER(bdbuf_cache),
   .access_waiters = { 
@@ -165,9 +159,25 @@ static struct k_bdbuf_cache bdbuf_cache = {
   .buffer_waiters = { 
     .cond_var = Z_CONDVAR_INITIALIZER(bdbuf_cache) 
   },
-  .once = PTHREAD_ONCE_INIT
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+  .read_ahead_sync = Z_SEM_INITIALIZER(bdbuf_cache.read_ahead_sync, 0, 1),
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 };
 
+static const struct k_bdbuf_config bdbuf_config = {
+  .max_read_ahead_blocks   = K_BDBUF_MAX_READ_AHEAD_BLOCKS_DEFAULT,
+  .max_write_blocks        = K_BDBUF_MAX_WRITE_BLOCKS_DEFAULT,                                  
+  .swapout_priority        = K_BDBUF_SWAPOUT_TASK_PRIORITY_DEFAULT,                                          
+  .swapout_period          = K_BDBUF_SWAPOUT_TASK_SWAP_PERIOD_DEFAULT,                                         
+  .swap_block_hold         = K_BDBUF_SWAPOUT_TASK_BLOCK_HOLD_DEFAULT,
+  .swapout_workers         = K_BDBUF_SWAPOUT_WORKER_TASKS_DEFAULT,     
+  .swapout_worker_priority = K_BDBUF_SWAPOUT_WORKER_TASK_PRIORITY_DEFAULT,                       
+  .task_stack_size         = K_BDBUF_TASK_STACK_SIZE_DEFAULT,
+  .size                    = K_BDBUF_CACHE_MEMORY_SIZE_DEFAULT,                                      
+  .buffer_min              = K_BDBUF_BUFFER_MIN_SIZE_DEFAULT,
+  .buffer_max              = K_BDBUF_BUFFER_MAX_SIZE_DEFAULT,                           
+  .read_ahead_priority     = K_BDBUF_READ_AHEAD_TASK_PRIORITY_DEFAULT
+};
 
 
 #if defined(CONFIG_BDBUF_TRACE)
@@ -218,13 +228,34 @@ void k_bdbuf_show_users(const char* where, struct k_bdbuf_buffer* bd) {
 #define k_bdbuf_show_users(_w, _b) ((void) 0)
 #endif /* CONFIG_BDBUF_TRACE */
 
+static inline void z_bdbuf_wait_for_sync(struct k_sem *sem, 
+  k_timeout_t timeout, int status) {
+  int ret = k_sem_take(sem, timeout);
+  if (ret)
+    z_bdbuf_fatal(status);
+}
+
+static void z_bdbuf_wait_for_event(struct k_sem *sem) {
+  z_bdbuf_wait_for_sync(sem, K_FOREVER, 
+    K_BDBUF_FATAL_WAIT_EVNT);
+}
+
+static void z_bdbuf_wait_for_transient_event(struct k_sem *sem) {
+  z_bdbuf_wait_for_sync(sem, K_FOREVER, 
+    K_BDBUF_FATAL_WAIT_TRANS_EVNT);
+}
+
+static inline void z_bdbuf_send_event(struct k_sem *sem) {
+  k_sem_give(sem);
+}
+
 /**
  * The default maximum height of 32 allows for AVL trees having between
  * 5,704,880 and 4,294,967,295 nodes, depending on order of insertion.  You may
  * change this compile-time constant as you wish.
  */
-#ifndef RTEMS_BDBUF_AVL_MAX_HEIGHT
-#define RTEMS_BDBUF_AVL_MAX_HEIGHT (32)
+#ifndef K_BDBUF_AVL_MAX_HEIGHT
+#define K_BDBUF_AVL_MAX_HEIGHT (32)
 #endif
 
 static void z_bdbuf_fatal (rtems_fatal_code error) {
@@ -260,7 +291,7 @@ static int z_bdbuf_avl_insert(struct k_bdbuf_buffer** root,
   struct k_bdbuf_buffer*  q;
   struct k_bdbuf_buffer*  p1;
   struct k_bdbuf_buffer*  p2;
-  struct k_bdbuf_buffer*  buf_stack[RTEMS_BDBUF_AVL_MAX_HEIGHT];
+  struct k_bdbuf_buffer*  buf_stack[K_BDBUF_AVL_MAX_HEIGHT];
   struct k_bdbuf_buffer** buf_prev = buf_stack;
 
   bool modified = false;
@@ -433,7 +464,7 @@ static int z_bdbuf_avl_remove(struct k_bdbuf_buffer** root,
   struct k_bdbuf_buffer*  s;
   struct k_bdbuf_buffer*  p1;
   struct k_bdbuf_buffer*  p2;
-  struct k_bdbuf_buffer*  buf_stack[RTEMS_BDBUF_AVL_MAX_HEIGHT];
+  struct k_bdbuf_buffer*  buf_stack[K_BDBUF_AVL_MAX_HEIGHT];
   struct k_bdbuf_buffer** buf_prev = buf_stack;
 
   bool modified = false;
@@ -714,15 +745,15 @@ static void z_bdbuf_lock_cache(void) {
 }
 
 static void z_bdbuf_unlock_cache(void) {
-  z_bdbuf_unlock (&bdbuf_cache.lock);
+  z_bdbuf_unlock(&bdbuf_cache.lock);
 }
 
 static void z_bdbuf_lock_sync(void) {
-  z_bdbuf_lock (&bdbuf_cache.sync_lock);
+  z_bdbuf_lock(&bdbuf_cache.sync_lock);
 }
 
 static void z_bdbuf_unlock_sync(void) {
-  z_bdbuf_unlock (&bdbuf_cache.sync_lock);
+  z_bdbuf_unlock(&bdbuf_cache.sync_lock);
 }
 
 static void z_bdbuf_group_obtain(struct k_bdbuf_buffer *bd) {
@@ -753,13 +784,8 @@ static void z_bdbuf_wake(struct k_bdbuf_waiters *waiters) {
     k_condvar_broadcast(&waiters->cond_var);
 }
 
-//TODO:
 static void z_bdbuf_wake_swapper(void) {
-  // rtems_status_code sc = rtems_event_send (bdbuf_cache.swapout,
-  //                                          RTEMS_BDBUF_SWAPOUT_SYNC);
-  // if (sc != RTEMS_SUCCESSFUL)
-  //   z_bdbuf_fatal (K_BDBUF_FATAL_SO_WAKE_1);
-  //k_sem_give(bdbuf_cache.swapout);
+  z_bdbuf_send_event(&bdbuf_cache.swapout_sem);
 }
 
 static bool z_bdbuf_has_buffer_waiters(void) {
@@ -775,7 +801,7 @@ static void z_bdbuf_remove_from_tree_and_lru_list(struct k_bdbuf_buffer *bd) {
   switch (bd->state) {
   case RTEMS_BDBUF_STATE_FREE:
     break;
-  case RTEMS_BDBUF_STATE_CACHED:
+  case K_BDBUF_STATE_CACHED:
     z_bdbuf_remove_from_tree(bd);
     break;
   default:
@@ -790,11 +816,11 @@ static void z_bdbuf_make_free_and_add_to_lru_list(struct k_bdbuf_buffer *bd) {
 }
 
 static void z_bdbuf_make_empty(struct k_bdbuf_buffer *bd) {
-  z_bdbuf_set_state(bd, RTEMS_BDBUF_STATE_EMPTY);
+  z_bdbuf_set_state(bd, K_BDBUF_STATE_EMPTY);
 }
 
 static void z_bdbuf_make_cached_and_add_to_lru_list(struct k_bdbuf_buffer *bd) {
-  z_bdbuf_set_state(bd, RTEMS_BDBUF_STATE_CACHED);
+  z_bdbuf_set_state(bd, K_BDBUF_STATE_CACHED);
   sys_dlist_append(&bdbuf_cache.lru, &bd->link);
 }
 
@@ -827,10 +853,10 @@ static void z_bdbuf_add_to_modified_list_after_access(
    * only a specific period of time even if still changing and get onto disk
    * and letting the file system try and recover this position if it can.
    */
-  if (bd->state == RTEMS_BDBUF_STATE_ACCESS_CACHED
-        || bd->state == RTEMS_BDBUF_STATE_ACCESS_EMPTY)
+  if (bd->state == K_BDBUF_STATE_ACCESS_CACHED
+        || bd->state == K_BDBUF_STATE_ACCESS_EMPTY)
     bd->hold_timer = bdbuf_config.swap_block_hold;
-  z_bdbuf_set_state(bd, RTEMS_BDBUF_STATE_MODIFIED);
+  z_bdbuf_set_state(bd, K_BDBUF_STATE_MODIFIED);
   sys_dlist_append(&bdbuf_cache.modified, &bd->link);
   if (bd->waiters)
     z_bdbuf_wake(&bdbuf_cache.access_waiters);
@@ -838,7 +864,7 @@ static void z_bdbuf_add_to_modified_list_after_access(
     z_bdbuf_wake_swapper();
 }
 
-static void z_bdbuf_add_to_lru_list_after_access (struct k_bdbuf_buffer *bd) {
+static void z_bdbuf_add_to_lru_list_after_access(struct k_bdbuf_buffer *bd) {
   z_bdbuf_group_release(bd);
   z_bdbuf_make_cached_and_add_to_lru_list(bd);
   if (bd->waiters)
@@ -883,16 +909,16 @@ static struct k_bdbuf_buffer *z_bdbuf_group_realloc(
   for (b = 0, bd = group->bdbuf;
        b < group->bds_per_group;
        b++, bd += bufs_per_bd)
-    z_bdbuf_remove_from_tree_and_lru_list (bd);
+    z_bdbuf_remove_from_tree_and_lru_list(bd);
 
   group->bds_per_group = new_bds_per_group;
   bufs_per_bd = bdbuf_cache.max_bds_per_group / new_bds_per_group;
   for (b = 1, bd = group->bdbuf + bufs_per_bd;
        b < group->bds_per_group;
        b++, bd += bufs_per_bd)
-    z_bdbuf_make_free_and_add_to_lru_list (bd);
+    z_bdbuf_make_free_and_add_to_lru_list(bd);
   if (b > 1)
-    z_bdbuf_wake (&bdbuf_cache.buffer_waiters);
+    z_bdbuf_wake(&bdbuf_cache.buffer_waiters);
   return group->bdbuf;
 }
 
@@ -935,163 +961,116 @@ static struct k_bdbuf_buffer *z_bdbuf_get_buffer_from_lru_list(
   return NULL;
 }
 
-static rtems_status_code
-rtems_bdbuf_create_task(
-  rtems_name name,
-  rtems_task_priority priority,
-  rtems_task_priority default_priority,
-  rtems_id *id
-)
-{
-  rtems_status_code sc;
-  size_t stack_size = bdbuf_config.task_stack_size ?
-    bdbuf_config.task_stack_size : RTEMS_BDBUF_TASK_STACK_SIZE_DEFAULT;
-
-  priority = priority != 0 ? priority : default_priority;
-
-  sc = rtems_task_create (name,
-                          priority,
-                          stack_size,
-                          RTEMS_PREEMPT | RTEMS_NO_TIMESLICE | RTEMS_NO_ASR,
-                          RTEMS_LOCAL | RTEMS_NO_FLOATING_POINT,
-                          id);
-
-  return sc;
+static int z_bdbuf_create_task(struct k_thread *new_thread, 
+  k_thread_stack_t *stack, const char *name, int prio,
+  k_thread_entry_t entry, void *arg) {
+  size_t stack_size = CONFIG_BDBUF_TASK_STACK_SIZE
+  if (stack == NULL) {
+    stack = k_malloc(sizeof(*stack) * stack_size);
+    if (stack == NULL)
+      return -ENOMEM;
+  }
+  k_tid_t thread = k_thread_create(new_thread, stack, stack_size,		  
+	  entry, arg, NULL, NULL, prio, 0, K_FOREVER);
+  if (name)
+    k_thread_name_set(thread, name);
+  return 0;	  
 }
-
-
-
 
 static struct k_bdbuf_swapout_transfer *z_bdbuf_swapout_transfer_alloc(void) {
   /*
-   * @note chrisj The rtems_blkdev_request and the array at the end is a hack.
+   * @note chrisj The struct k_blkdev_request and the array at the end is a hack.
    * I am disappointment at finding code like this in RTEMS. The request should
    * have been a sys_dlist_t. Simple, fast and less storage as the node
    * is already part of the buffer structure.
    */
   size_t transfer_size = sizeof(struct k_bdbuf_swapout_transfer)
-    + (bdbuf_config.max_write_blocks * sizeof (rtems_blkdev_sg_buffer));
+    + (bdbuf_config.max_write_blocks * sizeof (struct k_blkdev_sg_buffer));
   return k_calloc(1, transfer_size);
 }
 
 static void
-rtems_bdbuf_transfer_done(rtems_blkdev_request* req, rtems_status_code status);
-
-static void
-rtems_bdbuf_swapout_transfer_init(struct k_bdbuf_swapout_transfer* transfer,
-                                   rtems_id id)
-{
-  rtems_chain_initialize_empty (&transfer->bds);
+z_bdbuf_swapout_transfer_init(struct k_bdbuf_swapout_transfer* transfer,
+  struct k_sem *sync) {
+  sys_dlist_init(&transfer->bds);
+  transfer->write_req.io_sync = sync;
   transfer->dd = BDBUF_INVALID_DEV;
   transfer->syncing = false;
   transfer->write_req.req = RTEMS_BLKDEV_REQ_WRITE;
-  transfer->write_req.done = rtems_bdbuf_transfer_done;
-  transfer->write_req.io_task = id;
+  transfer->write_req.done = z_bdbuf_transfer_done;
 }
 
-static size_t rtems_bdbuf_swapout_worker_size(void) {
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+static size_t z_bdbuf_swapout_worker_size(void) {
   return sizeof(struct k_bdbuf_swapout_worker) +
-    (bdbuf_config.max_write_blocks * sizeof(rtems_blkdev_sg_buffer));
+    (bdbuf_config.max_write_blocks * sizeof(struct k_blkdev_sg_buffer));
 }
 
-static void
-bdbuf_swapout_worker_task (rtems_task_argument arg);
+static int z_bdbuf_swapout_workers_create(void) {
+  char *worker_current;
+  char name[32];
+  size_t worker_size;
+  size_t w;
+  int ret = 0;
 
-static rtems_status_code
-rtems_bdbuf_swapout_workers_create (void)
-{
-  rtems_status_code  sc;
-  size_t             w;
-  size_t             worker_size;
-  char              *worker_current;
+  worker_size = z_bdbuf_swapout_worker_size();
+  worker_current = k_calloc(1, bdbuf_config.swapout_workers * worker_size);
+  if (worker_current == NULL)
+    return -ENOMEM;
+  bdbuf_cache.swapout_workers = 
+    (struct k_bdbuf_swapout_worker *)worker_current;
+  for (w = 0; w < bdbuf_config.swapout_workers;
+       w++, worker_current += worker_size) {
+    struct k_bdbuf_swapout_worker *worker = 
+      (struct k_bdbuf_swapout_worker *)worker_current;
 
-  worker_size = rtems_bdbuf_swapout_worker_size ();
-  worker_current = calloc (1, bdbuf_config.swapout_workers * worker_size);
-  sc = worker_current != NULL ? RTEMS_SUCCESSFUL : RTEMS_NO_MEMORY;
-
-  bdbuf_cache.swapout_workers = (struct k_bdbuf_swapout_worker *) worker_current;
-
-  for (w = 0;
-       sc == RTEMS_SUCCESSFUL && w < bdbuf_config.swapout_workers;
-       w++, worker_current += worker_size)
-  {
-    struct k_bdbuf_swapout_worker *worker = (struct k_bdbuf_swapout_worker *) worker_current;
-
-    sc = rtems_bdbuf_create_task (rtems_build_name('B', 'D', 'o', 'a' + w),
-                                  bdbuf_config.swapout_worker_priority,
-                                  RTEMS_BDBUF_SWAPOUT_WORKER_TASK_PRIORITY_DEFAULT,
-                                  &worker->id);
-    if (sc == RTEMS_SUCCESSFUL)
-    {
-      rtems_bdbuf_swapout_transfer_init (&worker->transfer, worker->id);
-
-      sys_dlist_append (&bdbuf_cache.swapout_free_workers, &worker->link);
-      worker->enabled = true;
-
-      sc = rtems_task_start (worker->id,
-                             bdbuf_swapout_worker_task,
-                             (rtems_task_argument) worker);
-    }
+    snprintf(name, sizeof(name), "swapworker@%d", w);
+    ret = z_bdbuf_create_task(&worker->task, NULL, name, 
+      bdbuf_config.swapout_worker_priority, z_bdbuf_swapout_worker_task, worker);
+    if (ret) 
+      break;
+    k_sem_init(&worker->sync, 0, 1);
+    z_bdbuf_swapout_transfer_init(&worker->transfer, &worker->sync);
+    sys_dlist_append(&bdbuf_cache.swapout_free_workers, &worker->link);
+    worker->enabled = true;
+    k_thread_start(&bdbuf_cache.swapout_task);
   }
+  return ret;
+}
+#endif /* CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0 */
 
-  return sc;
+static size_t z_bdbuf_read_request_size(uint32_t transfer_count) {
+  return sizeof (struct k_blkdev_request) +
+    sizeof(struct k_blkdev_sg_buffer) * transfer_count;
 }
 
-static size_t
-rtems_bdbuf_read_request_size (uint32_t transfer_count)
-{
-  return sizeof (rtems_blkdev_request)
-    + sizeof (rtems_blkdev_sg_buffer) * transfer_count;
-}
-
-static rtems_status_code
-rtems_bdbuf_do_init (void)
-{
-  struct k_bdbuf_group*  group;
+static int rtems_bdbuf_do_init(void) {
+  struct k_bdbuf_group* group;
   struct k_bdbuf_buffer* bd;
-  uint8_t*            buffer;
-  size_t              b;
-  rtems_status_code   sc;
+  uint8_t* buffer;
+  size_t b;
+  int ret;
 
   if (rtems_bdbuf_tracer)
     printf ("bdbuf:init\n");
-
-  if (rtems_interrupt_is_in_progress())
-    return RTEMS_CALLED_FROM_ISR;
-
-  /*
-   * Check the configuration table values.
-   */
-
+  if (k_is_in_isr())
+    return -ESRCH;
   if ((bdbuf_config.buffer_max % bdbuf_config.buffer_min) != 0)
-    return RTEMS_INVALID_NUMBER;
-
-  if (rtems_bdbuf_read_request_size (bdbuf_config.max_read_ahead_blocks)
+    return -EINVAL;
+  if (z_bdbuf_read_request_size (bdbuf_config.max_read_ahead_blocks)
       > RTEMS_MINIMUM_STACK_SIZE / 8U)
-    return RTEMS_INVALID_NUMBER;
-
+    return -EINVAL;
   bdbuf_cache.sync_device = BDBUF_INVALID_DEV;
+  sys_dlist_init(&bdbuf_cache.swapout_free_workers);
+  sys_dlist_init(&bdbuf_cache.lru);
+  sys_dlist_init(&bdbuf_cache.modified);
+  sys_dlist_init(&bdbuf_cache.sync);
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+  sys_dlist_init(&bdbuf_cache.read_ahead_chain);
+#endif
+  z_bdbuf_lock_cache();
 
-  rtems_chain_initialize_empty (&bdbuf_cache.swapout_free_workers);
-  rtems_chain_initialize_empty (&bdbuf_cache.lru);
-  rtems_chain_initialize_empty (&bdbuf_cache.modified);
-  rtems_chain_initialize_empty (&bdbuf_cache.sync);
-  rtems_chain_initialize_empty (&bdbuf_cache.read_ahead_chain);
-
-  rtems_mutex_set_name (&bdbuf_cache.lock, "bdbuf lock");
-  rtems_mutex_set_name (&bdbuf_cache.sync_lock, "bdbuf sync lock");
-  rtems_condition_variable_set_name (&bdbuf_cache.access_waiters.cond_var,
-                                     "bdbuf access");
-  rtems_condition_variable_set_name (&bdbuf_cache.transfer_waiters.cond_var,
-                                     "bdbuf transfer");
-  rtems_condition_variable_set_name (&bdbuf_cache.buffer_waiters.cond_var,
-                                     "bdbuf buffer");
-
-  z_bdbuf_lock_cache ();
-
-  /*
-   * Compute the various number of elements in the cache.
-   */
+  /* Compute the various number of elements in the cache. */
   bdbuf_cache.buffer_min_count =
     bdbuf_config.size / bdbuf_config.buffer_min;
   bdbuf_cache.max_bds_per_group =
@@ -1099,19 +1078,15 @@ rtems_bdbuf_do_init (void)
   bdbuf_cache.group_count =
     bdbuf_cache.buffer_min_count / bdbuf_cache.max_bds_per_group;
 
-  /*
-   * Allocate the memory for the buffer descriptors.
-   */
-  bdbuf_cache.bds = calloc (sizeof (struct k_bdbuf_buffer),
-                            bdbuf_cache.buffer_min_count);
+  /* Allocate the memory for the buffer descriptors. */
+  bdbuf_cache.bds = k_calloc(sizeof(struct k_bdbuf_buffer), 
+    bdbuf_cache.buffer_min_count);     
   if (!bdbuf_cache.bds)
     goto error;
 
-  /*
-   * Allocate the memory for the buffer descriptors.
-   */
-  bdbuf_cache.groups = calloc (sizeof (struct k_bdbuf_group),
-                               bdbuf_cache.group_count);
+  /* Allocate the memory for the buffer descriptors. */
+  bdbuf_cache.groups = k_calloc(sizeof(struct k_bdbuf_group), 
+    bdbuf_cache.group_count);        
   if (!bdbuf_cache.groups)
     goto error;
 
@@ -1120,8 +1095,8 @@ rtems_bdbuf_do_init (void)
    * aligned. It is possible to k_free the memory allocated by
    * rtems_cache_aligned_malloc() with k_free().
    */
-  bdbuf_cache.buffers = rtems_cache_aligned_malloc(bdbuf_cache.buffer_min_count
-                                                   * bdbuf_config.buffer_min);
+  bdbuf_cache.buffers = k_aligned_alloc(cache_data_line_size_get(), 
+    bdbuf_cache.buffer_min_count * bdbuf_config.buffer_min);
   if (bdbuf_cache.buffers == NULL)
     goto error;
 
@@ -1132,303 +1107,214 @@ rtems_bdbuf_do_init (void)
   for (b = 0, group = bdbuf_cache.groups,
          bd = bdbuf_cache.bds, buffer = bdbuf_cache.buffers;
        b < bdbuf_cache.buffer_min_count;
-       b++, bd++, buffer += bdbuf_config.buffer_min)
-  {
-    bd->dd    = BDBUF_INVALID_DEV;
+       b++, bd++, buffer += bdbuf_config.buffer_min) {
+    bd->dd     = BDBUF_INVALID_DEV;
     bd->group  = group;
     bd->buffer = buffer;
-
-    sys_dlist_append (&bdbuf_cache.lru, &bd->link);
-
+    sys_dlist_append(&bdbuf_cache.lru, &bd->link);
     if ((b % bdbuf_cache.max_bds_per_group) ==
         (bdbuf_cache.max_bds_per_group - 1))
       group++;
   }
-
-  for (b = 0,
-         group = bdbuf_cache.groups,
-         bd = bdbuf_cache.bds;
+  for (b = 0, group = bdbuf_cache.groups,
+       bd = bdbuf_cache.bds;
        b < bdbuf_cache.group_count;
-       b++,
-         group++,
-         bd += bdbuf_cache.max_bds_per_group)
-  {
+       b++, group++, bd += bdbuf_cache.max_bds_per_group) {
     group->bds_per_group = bdbuf_cache.max_bds_per_group;
     group->bdbuf = bd;
   }
 
-  /*
-   * Create and start swapout task.
-   */
-
-  bdbuf_cache.swapout_transfer = z_bdbuf_swapout_transfer_alloc ();
+  /* Create and start swapout task. */
+  bdbuf_cache.swapout_transfer = z_bdbuf_swapout_transfer_alloc();
   if (!bdbuf_cache.swapout_transfer)
     goto error;
 
   bdbuf_cache.swapout_enabled = true;
-
-  sc = rtems_bdbuf_create_task (rtems_build_name('B', 'S', 'W', 'P'),
-                                bdbuf_config.swapout_priority,
-                                RTEMS_BDBUF_SWAPOUT_TASK_PRIORITY_DEFAULT,
-                                &bdbuf_cache.swapout);
-  if (sc != RTEMS_SUCCESSFUL)
+  ret = z_bdbuf_create_task(&bdbuf_cache.swapout_task, swaptask_stack, 
+    "swapout", 
+    bdbuf_config.swapout_worker_priority, z_bdbuf_swapout_task, 
+    bdbuf_cache.swapout_transfer);
+  if (ret) 
     goto error;
+  k_sem_init(&bdbuf_cache.swapout_sem, 0, 1);
+  z_bdbuf_swapout_transfer_init(bdbuf_cache.swapout_transfer, 
+    &bdbuf_cache.swapout_sem);
+  k_thread_start(&bdbuf_cache.swapout_task);
 
-  rtems_bdbuf_swapout_transfer_init (bdbuf_cache.swapout_transfer, bdbuf_cache.swapout);
-
-  sc = rtems_task_start (bdbuf_cache.swapout,
-                         bdbuf_swapout_task,
-                         (rtems_task_argument) bdbuf_cache.swapout_transfer);
-  if (sc != RTEMS_SUCCESSFUL)
-    goto error;
-
-  if (bdbuf_config.swapout_workers > 0)
-  {
-    sc = rtems_bdbuf_swapout_workers_create ();
-    if (sc != RTEMS_SUCCESSFUL)
-      goto error;
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+  if (bdbuf_config.swapout_workers > 0) {
+    ret = z_bdbuf_swapout_workers_create();
+    if (ret)
+      goto del_swapout;
   }
-
-  if (bdbuf_config.max_read_ahead_blocks > 0)
-  {
+#endif /* CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0 */
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+  if (bdbuf_config.max_read_ahead_blocks > 0) {
     bdbuf_cache.read_ahead_enabled = true;
-    sc = rtems_bdbuf_create_task (rtems_build_name('B', 'R', 'D', 'A'),
-                                  bdbuf_config.read_ahead_priority,
-                                  RTEMS_BDBUF_READ_AHEAD_TASK_PRIORITY_DEFAULT,
-                                  &bdbuf_cache.read_ahead_task);
-    if (sc != RTEMS_SUCCESSFUL)
-      goto error;
-
-    sc = rtems_task_start (bdbuf_cache.read_ahead_task,
-                           bdbuf_read_ahead_task,
-                           0);
-    if (sc != RTEMS_SUCCESSFUL)
-      goto error;
+    ret = z_bdbuf_create_task(&bdbuf_cache.read_ahead_task, readahead_task_stack,
+     "bdbuf@readahead", 
+      bdbuf_config.read_ahead_priority, z_bdbuf_read_ahead_task, NULL);
+    if (ret)
+      goto del_workers;
+    k_sem_init(&bdbuf_cache.read_ahead_sync, 0, 1);
+    k_thread_start(&bdbuf_cache.read_ahead_task);
   }
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
+  z_bdbuf_unlock_cache();
+  return 0;
 
-  z_bdbuf_unlock_cache ();
-
-  return RTEMS_SUCCESSFUL;
-
-error:
-
-  if (bdbuf_cache.read_ahead_task != 0)
-    rtems_task_delete (bdbuf_cache.read_ahead_task);
-
-  if (bdbuf_cache.swapout != 0)
-    rtems_task_delete (bdbuf_cache.swapout);
-
-  if (bdbuf_cache.swapout_workers)
-  {
-    char   *worker_current = (char *) bdbuf_cache.swapout_workers;
-    size_t  worker_size = rtems_bdbuf_swapout_worker_size ();
-    size_t  w;
-
-    for (w = 0;
-         w < bdbuf_config.swapout_workers;
-         w++, worker_current += worker_size)
-    {
-      struct k_bdbuf_swapout_worker *worker = (struct k_bdbuf_swapout_worker *) worker_current;
-
-      if (worker->id != 0) {
-        rtems_task_delete (worker->id);
-      }
+del_workers:
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+  if (true) {
+    char *worker_current = (char *)bdbuf_cache.swapout_workers;
+    size_t worker_size = z_bdbuf_swapout_worker_size();
+    size_t w;
+    for (w = 0; w < bdbuf_config.swapout_workers;
+         w++, worker_current += worker_size) {
+      struct k_bdbuf_swapout_worker *worker = 
+        (struct k_bdbuf_swapout_worker *)worker_current;
+      k_thread_abort(&worker->task);
     }
   }
-
-  k_free (bdbuf_cache.buffers);
-  k_free (bdbuf_cache.groups);
-  k_free (bdbuf_cache.bds);
-  k_free (bdbuf_cache.swapout_transfer);
-  k_free (bdbuf_cache.swapout_workers);
-
-  z_bdbuf_unlock_cache ();
-
+#endif /* CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0 */
+del_swapout:
+  k_thread_abort(&bdbuf_cache.swapout_task);
+error:
+  k_free(bdbuf_cache.buffers);
+  k_free(bdbuf_cache.groups);
+  k_free(bdbuf_cache.bds);
+  k_free(bdbuf_cache.swapout_transfer);
+  k_free(bdbuf_cache.swapout_workers);
+  z_bdbuf_unlock_cache();
   return RTEMS_UNSATISFIED;
 }
 
-static void
-rtems_bdbuf_init_once (void)
-{
-  bdbuf_cache.init_status = rtems_bdbuf_do_init();
+//TODO: not multi-thread safe
+int k_bdbuf_init(void) {
+  if (!bdbuf_cache.once) {
+    bdbuf_cache.once = true;
+    return rtems_bdbuf_do_init();
+  }
+  return 0;
 }
 
-rtems_status_code
-rtems_bdbuf_init (void)
-{
-  int eno;
-
-  eno = pthread_once (&bdbuf_cache.once, rtems_bdbuf_init_once);
-  _Assert (eno == 0);
-  (void) eno;
-
-  return bdbuf_cache.init_status;
-}
-
-
-static void z_bdbuf_wait_for_event(struct k_sem *sem) {
-  int ret = k_sem_take(sem, K_FOREVER);
-  if (ret)
-    z_bdbuf_fatal (K_BDBUF_FATAL_WAIT_EVNT);
-}
-
-static void z_bdbuf_wait_for_transient_event(struct k_sem *sem)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-
-  sc = rtems_event_transient_receive (RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-  if (sc != RTEMS_SUCCESSFUL)
-    z_bdbuf_fatal (K_BDBUF_FATAL_WAIT_TRANS_EVNT);
-}
-
-static void
-rtems_bdbuf_wait_for_access (struct k_bdbuf_buffer *bd)
-{
-  while (true)
-  {
-    switch (bd->state)
-    {
-      case RTEMS_BDBUF_STATE_MODIFIED:
-        z_bdbuf_group_release (bd);
-        /* Fall through */
-      case RTEMS_BDBUF_STATE_CACHED:
-        rtems_chain_extract_unprotected (&bd->link);
-        /* Fall through */
-      case RTEMS_BDBUF_STATE_EMPTY:
-        return;
-      case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-      case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-      case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-        z_bdbuf_wait (bd, &bdbuf_cache.access_waiters);
-        break;
-      case RTEMS_BDBUF_STATE_SYNC:
-      case RTEMS_BDBUF_STATE_TRANSFER:
-      case RTEMS_BDBUF_STATE_TRANSFER_PURGED:
-        z_bdbuf_wait (bd, &bdbuf_cache.transfer_waiters);
-        break;
-      default:
-        z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_7);
+static void z_bdbuf_wait_for_access(struct k_bdbuf_buffer *bd) {
+  while (true) {
+    switch (bd->state) {
+    case K_BDBUF_STATE_MODIFIED:
+      z_bdbuf_group_release (bd);
+      /* Fall through */
+    case K_BDBUF_STATE_CACHED:
+      sys_dlist_remove (&bd->link);
+      /* Fall through */
+    case K_BDBUF_STATE_EMPTY:
+      return;
+    case K_BDBUF_STATE_ACCESS_CACHED:
+    case K_BDBUF_STATE_ACCESS_EMPTY:
+    case K_BDBUF_STATE_ACCESS_MODIFIED:
+    case K_BDBUF_STATE_ACCESS_PURGED:
+      z_bdbuf_wait (bd, &bdbuf_cache.access_waiters);
+      break;
+    case K_BDBUF_STATE_SYNC:
+    case K_BDBUF_STATE_TRANSFER:
+    case K_BDBUF_STATE_TRANSFER_PURGED:
+      z_bdbuf_wait (bd, &bdbuf_cache.transfer_waiters);
+      break;
+    default:
+      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_7);
     }
   }
 }
 
-static void
-rtems_bdbuf_request_sync_for_modified_buffer (struct k_bdbuf_buffer *bd)
-{
-  z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_SYNC);
-  rtems_chain_extract_unprotected (&bd->link);
-  sys_dlist_append (&bdbuf_cache.sync, &bd->link);
-  z_bdbuf_wake_swapper ();
+static void z_bdbuf_request_sync_for_modified_buffer(
+  struct k_bdbuf_buffer *bd) {
+  z_bdbuf_set_state (bd, K_BDBUF_STATE_SYNC);
+  sys_dlist_remove(&bd->link);
+  sys_dlist_append(&bdbuf_cache.sync, &bd->link);
+  z_bdbuf_wake_swapper();
 }
 
-/**
- * @brief Waits until the buffer is ready for recycling.
- *
- * @retval @c true Buffer is valid and may be recycled.
- * @retval @c false Buffer is invalid and has to searched again.
- */
-static bool
-rtems_bdbuf_wait_for_recycle (struct k_bdbuf_buffer *bd)
-{
-  while (true)
-  {
-    switch (bd->state)
-    {
-      case RTEMS_BDBUF_STATE_FREE:
+static bool rtems_bdbuf_wait_for_recycle(struct k_bdbuf_buffer *bd) {
+  while (true) {
+    switch (bd->state) {
+    case RTEMS_BDBUF_STATE_FREE:
+      return true;
+    case K_BDBUF_STATE_MODIFIED:
+      z_bdbuf_request_sync_for_modified_buffer(bd);
+      break;
+    case K_BDBUF_STATE_CACHED:
+    case K_BDBUF_STATE_EMPTY:
+      if (bd->waiters == 0)
         return true;
-      case RTEMS_BDBUF_STATE_MODIFIED:
-        rtems_bdbuf_request_sync_for_modified_buffer (bd);
-        break;
-      case RTEMS_BDBUF_STATE_CACHED:
-      case RTEMS_BDBUF_STATE_EMPTY:
-        if (bd->waiters == 0)
-          return true;
-        else
-        {
-          /*
-           * It is essential that we wait here without a special wait count and
-           * without the group in use.  Otherwise we could trigger a wait ping
-           * pong with another recycle waiter.  The state of the buffer is
-           * arbitrary afterwards.
-           */
-          z_bdbuf_anonymous_wait (&bdbuf_cache.buffer_waiters);
-          return false;
-        }
-      case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-      case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-      case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-        z_bdbuf_wait (bd, &bdbuf_cache.access_waiters);
-        break;
-      case RTEMS_BDBUF_STATE_SYNC:
-      case RTEMS_BDBUF_STATE_TRANSFER:
-      case RTEMS_BDBUF_STATE_TRANSFER_PURGED:
-        z_bdbuf_wait (bd, &bdbuf_cache.transfer_waiters);
-        break;
-      default:
-        z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_8);
+      else
+      {
+        /*
+          * It is essential that we wait here without a special wait count and
+          * without the group in use.  Otherwise we could trigger a wait ping
+          * pong with another recycle waiter.  The state of the buffer is
+          * arbitrary afterwards.
+          */
+        z_bdbuf_anonymous_wait(&bdbuf_cache.buffer_waiters);
+        return false;
+      }
+    case K_BDBUF_STATE_ACCESS_CACHED:
+    case K_BDBUF_STATE_ACCESS_EMPTY:
+    case K_BDBUF_STATE_ACCESS_MODIFIED:
+    case K_BDBUF_STATE_ACCESS_PURGED:
+      z_bdbuf_wait(bd, &bdbuf_cache.access_waiters);
+      break;
+    case K_BDBUF_STATE_SYNC:
+    case K_BDBUF_STATE_TRANSFER:
+    case K_BDBUF_STATE_TRANSFER_PURGED:
+      z_bdbuf_wait(bd, &bdbuf_cache.transfer_waiters);
+      break;
+    default:
+      z_bdbuf_fatal_with_state(bd->state, K_BDBUF_FATAL_STATE_8);
     }
   }
 }
 
-static void
-rtems_bdbuf_wait_for_sync_done (struct k_bdbuf_buffer *bd)
-{
-  while (true)
-  {
-    switch (bd->state)
-    {
-      case RTEMS_BDBUF_STATE_CACHED:
-      case RTEMS_BDBUF_STATE_EMPTY:
-      case RTEMS_BDBUF_STATE_MODIFIED:
-      case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-      case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-      case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-        return;
-      case RTEMS_BDBUF_STATE_SYNC:
-      case RTEMS_BDBUF_STATE_TRANSFER:
-      case RTEMS_BDBUF_STATE_TRANSFER_PURGED:
-        z_bdbuf_wait (bd, &bdbuf_cache.transfer_waiters);
-        break;
-      default:
-        z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_9);
+static void z_bdbuf_wait_for_sync_done(struct k_bdbuf_buffer *bd) {
+  while (true) {
+    switch (bd->state) {
+    case K_BDBUF_STATE_CACHED:
+    case K_BDBUF_STATE_EMPTY:
+    case K_BDBUF_STATE_MODIFIED:
+    case K_BDBUF_STATE_ACCESS_CACHED:
+    case K_BDBUF_STATE_ACCESS_EMPTY:
+    case K_BDBUF_STATE_ACCESS_MODIFIED:
+    case K_BDBUF_STATE_ACCESS_PURGED:
+      return;
+    case K_BDBUF_STATE_SYNC:
+    case K_BDBUF_STATE_TRANSFER:
+    case K_BDBUF_STATE_TRANSFER_PURGED:
+      z_bdbuf_wait(bd, &bdbuf_cache.transfer_waiters);
+      break;
+    default:
+      z_bdbuf_fatal_with_state(bd->state, K_BDBUF_FATAL_STATE_9);
     }
   }
 }
 
-static void
-rtems_bdbuf_wait_for_buffer (void)
-{
-  if (!rtems_chain_is_empty (&bdbuf_cache.modified))
-    z_bdbuf_wake_swapper ();
-
-  z_bdbuf_anonymous_wait (&bdbuf_cache.buffer_waiters);
+static void z_bdbuf_wait_for_buffer(void) {
+  if (!sys_dlist_is_empty(&bdbuf_cache.modified))
+    z_bdbuf_wake_swapper();
+  z_bdbuf_anonymous_wait(&bdbuf_cache.buffer_waiters);
 }
 
-static void
-rtems_bdbuf_sync_after_access (struct k_bdbuf_buffer *bd)
-{
-  z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_SYNC);
-
-  sys_dlist_append (&bdbuf_cache.sync, &bd->link);
-
+static void z_bdbuf_sync_after_access(struct k_bdbuf_buffer *bd) {
+  z_bdbuf_set_state(bd, K_BDBUF_STATE_SYNC);
+  sys_dlist_append(&bdbuf_cache.sync, &bd->link);
   if (bd->waiters)
     z_bdbuf_wake (&bdbuf_cache.access_waiters);
+  z_bdbuf_wake_swapper();
+  z_bdbuf_wait_for_sync_done(bd);
 
-  z_bdbuf_wake_swapper ();
-  rtems_bdbuf_wait_for_sync_done (bd);
-
-  /*
-   * We may have created a cached or empty buffer which may be recycled.
-   */
-  if (bd->waiters == 0
-        && (bd->state == RTEMS_BDBUF_STATE_CACHED
-          || bd->state == RTEMS_BDBUF_STATE_EMPTY))
-  {
-    if (bd->state == RTEMS_BDBUF_STATE_EMPTY)
-    {
+  /* We may have created a cached or empty buffer which may be recycled. */
+  if (bd->waiters == 0 && 
+     (bd->state == K_BDBUF_STATE_CACHED || 
+      bd->state == K_BDBUF_STATE_EMPTY)) {
+    if (bd->state == K_BDBUF_STATE_EMPTY) {
       z_bdbuf_remove_from_tree (bd);
       z_bdbuf_make_free_and_add_to_lru_list (bd);
     }
@@ -1436,565 +1322,404 @@ rtems_bdbuf_sync_after_access (struct k_bdbuf_buffer *bd)
   }
 }
 
-static struct k_bdbuf_buffer *
-rtems_bdbuf_get_buffer_for_read_ahead (struct k_disk_device *dd,
-                                       blkdev_bnum_t  block)
-{
+static struct k_bdbuf_buffer *z_bdbuf_get_buffer_for_read_ahead(
+  struct k_disk_device *dd, blkdev_bnum_t block) {
   struct k_bdbuf_buffer *bd = NULL;
-
-  bd = z_bdbuf_avl_search (&bdbuf_cache.tree, dd, block);
-
-  if (bd == NULL)
-  {
-    bd = z_bdbuf_get_buffer_from_lru_list (dd, block);
-
+  bd = z_bdbuf_avl_search(&bdbuf_cache.tree, dd, block);
+  if (bd == NULL) {
+    bd = z_bdbuf_get_buffer_from_lru_list(dd, block);
     if (bd != NULL)
       z_bdbuf_group_obtain (bd);
-  }
-  else
+  } else {
     /*
      * The buffer is in the cache.  So it is already available or in use, and
      * thus no need for a read ahead.
      */
     bd = NULL;
-
+  }
   return bd;
 }
 
-static struct k_bdbuf_buffer *
-rtems_bdbuf_get_buffer_for_access (struct k_disk_device *dd,
-                                   blkdev_bnum_t  block)
-{
+static struct k_bdbuf_buffer *z_bdbuf_get_buffer_for_access(
+  struct k_disk_device *dd, blkdev_bnum_t block) {
   struct k_bdbuf_buffer *bd = NULL;
-
-  do
-  {
-    bd = z_bdbuf_avl_search (&bdbuf_cache.tree, dd, block);
-
-    if (bd != NULL)
-    {
-      if (bd->group->bds_per_group != dd->bds_per_group)
-      {
-        if (rtems_bdbuf_wait_for_recycle (bd))
-        {
+  do {
+    bd = z_bdbuf_avl_search(&bdbuf_cache.tree, dd, block);
+    if (bd != NULL) {
+      if (bd->group->bds_per_group != dd->bds_per_group) {
+        if (rtems_bdbuf_wait_for_recycle(bd)) {
           z_bdbuf_remove_from_tree_and_lru_list (bd);
           z_bdbuf_make_free_and_add_to_lru_list (bd);
-          z_bdbuf_wake (&bdbuf_cache.buffer_waiters);
+          z_bdbuf_wake(&bdbuf_cache.buffer_waiters);
         }
         bd = NULL;
       }
-    }
-    else
-    {
-      bd = z_bdbuf_get_buffer_from_lru_list (dd, block);
-
+    } else {
+      bd = z_bdbuf_get_buffer_from_lru_list(dd, block);
       if (bd == NULL)
-        rtems_bdbuf_wait_for_buffer ();
+        z_bdbuf_wait_for_buffer();
     }
-  }
-  while (bd == NULL);
-
-  rtems_bdbuf_wait_for_access (bd);
+  } while (bd == NULL);
+  z_bdbuf_wait_for_access(bd);
   z_bdbuf_group_obtain (bd);
-
   return bd;
 }
 
-static rtems_status_code
-rtems_bdbuf_get_media_block (const struct k_disk_device *dd,
-                             blkdev_bnum_t        block,
-                             blkdev_bnum_t       *media_block_ptr)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-  if (block < dd->block_count)
-  {
+static int z_bdbuf_get_media_block(const struct k_disk_device *dd,
+  blkdev_bnum_t block, blkdev_bnum_t *media_block_ptr) {               
+  if (block < dd->block_count) {
     /*
      * Compute the media block number. Drivers work with media block number not
      * the block number a BD may have as this depends on the block size set by
      * the user.
      */
-    *media_block_ptr = z_bdbuf_media_block (dd, block) + dd->start;
+    *media_block_ptr = z_bdbuf_media_block(dd, block) + dd->start;
+    return 0;
   }
-  else
-  {
-    sc = RTEMS_INVALID_ID;
-  }
-
-  return sc;
+  return -EINVAL;
 }
 
-rtems_status_code
-rtems_bdbuf_get (struct k_disk_device   *dd,
-                 blkdev_bnum_t    block,
-                 struct k_bdbuf_buffer **bd_ptr)
-{
-  rtems_status_code   sc = RTEMS_SUCCESSFUL;
+int k_bdbuf_get(struct k_disk_device *dd, blkdev_bnum_t block,
+  struct k_bdbuf_buffer **bd_ptr) {
   struct k_bdbuf_buffer *bd = NULL;
-  blkdev_bnum_t   media_block;
+  blkdev_bnum_t media_block;
+  int ret;
 
-  z_bdbuf_lock_cache ();
-
-  sc = rtems_bdbuf_get_media_block (dd, block, &media_block);
-  if (sc == RTEMS_SUCCESSFUL)
-  {
-    /*
-     * Print the block index relative to the physical disk.
-     */
-    if (rtems_bdbuf_tracer)
+  z_bdbuf_lock_cache();
+  ret = z_bdbuf_get_media_block(dd, block, &media_block);
+  if (ret == 0) {
+    /* Print the block index relative to the physical disk. */
+    if (rtems_bdbuf_tracer) {
       printf ("bdbuf:get: %" PRIu32 " (%" PRIu32 ") (dev = %08x)\n",
               media_block, block, (unsigned) dd->dev);
-
-    bd = rtems_bdbuf_get_buffer_for_access (dd, media_block);
-
-    switch (bd->state)
-    {
-      case RTEMS_BDBUF_STATE_CACHED:
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_CACHED);
-        break;
-      case RTEMS_BDBUF_STATE_EMPTY:
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_EMPTY);
-        break;
-      case RTEMS_BDBUF_STATE_MODIFIED:
-        /*
-         * To get a modified buffer could be considered a bug in the caller
-         * because you should not be getting an already modified buffer but
-         * user may have modified a byte in a block then decided to seek the
-         * start and write the whole block and the file system will have no
-         * record of this so just gets the block to fill.
-         */
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_MODIFIED);
-        break;
-      default:
-        z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_2);
-        break;
     }
-
-    if (rtems_bdbuf_tracer)
-    {
-      k_bdbuf_show_users ("get", bd);
-      k_bdbuf_show_usage ();
+    bd = z_bdbuf_get_buffer_for_access(dd, media_block);
+    switch (bd->state) {
+    case K_BDBUF_STATE_CACHED:
+      z_bdbuf_set_state(bd, K_BDBUF_STATE_ACCESS_CACHED);
+      break;
+    case K_BDBUF_STATE_EMPTY:
+      z_bdbuf_set_state(bd, K_BDBUF_STATE_ACCESS_EMPTY);
+      break;
+    case K_BDBUF_STATE_MODIFIED:
+      /*
+        * To get a modified buffer could be considered a bug in the caller
+        * because you should not be getting an already modified buffer but
+        * user may have modified a byte in a block then decided to seek the
+        * start and write the whole block and the file system will have no
+        * record of this so just gets the block to fill.
+        */
+      z_bdbuf_set_state (bd, K_BDBUF_STATE_ACCESS_MODIFIED);
+      break;
+    default:
+      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_2);
+      break;
+    }
+    if (rtems_bdbuf_tracer) {
+      k_bdbuf_show_users("get", bd);
+      k_bdbuf_show_usage();
     }
   }
-
-  z_bdbuf_unlock_cache ();
-
+  z_bdbuf_unlock_cache();
   *bd_ptr = bd;
-
-  return sc;
+  return ret;
 }
 
-/**
- * Call back handler called by the low level driver when the transfer has
- * completed. This function may be invoked from interrupt handler.
- *
- * @param arg Arbitrary argument specified in block device request
- *            structure (in this case - pointer to the appropriate
- *            block device request structure).
- * @param status I/O completion status
- */
 static void
-rtems_bdbuf_transfer_done (rtems_blkdev_request* req, rtems_status_code status)
-{
+z_bdbuf_transfer_done(struct k_blkdev_request* req, int status) {
   req->status = status;
-
-  rtems_event_transient_send (req->io_task);
+  z_bdbuf_send_event(&req->io_sync);
 }
 
-static rtems_status_code
-rtems_bdbuf_execute_transfer_request (struct k_disk_device    *dd,
-                                      rtems_blkdev_request *req,
-                                      bool                  cache_locked)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
+static int
+z_bdbuf_execute_transfer_request(struct k_disk_device *dd,
+  struct k_blkdev_request *req, bool cache_locked) {
   uint32_t transfer_index = 0;
   bool wake_transfer_waiters = false;
   bool wake_buffer_waiters = false;
+  int ret;
 
   if (cache_locked)
-    z_bdbuf_unlock_cache ();
+    z_bdbuf_unlock_cache();
 
-  /* The return value will be ignored for transfer requests */
-  dd->ioctl (dd->phys_dev, RTEMS_BLKIO_REQUEST, req);
-
-  /* Wait for transfer request completion */
-  z_bdbuf_wait_for_transient_event ();
-  sc = req->status;
-
+  dd->ioctl(dd->phys_dev, K_BLKIO_REQUEST, req);
+  z_bdbuf_wait_for_transient_event(&req->io_sync);
+  ret = req->status;
   z_bdbuf_lock_cache ();
-
-  /* Statistics */
-  if (req->req == RTEMS_BLKDEV_REQ_READ)
-  {
+  if (req->req == K_BLKDEV_REQ_READ) {
     dd->stats.read_blocks += req->bufnum;
-    if (sc != RTEMS_SUCCESSFUL)
+    if (ret)
       ++dd->stats.read_errors;
-  }
-  else
-  {
+  } else {
     dd->stats.write_blocks += req->bufnum;
     ++dd->stats.write_transfers;
-    if (sc != RTEMS_SUCCESSFUL)
+    if (ret)
       ++dd->stats.write_errors;
   }
 
-  for (transfer_index = 0; transfer_index < req->bufnum; ++transfer_index)
-  {
-    struct k_bdbuf_buffer *bd = req->bufs [transfer_index].user;
+  for (transfer_index = 0; transfer_index < req->bufnum; ++transfer_index) {
+    struct k_bdbuf_buffer *bd = req->bufs[transfer_index].user;
     bool waiters = bd->waiters;
-
     if (waiters)
       wake_transfer_waiters = true;
     else
       wake_buffer_waiters = true;
-
-    z_bdbuf_group_release (bd);
-
-    if (sc == RTEMS_SUCCESSFUL && bd->state == RTEMS_BDBUF_STATE_TRANSFER)
-      z_bdbuf_make_cached_and_add_to_lru_list (bd);
+    z_bdbuf_group_release(bd);
+    if (ret == 0 && bd->state == K_BDBUF_STATE_TRANSFER)
+      z_bdbuf_make_cached_and_add_to_lru_list(bd);
     else
-      z_bdbuf_discard_buffer (bd);
-
+      z_bdbuf_discard_buffer(bd);
     if (rtems_bdbuf_tracer)
       k_bdbuf_show_users ("transfer", bd);
   }
-
   if (wake_transfer_waiters)
-    z_bdbuf_wake (&bdbuf_cache.transfer_waiters);
-
+    z_bdbuf_wake(&bdbuf_cache.transfer_waiters);
   if (wake_buffer_waiters)
-    z_bdbuf_wake (&bdbuf_cache.buffer_waiters);
-
+    z_bdbuf_wake(&bdbuf_cache.buffer_waiters);
   if (!cache_locked)
-    z_bdbuf_unlock_cache ();
-
-  if (sc == RTEMS_SUCCESSFUL || sc == RTEMS_UNSATISFIED)
-    return sc;
-  else
-    return RTEMS_IO_ERROR;
+    z_bdbuf_unlock_cache();
+  return ret;
 }
 
-static rtems_status_code
-rtems_bdbuf_execute_read_request (struct k_disk_device  *dd,
-                                  struct k_bdbuf_buffer *bd,
-                                  uint32_t            transfer_count)
-{
-  rtems_blkdev_request *req = NULL;
+static int z_bdbuf_execute_read_request(struct k_disk_device *dd,
+  struct k_bdbuf_buffer *bd, uint32_t transfer_count) {        
+  struct k_blkdev_request *req = NULL;
   blkdev_bnum_t media_block = bd->block;
   uint32_t media_blocks_per_block = dd->media_blocks_per_block;
   uint32_t block_size = dd->block_size;
   uint32_t transfer_index = 1;
 
-  /*
-   * TODO: This type of request structure is wrong and should be removed.
-   */
-#define bdbuf_alloc(size) __builtin_alloca (size)
-
-  req = bdbuf_alloc (rtems_bdbuf_read_request_size (transfer_count));
-
-  req->req = RTEMS_BLKDEV_REQ_READ;
-  req->done = rtems_bdbuf_transfer_done;
-  req->io_task = rtems_task_self ();
+  //TODO: This type of request structure is wrong and should be removed.
+#define bdbuf_alloc(size) __builtin_alloca(size)
+  req = bdbuf_alloc(z_bdbuf_read_request_size(transfer_count));
+  k_sem_init(&req->io_sync, 0, 1); //req->io_task = rtems_task_self ();
+  req->req = K_BLKDEV_REQ_READ;
+  req->done = z_bdbuf_transfer_done;
   req->bufnum = 0;
 
-  z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_TRANSFER);
-
+  z_bdbuf_set_state(bd, K_BDBUF_STATE_TRANSFER);
   req->bufs [0].user   = bd;
   req->bufs [0].block  = media_block;
   req->bufs [0].length = block_size;
   req->bufs [0].buffer = bd->buffer;
-
   if (rtems_bdbuf_tracer)
-    k_bdbuf_show_users ("read", bd);
+    k_bdbuf_show_users("read", bd);
 
-  while (transfer_index < transfer_count)
-  {
+  while (transfer_index < transfer_count) {
     media_block += media_blocks_per_block;
-
-    bd = rtems_bdbuf_get_buffer_for_read_ahead (dd, media_block);
-
+    bd = z_bdbuf_get_buffer_for_read_ahead(dd, media_block);
     if (bd == NULL)
       break;
-
-    z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_TRANSFER);
-
+    z_bdbuf_set_state(bd, K_BDBUF_STATE_TRANSFER);
     req->bufs [transfer_index].user   = bd;
     req->bufs [transfer_index].block  = media_block;
     req->bufs [transfer_index].length = block_size;
     req->bufs [transfer_index].buffer = bd->buffer;
-
     if (rtems_bdbuf_tracer)
-      k_bdbuf_show_users ("read", bd);
-
+      k_bdbuf_show_users("read", bd);
     ++transfer_index;
   }
-
   req->bufnum = transfer_index;
-
-  return rtems_bdbuf_execute_transfer_request (dd, req, true);
+  return z_bdbuf_execute_transfer_request(dd, req, true);
 }
 
-static bool
-rtems_bdbuf_is_read_ahead_active (const struct k_disk_device *dd)
-{
-  return !rtems_chain_is_node_off_chain (&dd->read_ahead.node);
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+static bool z_bdbuf_is_read_ahead_active(const struct k_disk_device *dd) {
+  return sys_dnode_is_linked(&dd->read_ahead.node);
 }
 
-static void
-rtems_bdbuf_read_ahead_cancel (struct k_disk_device *dd)
-{
-  if (rtems_bdbuf_is_read_ahead_active (dd))
-  {
-    rtems_chain_extract_unprotected (&dd->read_ahead.node);
-    rtems_chain_set_off_chain (&dd->read_ahead.node);
-  }
+static void z_bdbuf_read_ahead_cancel(struct k_disk_device *dd) {
+  if (z_bdbuf_is_read_ahead_active(dd))
+    sys_dlist_remove(&dd->read_ahead.node);
 }
 
-static void
-rtems_bdbuf_read_ahead_reset (struct k_disk_device *dd)
-{
-  rtems_bdbuf_read_ahead_cancel (dd);
-  dd->read_ahead.trigger = RTEMS_DISK_READ_AHEAD_NO_TRIGGER;
+static void z_bdbuf_read_ahead_reset(struct k_disk_device *dd) {
+  z_bdbuf_read_ahead_cancel(dd);
+  dd->read_ahead.trigger = K_DISK_READ_AHEAD_NO_TRIGGER;
 }
 
-static void
-rtems_bdbuf_read_ahead_add_to_chain (struct k_disk_device *dd)
-{
-  rtems_status_code sc;
+static void z_bdbuf_read_ahead_add_to_chain(struct k_disk_device *dd) {
   sys_dlist_t *chain = &bdbuf_cache.read_ahead_chain;
+  if (sys_dlist_is_empty(chain)) {
+    z_bdbuf_send_event(&bdbuf_cache.read_ahead_sync);
 
-  if (rtems_chain_is_empty (chain))
-  {
-    sc = rtems_event_send (bdbuf_cache.read_ahead_task,
-                           RTEMS_BDBUF_READ_AHEAD_WAKE_UP);
-    if (sc != RTEMS_SUCCESSFUL)
-      z_bdbuf_fatal (K_BDBUF_FATAL_RA_WAKE_UP);
   }
-
-  sys_dlist_append (chain, &dd->read_ahead.node);
+  sys_dlist_append(chain, &dd->read_ahead.node);
 }
 
 static void
-rtems_bdbuf_check_read_ahead_trigger (struct k_disk_device *dd,
-                                      blkdev_bnum_t  block)
-{
-  if (bdbuf_cache.read_ahead_task != 0
-      && dd->read_ahead.trigger == block
-      && !rtems_bdbuf_is_read_ahead_active (dd))
-  {
-    dd->read_ahead.nr_blocks = RTEMS_DISK_READ_AHEAD_SIZE_AUTO;
-    rtems_bdbuf_read_ahead_add_to_chain(dd);
+z_bdbuf_check_read_ahead_trigger(struct k_disk_device *dd,
+  blkdev_bnum_t block) {
+  if (bdbuf_cache.read_ahead_task != 0 &&
+      dd->read_ahead.trigger == block &&
+      !z_bdbuf_is_read_ahead_active (dd)) {
+    dd->read_ahead.nr_blocks = K_DISK_READ_AHEAD_SIZE_AUTO;
+    z_bdbuf_read_ahead_add_to_chain(dd);
   }
 }
 
-static void
-rtems_bdbuf_set_read_ahead_trigger (struct k_disk_device *dd,
-                                    blkdev_bnum_t  block)
-{
-  if (dd->read_ahead.trigger != block)
-  {
-    rtems_bdbuf_read_ahead_cancel (dd);
+static void z_bdbuf_set_read_ahead_trigger(struct k_disk_device *dd,
+  blkdev_bnum_t block) {
+  if (dd->read_ahead.trigger != block) {
+    z_bdbuf_read_ahead_cancel(dd);
     dd->read_ahead.trigger = block + 1;
     dd->read_ahead.next = block + 2;
   }
 }
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 
-rtems_status_code
-rtems_bdbuf_read (struct k_disk_device   *dd,
-                  blkdev_bnum_t    block,
-                  struct k_bdbuf_buffer **bd_ptr)
-{
-  rtems_status_code     sc = RTEMS_SUCCESSFUL;
-  struct k_bdbuf_buffer   *bd = NULL;
-  blkdev_bnum_t     media_block;
+int k_bdbuf_read(struct k_disk_device *dd, blkdev_bnum_t block,
+  struct k_bdbuf_buffer **bd_ptr) {
+  struct k_bdbuf_buffer *bd = NULL;
+  blkdev_bnum_t media_block;
+  int ret;
 
   z_bdbuf_lock_cache ();
-
-  sc = rtems_bdbuf_get_media_block (dd, block, &media_block);
-  if (sc == RTEMS_SUCCESSFUL)
-  {
-    if (rtems_bdbuf_tracer)
-      printf ("bdbuf:read: %" PRIu32 " (%" PRIu32 ") (dev = %08x)\n",
+  ret = z_bdbuf_get_media_block(dd, block, &media_block);
+  if (ret == 0) {
+    if (rtems_bdbuf_tracer) {
+      printf("bdbuf:read: %" PRIu32 " (%" PRIu32 ") (dev = %08x)\n",
               media_block, block, (unsigned) dd->dev);
-
-    bd = rtems_bdbuf_get_buffer_for_access (dd, media_block);
-    switch (bd->state)
-    {
-      case RTEMS_BDBUF_STATE_CACHED:
-        ++dd->stats.read_hits;
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_CACHED);
-        break;
-      case RTEMS_BDBUF_STATE_MODIFIED:
-        ++dd->stats.read_hits;
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_MODIFIED);
-        break;
-      case RTEMS_BDBUF_STATE_EMPTY:
-        ++dd->stats.read_misses;
-        rtems_bdbuf_set_read_ahead_trigger (dd, block);
-        sc = rtems_bdbuf_execute_read_request (dd, bd, 1);
-        if (sc == RTEMS_SUCCESSFUL)
-        {
-          z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_ACCESS_CACHED);
-          rtems_chain_extract_unprotected (&bd->link);
-          z_bdbuf_group_obtain (bd);
-        }
-        else
-        {
-          bd = NULL;
-        }
-        break;
-      default:
-        z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_4);
-        break;
     }
-
-    rtems_bdbuf_check_read_ahead_trigger (dd, block);
+    bd = z_bdbuf_get_buffer_for_access(dd, media_block);
+    switch (bd->state) {
+    case K_BDBUF_STATE_CACHED:
+      ++dd->stats.read_hits;
+      z_bdbuf_set_state(bd, K_BDBUF_STATE_ACCESS_CACHED);
+      break;
+    case K_BDBUF_STATE_MODIFIED:
+      ++dd->stats.read_hits;
+      z_bdbuf_set_state(bd, K_BDBUF_STATE_ACCESS_MODIFIED);
+      break;
+    case K_BDBUF_STATE_EMPTY:
+      ++dd->stats.read_misses;
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+      z_bdbuf_set_read_ahead_trigger(dd, block);
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
+      ret = z_bdbuf_execute_read_request(dd, bd, 1);
+      if (ret == 0) {
+        z_bdbuf_set_state(bd, K_BDBUF_STATE_ACCESS_CACHED);
+        sys_dlist_remove(&bd->link);
+        z_bdbuf_group_obtain(bd);
+      } else {
+        bd = NULL;
+      }
+      break;
+    default:
+      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_4);
+      break;
+    }
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+    z_bdbuf_check_read_ahead_trigger(dd, block);
+#endif
   }
-
   z_bdbuf_unlock_cache ();
-
   *bd_ptr = bd;
-
-  return sc;
+  return ret;
 }
 
-void
-rtems_bdbuf_peek (struct k_disk_device *dd,
-                  blkdev_bnum_t block,
-                  uint32_t nr_blocks)
-{
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+void k_bdbuf_peek(struct k_disk_device *dd, blkdev_bnum_t block,
+  uint32_t nr_blocks) {
   z_bdbuf_lock_cache ();
-
-  if (bdbuf_cache.read_ahead_enabled && nr_blocks > 0)
-  {
-    rtems_bdbuf_read_ahead_reset(dd);
+  if (bdbuf_cache.read_ahead_enabled && nr_blocks > 0) {
+    z_bdbuf_read_ahead_reset(dd);
     dd->read_ahead.next = block;
     dd->read_ahead.nr_blocks = nr_blocks;
-    rtems_bdbuf_read_ahead_add_to_chain(dd);
+    z_bdbuf_read_ahead_add_to_chain(dd);
   }
-
-  z_bdbuf_unlock_cache ();
+  z_bdbuf_unlock_cache();
 }
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 
-static rtems_status_code
-rtems_bdbuf_check_bd_and_lock_cache (struct k_bdbuf_buffer *bd, const char *kind)
-{
+static int z_bdbuf_check_bd_and_lock_cache(struct k_bdbuf_buffer *bd,
+  const char *kind) {
   if (bd == NULL)
-    return RTEMS_INVALID_ADDRESS;
-  if (rtems_bdbuf_tracer)
-  {
-    printf ("bdbuf:%s: %" PRIu32 "\n", kind, bd->block);
-    k_bdbuf_show_users (kind, bd);
+    return -EINVAL;
+  if (rtems_bdbuf_tracer) {
+    printf("bdbuf:%s: %" PRIu32 "\n", kind, bd->block);
+    k_bdbuf_show_users(kind, bd);
   }
   z_bdbuf_lock_cache();
-
-  return RTEMS_SUCCESSFUL;
+  return 0;
 }
 
-rtems_status_code
-rtems_bdbuf_release (struct k_bdbuf_buffer *bd)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-
-  sc = rtems_bdbuf_check_bd_and_lock_cache (bd, "release");
-  if (sc != RTEMS_SUCCESSFUL)
-    return sc;
-
-  switch (bd->state)
-  {
-    case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-      z_bdbuf_add_to_lru_list_after_access (bd);
-      break;
-    case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-    case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-      z_bdbuf_discard_buffer_after_access (bd);
-      break;
-    case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      z_bdbuf_add_to_modified_list_after_access (bd);
-      break;
-    default:
-      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_0);
-      break;
+int k_bdbuf_release(struct k_bdbuf_buffer *bd) {
+  int ret = z_bdbuf_check_bd_and_lock_cache(bd, "release");
+  if (ret)
+    return ret;
+  switch (bd->state) {
+  case K_BDBUF_STATE_ACCESS_CACHED:
+    z_bdbuf_add_to_lru_list_after_access(bd);
+    break;
+  case K_BDBUF_STATE_ACCESS_EMPTY:
+  case K_BDBUF_STATE_ACCESS_PURGED:
+    z_bdbuf_discard_buffer_after_access(bd);
+    break;
+  case K_BDBUF_STATE_ACCESS_MODIFIED:
+    z_bdbuf_add_to_modified_list_after_access(bd);
+    break;
+  default:
+    z_bdbuf_fatal_with_state(bd->state, K_BDBUF_FATAL_STATE_0);
+    break;
   }
-
   if (rtems_bdbuf_tracer)
-    k_bdbuf_show_usage ();
-
-  z_bdbuf_unlock_cache ();
-
-  return RTEMS_SUCCESSFUL;
+    k_bdbuf_show_usage();
+  z_bdbuf_unlock_cache();
+  return ret;
 }
 
-rtems_status_code
-rtems_bdbuf_release_modified (struct k_bdbuf_buffer *bd)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-
-  sc = rtems_bdbuf_check_bd_and_lock_cache (bd, "release modified");
-  if (sc != RTEMS_SUCCESSFUL)
-    return sc;
-
-  switch (bd->state)
-  {
-    case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-    case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-    case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      z_bdbuf_add_to_modified_list_after_access (bd);
-      break;
-    case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-      z_bdbuf_discard_buffer_after_access (bd);
-      break;
-    default:
-      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_6);
-      break;
+int k_bdbuf_release_modified (struct k_bdbuf_buffer *bd) {
+  int ret = z_bdbuf_check_bd_and_lock_cache(bd, "release modified");
+  if (ret)
+    return ret;
+  switch (bd->state) {
+  case K_BDBUF_STATE_ACCESS_CACHED:
+  case K_BDBUF_STATE_ACCESS_EMPTY:
+  case K_BDBUF_STATE_ACCESS_MODIFIED:
+    z_bdbuf_add_to_modified_list_after_access(bd);
+    break;
+  case K_BDBUF_STATE_ACCESS_PURGED:
+    z_bdbuf_discard_buffer_after_access(bd);
+    break;
+  default:
+    z_bdbuf_fatal_with_state(bd->state, K_BDBUF_FATAL_STATE_6);
+    break;
   }
-
   if (rtems_bdbuf_tracer)
-    k_bdbuf_show_usage ();
-
-  z_bdbuf_unlock_cache ();
-
-  return RTEMS_SUCCESSFUL;
+    k_bdbuf_show_usage();
+  z_bdbuf_unlock_cache();
+  return ret;
 }
 
-rtems_status_code
-rtems_bdbuf_sync (struct k_bdbuf_buffer *bd)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-
-  sc = rtems_bdbuf_check_bd_and_lock_cache (bd, "sync");
-  if (sc != RTEMS_SUCCESSFUL)
-    return sc;
-
-  switch (bd->state)
-  {
-    case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-    case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-    case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-      rtems_bdbuf_sync_after_access (bd);
-      break;
-    case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-      z_bdbuf_discard_buffer_after_access (bd);
-      break;
-    default:
-      z_bdbuf_fatal_with_state (bd->state, K_BDBUF_FATAL_STATE_5);
-      break;
+int k_bdbuf_sync(struct k_bdbuf_buffer *bd) {
+  int ret = z_bdbuf_check_bd_and_lock_cache(bd, "sync");
+  if (ret)
+    return ret;
+  switch (bd->state) {
+  case K_BDBUF_STATE_ACCESS_CACHED:
+  case K_BDBUF_STATE_ACCESS_EMPTY:
+  case K_BDBUF_STATE_ACCESS_MODIFIED:
+    z_bdbuf_sync_after_access(bd);
+    break;
+  case K_BDBUF_STATE_ACCESS_PURGED:
+    z_bdbuf_discard_buffer_after_access(bd);
+    break;
+  default:
+    z_bdbuf_fatal_with_state(bd->state, K_BDBUF_FATAL_STATE_5);
+    break;
   }
-
   if (rtems_bdbuf_tracer)
-    k_bdbuf_show_usage ();
-
-  z_bdbuf_unlock_cache ();
-
-  return RTEMS_SUCCESSFUL;
+    k_bdbuf_show_usage();
+  z_bdbuf_unlock_cache();
+  return ret;
 }
 
-rtems_status_code
-rtems_bdbuf_syncdev (struct k_disk_device *dd)
-{
+int k_bdbuf_syncdev(struct k_disk_device *dd) {
+  struct k_sem syncsem;
   if (rtems_bdbuf_tracer)
-    printf ("bdbuf:syncdev: %08x\n", (unsigned) dd->dev);
-
+    printf("bdbuf:syncdev: %08x\n", (unsigned) dd->dev);
   /*
    * Take the sync lock before locking the cache. Once we have the sync lock we
    * can lock the cache. If another thread has the sync lock it will cause this
@@ -2011,65 +1736,35 @@ rtems_bdbuf_syncdev (struct k_disk_device *dd)
    * The swap out task will negate the sync active flag when no more buffers
    * for the device are held on the "modified for sync" queues.
    */
+  k_sem_init(&syncsem, 0, 1);
   bdbuf_cache.sync_active    = true;
-  bdbuf_cache.sync_requester = rtems_task_self ();
+  bdbuf_cache.sync_requester = &syncsem;
   bdbuf_cache.sync_device    = dd;
-
-  z_bdbuf_wake_swapper ();
-  z_bdbuf_unlock_cache ();
-  z_bdbuf_wait_for_transient_event ();
-  z_bdbuf_unlock_sync ();
-
-  return RTEMS_SUCCESSFUL;
+  z_bdbuf_wake_swapper();
+  z_bdbuf_unlock_cache();
+  z_bdbuf_wait_for_transient_event(&syncsem);
+  z_bdbuf_unlock_sync();
+  return 0;
 }
 
-/**
- * Swapout transfer to the driver. The driver will break this I/O into groups
- * of consecutive write requests is multiple consecutive buffers are required
- * by the driver. The cache is not locked.
- *
- * @param transfer The transfer transaction.
- */
 static void
-rtems_bdbuf_swapout_write (struct k_bdbuf_swapout_transfer* transfer)
-{
+z_bdbuf_swapout_write(struct k_bdbuf_swapout_transfer* transfer) {
   sys_dnode_t *node;
-
   if (rtems_bdbuf_tracer)
-    printf ("bdbuf:swapout transfer: %08x\n", (unsigned) transfer->dd->dev);
-
-  /*
-   * If there are buffers to transfer to the media transfer them.
-   */
-  if (!rtems_chain_is_empty (&transfer->bds))
-  {
-    /*
-     * The last block number used when the driver only supports
-     * continuous blocks in a single request.
-     */
+    printf("bdbuf:swapout transfer: %08x\n", (unsigned) transfer->dd->dev);
+  if (!sys_dlist_is_empty(&transfer->bds)) {
     uint32_t last_block = 0;
-
     struct k_disk_device *dd = transfer->dd;
     uint32_t media_blocks_per_block = dd->media_blocks_per_block;
     bool need_continuous_blocks =
-      (dd->phys_dev->capabilities & RTEMS_BLKDEV_CAP_MULTISECTOR_CONT) != 0;
+      (dd->phys_dev->capabilities & K_BLKDEV_CAP_MULTISECTOR_CONT) != 0;
 
-    /*
-     * Take as many buffers as configured and pass to the driver. Note, the
-     * API to the drivers has an array of buffers and if a chain was passed
-     * we could have just passed the list. If the driver API is updated it
-     * should be possible to make this change with little effect in this
-     * code. The array that is passed is broken in design and should be
-     * removed. Merging members of a struct into the first member is
-     * trouble waiting to happen.
-     */
     transfer->write_req.status = RTEMS_RESOURCE_IN_USE;
     transfer->write_req.bufnum = 0;
-
-    while ((node = rtems_chain_get_unprotected(&transfer->bds)) != NULL)
-    {
-      struct k_bdbuf_buffer* bd = (struct k_bdbuf_buffer*) node;
-      bool                write = false;
+    while ((node = sys_dlist_get(&transfer->bds)) != NULL) {
+      struct k_bdbuf_buffer* bd = CONTAINER_OF(node, 
+        struct k_bdbuf_buffer, link);
+      bool write = false;
 
       /*
        * If the device only accepts sequential buffers and this is not the
@@ -2077,21 +1772,18 @@ rtems_bdbuf_swapout_write (struct k_bdbuf_swapout_transfer* transfer)
        * sequential then put the buffer back on the transfer chain and write
        * the committed buffers.
        */
-
-      if (rtems_bdbuf_tracer)
-        printf ("bdbuf:swapout write: bd:%" PRIu32 ", bufnum:%" PRIu32 " mode:%s\n",
+      if (rtems_bdbuf_tracer) {
+        printf("bdbuf:swapout write: bd:%" PRIu32 ", bufnum:%" PRIu32 " mode:%s\n",
                 bd->block, transfer->write_req.bufnum,
                 need_continuous_blocks ? "MULTI" : "SCAT");
-
-      if (need_continuous_blocks && transfer->write_req.bufnum &&
-          bd->block != last_block + media_blocks_per_block)
-      {
-        sys_dlist_prepend (&transfer->bds, &bd->link);
-        write = true;
       }
-      else
-      {
-        rtems_blkdev_sg_buffer* buf;
+      if (need_continuous_blocks && 
+          transfer->write_req.bufnum &&
+          bd->block != last_block + media_blocks_per_block) {
+        sys_dlist_prepend(&transfer->bds, &bd->link);
+        write = true;
+      } else {
+        struct k_blkdev_sg_buffer* buf;
         buf = &transfer->write_req.bufs[transfer->write_req.bufnum];
         transfer->write_req.bufnum++;
         buf->user   = bd;
@@ -2100,102 +1792,52 @@ rtems_bdbuf_swapout_write (struct k_bdbuf_swapout_transfer* transfer)
         buf->buffer = bd->buffer;
         last_block  = bd->block;
       }
-
-      /*
-       * Perform the transfer if there are no more buffers, or the transfer
-       * size has reached the configured max. value.
-       */
-
-      if (rtems_chain_is_empty (&transfer->bds) ||
+      if (sys_dlist_is_empty(&transfer->bds) ||
           (transfer->write_req.bufnum >= bdbuf_config.max_write_blocks))
         write = true;
-
-      if (write)
-      {
-        rtems_bdbuf_execute_transfer_request (dd, &transfer->write_req, false);
-
-        transfer->write_req.status = RTEMS_RESOURCE_IN_USE;
+      if (write) {
+        z_bdbuf_execute_transfer_request(dd, &transfer->write_req, false);
+        transfer->write_req.status = EBUSY;
         transfer->write_req.bufnum = 0;
       }
     }
-
-    /*
-     * If sync'ing and the deivce is capability of handling a sync IO control
-     * call perform the call.
-     */
     if (transfer->syncing &&
-        (dd->phys_dev->capabilities & RTEMS_BLKDEV_CAP_SYNC))
-    {
-      /* int result = */ dd->ioctl (dd->phys_dev, RTEMS_BLKDEV_REQ_SYNC, NULL);
-      /* How should the error be handled ? */
+        (dd->phys_dev->capabilities & K_BLKDEV_CAP_SYNC)) {
+      //TODO: How should the error be handled ? */
+       dd->ioctl (dd->phys_dev, RTEMS_BLKDEV_REQ_SYNC, NULL);
     }
   }
 }
 
-/**
- * Process the modified list of buffers. There is a sync or modified list that
- * needs to be handled so we have a common function to do the work.
- *
- * @param dd_ptr Pointer to the device to handle. If BDBUF_INVALID_DEV no
- * device is selected so select the device of the first buffer to be written to
- * disk.
- * @param chain The modified chain to process.
- * @param transfer The chain to append buffers to be written too.
- * @param sync_active If true this is a sync operation so expire all timers.
- * @param update_timers If true update the timers.
- * @param timer_delta It update_timers is true update the timers by this
- *                    amount.
- */
 static void
-rtems_bdbuf_swapout_modified_processing (struct k_disk_device  **dd_ptr,
-                                         sys_dlist_t* chain,
-                                         sys_dlist_t* transfer,
-                                         bool                 sync_active,
-                                         bool                 update_timers,
-                                         uint32_t             timer_delta)
-{
-  if (!rtems_chain_is_empty (chain))
-  {
-    sys_dnode_t* node = rtems_chain_head (chain);
-    bool              sync_all;
+z_bdbuf_swapout_modified_processing(struct k_disk_device **dd_ptr,
+  sys_dlist_t* chain, sys_dlist_t* transfer, bool sync_active,
+  bool update_timers, uint32_t timer_delta) {
 
-    node = node->next;
+  if (!sys_dlist_is_empty(chain)) {
+    sys_dnode_t* node = sys_dlist_peek_head_not_empty(chain);
+    bool sync_all;
 
-    /*
-     * A sync active with no valid dev means sync all.
-     */
     if (sync_active && (*dd_ptr == BDBUF_INVALID_DEV))
       sync_all = true;
     else
       sync_all = false;
 
-    while (!rtems_chain_is_tail (chain, node))
-    {
-      struct k_bdbuf_buffer* bd = (struct k_bdbuf_buffer*) node;
-
-      /*
-       * Check if the buffer's hold timer has reached 0. If a sync is active
-       * or someone waits for a buffer written force all the timers to 0.
-       *
-       * @note Lots of sync requests will skew this timer. It should be based
-       *       on TOD to be accurate. Does it matter ?
-       */
+    while (node != (sys_dnode_t *)chain) {
+      struct k_bdbuf_buffer* bd = CONTAINER_OF(node, 
+        struct k_bdbuf_buffer, link);
       if (sync_all || (sync_active && (*dd_ptr == bd->dd))
-          || z_bdbuf_has_buffer_waiters ())
+          || z_bdbuf_has_buffer_waiters())
         bd->hold_timer = 0;
 
-      if (bd->hold_timer)
-      {
-        if (update_timers)
-        {
+      if (bd->hold_timer) {
+        if (update_timers) {
           if (bd->hold_timer > timer_delta)
             bd->hold_timer -= timer_delta;
           else
             bd->hold_timer = 0;
         }
-
-        if (bd->hold_timer)
-        {
+        if (bd->hold_timer) {
           node = node->next;
           continue;
         }
@@ -2208,11 +1850,9 @@ rtems_bdbuf_swapout_modified_processing (struct k_disk_device  **dd_ptr,
        */
       if (*dd_ptr == BDBUF_INVALID_DEV)
         *dd_ptr = bd->dd;
-
-      if (bd->dd == *dd_ptr)
-      {
+      if (bd->dd == *dd_ptr) {
         sys_dnode_t* next_node = node->next;
-        sys_dnode_t* tnode = rtems_chain_tail (transfer);
+        sys_dnode_t* tnode = transfer->tail;
 
         /*
          * The blocks on the transfer list are sorted in block order. This
@@ -2220,69 +1860,35 @@ rtems_bdbuf_swapout_modified_processing (struct k_disk_device  **dd_ptr,
          * blocks perform better with sorted blocks and for real disks it may
          * help lower head movement.
          */
-
-        z_bdbuf_set_state (bd, RTEMS_BDBUF_STATE_TRANSFER);
-
-        rtems_chain_extract_unprotected (node);
-
-        tnode = tnode->previous;
-
-        while (node && !rtems_chain_is_head (transfer, tnode))
-        {
-          struct k_bdbuf_buffer* tbd = (struct k_bdbuf_buffer*) tnode;
-
-          if (bd->block > tbd->block)
-          {
-            rtems_chain_insert_unprotected (tnode, node);
+        z_bdbuf_set_state(bd, K_BDBUF_STATE_TRANSFER);
+        sys_dlist_remove(node);
+        while (node && !sys_dlist_is_head(transfer, tnode)) {
+          struct k_bdbuf_buffer* tbd = CONTAINER_OF(tnode, 
+            struct k_bdbuf_buffer, link);
+          if (bd->block > tbd->block) {
+            sys_dlist_insert(tnode->next, node); 
             node = NULL;
-          }
-          else
-            tnode = tnode->previous;
+          } else
+            tnode = tnode->prev;
         }
-
         if (node)
-          sys_dlist_prepend (transfer, node);
-
+          sys_dlist_prepend(transfer, node);
         node = next_node;
-      }
-      else
-      {
+      } else {
         node = node->next;
       }
     }
   }
 }
 
-/**
- * Process the cache's modified buffers. Check the sync list first then the
- * modified list extracting the buffers suitable to be written to disk. We have
- * a device at a time. The task level loop will repeat this operation while
- * there are buffers to be written. If the transfer fails place the buffers
- * back on the modified list and try again later. The cache is unlocked while
- * the buffers are being written to disk.
- *
- * @param timer_delta It update_timers is true update the timers by this
- *                    amount.
- * @param update_timers If true update the timers.
- * @param transfer The transfer transaction data.
- *
- * @retval true Buffers where written to disk so scan again.
- * @retval false No buffers where written to disk.
- */
 static bool
-rtems_bdbuf_swapout_processing (unsigned long                 timer_delta,
-                                bool                          update_timers,
-                                struct k_bdbuf_swapout_transfer* transfer)
-{
+z_bdbuf_swapout_processing(unsigned long timer_delta,
+  bool update_timers, struct k_bdbuf_swapout_transfer* transfer) {
   struct k_bdbuf_swapout_worker* worker;
-  bool                        transfered_buffers = false;
-  bool                        sync_active;
+  bool transfered_buffers = false;
+  bool sync_active;
 
   z_bdbuf_lock_cache ();
-
-  /*
-   * To set this to true you need the cache and the sync lock.
-   */
   sync_active = bdbuf_cache.sync_active;
 
   /*
@@ -2294,17 +1900,15 @@ rtems_bdbuf_swapout_processing (unsigned long                 timer_delta,
    * lock. The simplest solution is to get the main swap out task perform all
    * sync operations.
    */
-  if (sync_active)
+  if (sync_active) {
     worker = NULL;
-  else
-  {
-    worker = (struct k_bdbuf_swapout_worker*)
-      rtems_chain_get_unprotected (&bdbuf_cache.swapout_free_workers);
+  } else {
+    worker = (struct k_bdbuf_swapout_worker*)sys_dlist_get(
+      &bdbuf_cache.swapout_free_workers);
     if (worker)
       transfer = &worker->transfer;
   }
-
-  rtems_chain_initialize_empty (&transfer->bds);
+  sys_dlist_init(&transfer->bds);
   transfer->dd = BDBUF_INVALID_DEV;
   transfer->syncing = sync_active;
 
@@ -2320,21 +1924,12 @@ rtems_bdbuf_swapout_processing (unsigned long                 timer_delta,
    * If we have any buffers in the sync queue move them to the modified
    * list. The first sync buffer will select the device we use.
    */
-  rtems_bdbuf_swapout_modified_processing (&transfer->dd,
-                                           &bdbuf_cache.sync,
-                                           &transfer->bds,
-                                           true, false,
-                                           timer_delta);
+  z_bdbuf_swapout_modified_processing(&transfer->dd, &bdbuf_cache.sync,
+    &transfer->bds, true, false, timer_delta);
 
-  /*
-   * Process the cache's modified list.
-   */
-  rtems_bdbuf_swapout_modified_processing (&transfer->dd,
-                                           &bdbuf_cache.modified,
-                                           &transfer->bds,
-                                           sync_active,
-                                           update_timers,
-                                           timer_delta);
+  /* Process the cache's modified list. */
+  z_bdbuf_swapout_modified_processing(&transfer->dd, &bdbuf_cache.modified,
+    &transfer->bds, sync_active, update_timers, timer_delta);
 
   /*
    * We have all the buffers that have been modified for this device so the
@@ -2342,47 +1937,32 @@ rtems_bdbuf_swapout_processing (unsigned long                 timer_delta,
    * TRANSFER.
    */
   z_bdbuf_unlock_cache ();
-
-  /*
-   * If there are buffers to transfer to the media transfer them.
-   */
-  if (!rtems_chain_is_empty (&transfer->bds))
-  {
+  if (!sys_dlist_is_empty(&transfer->bds)) {
     if (worker)
-    {
-      rtems_status_code sc = rtems_event_send (worker->id,
-                                               RTEMS_BDBUF_SWAPOUT_SYNC);
-      if (sc != RTEMS_SUCCESSFUL)
-        z_bdbuf_fatal (K_BDBUF_FATAL_SO_WAKE_2);
-    }
+      z_bdbuf_send_event(&worker->sync);
     else
-    {
-      rtems_bdbuf_swapout_write (transfer);
-    }
-
+      z_bdbuf_swapout_write(transfer);
     transfered_buffers = true;
   }
-
-  if (sync_active && !transfered_buffers)
-  {
-    rtems_id sync_requester;
-    z_bdbuf_lock_cache ();
+  if (sync_active && !transfered_buffers) {
+    struct k_sem *sync_requester;
+    z_bdbuf_lock_cache();
     sync_requester = bdbuf_cache.sync_requester;
     bdbuf_cache.sync_active = false;
-    bdbuf_cache.sync_requester = 0;
-    z_bdbuf_unlock_cache ();
+    bdbuf_cache.sync_requester = NULL;
+    z_bdbuf_unlock_cache();
     if (sync_requester)
-      rtems_event_transient_send (sync_requester);
+      z_bdbuf_send_event(sync_requester);
   }
-
   return transfered_buffers;
 }
 
-static void bdbuf_swapout_worker_task(void *arg) {
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+static void z_bdbuf_swapout_worker_task(void *arg) {
   struct k_bdbuf_swapout_worker* worker = arg;
   while (worker->enabled) {
     z_bdbuf_wait_for_event(&worker->sync);
-    rtems_bdbuf_swapout_write(&worker->transfer);
+    z_bdbuf_swapout_write(&worker->transfer);
     z_bdbuf_lock_cache();
     sys_dlist_init(&worker->transfer.bds);
     worker->transfer.dd = BDBUF_INVALID_DEV;
@@ -2393,236 +1973,157 @@ static void bdbuf_swapout_worker_task(void *arg) {
   k_thread_abort();
 }
 
-static void bdbuf_swapout_workers_close(void) {
+static void z_bdbuf_swapout_workers_close(void) {
   sys_dnode_t* node;
-  z_bdbuf_lock_cache ();
+  z_bdbuf_lock_cache();
   SYS_DLIST_FOR_EACH_NODE(&bdbuf_cache.swapout_free_workers, node) {
     struct k_bdbuf_swapout_worker* worker = CONTAINER_OF(node,
       struct k_bdbuf_swapout_worker, link);
     worker->enabled = false;
-    k_sem_give(&worker->sync);
+    z_bdbuf_send_event(&worker->sync);
   }
   z_bdbuf_unlock_cache();
 }
+#endif /* CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0 */
 
-static void bdbuf_swapout_task(void *arg) {
+static void z_bdbuf_swapout_task(void *arg) {
   const uint32_t period_in_msecs = bdbuf_config.swapout_period;
   struct k_bdbuf_swapout_transfer* transfer = arg;
-  uint32_t period_in_ticks;
+  k_timeout_t period_in_ticks;
   uint32_t timer_delta;
 
-  /*
-   * Localise the period.
-   */
-  period_in_ticks = RTEMS_MICROSECONDS_TO_TICKS (period_in_msecs * 1000);
-
-  /*
-   * This is temporary. Needs to be changed to use the real time clock.
-   */
+  period_in_ticks = K_USEC(period_in_msecs * 1000);
+  //TODO: This is temporary. Needs to be changed to use the real time clock.
   timer_delta = period_in_msecs;
-
-  while (bdbuf_cache.swapout_enabled)
-  {
-    rtems_event_set   out;
-    rtems_status_code sc;
-
-    /*
-     * Only update the timers once in the processing cycle.
-     */
+  while (bdbuf_cache.swapout_enabled) {
     bool update_timers = true;
-
-    /*
-     * If we write buffers to any disk perform a check again. We only write a
-     * single device at a time and the cache may have more than one device's
-     * buffers modified waiting to be written.
-     */
     bool transfered_buffers;
-
-    do
-    {
+    do {
       transfered_buffers = false;
-
-      /*
-       * Extact all the buffers we find for a specific device. The device is
-       * the first one we find on a modified list. Process the sync queue of
-       * buffers first.
-       */
-      if (rtems_bdbuf_swapout_processing (timer_delta,
-                                          update_timers,
-                                          transfer))
-      {
+      if (z_bdbuf_swapout_processing(timer_delta,
+        update_timers, transfer)) {
         transfered_buffers = true;
       }
-
-      /*
-       * Only update the timers once.
-       */
       update_timers = false;
-    }
-    while (transfered_buffers);
-
-    sc = rtems_event_receive (RTEMS_BDBUF_SWAPOUT_SYNC,
-                              RTEMS_EVENT_ALL | RTEMS_WAIT,
-                              period_in_ticks,
-                              &out);
-
-    if ((sc != RTEMS_SUCCESSFUL) && (sc != RTEMS_TIMEOUT))
-      z_bdbuf_fatal (K_BDBUF_FATAL_SWAPOUT_RE);
+    } while (transfered_buffers);
+    
+    z_bdbuf_wait_for_sync(&bdbuf_cache.swapout_sem, period_in_ticks, 
+      K_BDBUF_FATAL_SWAPOUT_RE);
   }
-
-  bdbuf_swapout_workers_close();
-
-  k_free (transfer);
-
+#if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
+  z_bdbuf_swapout_workers_close();
+#endif
+  k_free(transfer);
   k_thread_abort();
 }
 
-static void
-rtems_bdbuf_purge_list (sys_dlist_t *purge_list)
-{
+static void z_bdbuf_purge_list(sys_dlist_t *purge_list) {
   bool wake_buffer_waiters = false;
   sys_dnode_t *node = NULL;
 
-  while ((node = rtems_chain_get_unprotected (purge_list)) != NULL)
-  {
-    struct k_bdbuf_buffer *bd = (struct k_bdbuf_buffer *) node;
-
+  while ((node = sys_dlist_get(purge_list)) != NULL) {
+    struct k_bdbuf_buffer *bd = CONTAINER_OF(node, 
+      struct k_bdbuf_buffer, link);
     if (bd->waiters == 0)
       wake_buffer_waiters = true;
-
-    z_bdbuf_discard_buffer (bd);
+    z_bdbuf_discard_buffer(bd);
   }
-
   if (wake_buffer_waiters)
-    z_bdbuf_wake (&bdbuf_cache.buffer_waiters);
+    z_bdbuf_wake(&bdbuf_cache.buffer_waiters);
 }
 
 static void
-rtems_bdbuf_gather_for_purge (sys_dlist_t *purge_list,
-                              const struct k_disk_device *dd)
-{
-  struct k_bdbuf_buffer *stack [RTEMS_BDBUF_AVL_MAX_HEIGHT];
+z_bdbuf_gather_for_purge(sys_dlist_t *purge_list,
+  const struct k_disk_device *dd) {
+  struct k_bdbuf_buffer *stack [K_BDBUF_AVL_MAX_HEIGHT];
   struct k_bdbuf_buffer **prev = stack;
   struct k_bdbuf_buffer *cur = bdbuf_cache.tree;
 
   *prev = NULL;
-
-  while (cur != NULL)
-  {
-    if (cur->dd == dd)
-    {
-      switch (cur->state)
-      {
-        case RTEMS_BDBUF_STATE_FREE:
-        case RTEMS_BDBUF_STATE_EMPTY:
-        case RTEMS_BDBUF_STATE_ACCESS_PURGED:
-        case RTEMS_BDBUF_STATE_TRANSFER_PURGED:
-          break;
-        case RTEMS_BDBUF_STATE_SYNC:
-          z_bdbuf_wake (&bdbuf_cache.transfer_waiters);
-          /* Fall through */
-        case RTEMS_BDBUF_STATE_MODIFIED:
-          z_bdbuf_group_release (cur);
-          /* Fall through */
-        case RTEMS_BDBUF_STATE_CACHED:
-          rtems_chain_extract_unprotected (&cur->link);
-          sys_dlist_append (purge_list, &cur->link);
-          break;
-        case RTEMS_BDBUF_STATE_TRANSFER:
-          z_bdbuf_set_state (cur, RTEMS_BDBUF_STATE_TRANSFER_PURGED);
-          break;
-        case RTEMS_BDBUF_STATE_ACCESS_CACHED:
-        case RTEMS_BDBUF_STATE_ACCESS_EMPTY:
-        case RTEMS_BDBUF_STATE_ACCESS_MODIFIED:
-          z_bdbuf_set_state (cur, RTEMS_BDBUF_STATE_ACCESS_PURGED);
-          break;
-        default:
-          z_bdbuf_fatal (K_BDBUF_FATAL_STATE_11);
+  while (cur != NULL) {
+    if (cur->dd == dd) {
+      switch (cur->state) {
+      case RTEMS_BDBUF_STATE_FREE:
+      case K_BDBUF_STATE_EMPTY:
+      case K_BDBUF_STATE_ACCESS_PURGED:
+      case K_BDBUF_STATE_TRANSFER_PURGED:
+        break;
+      case K_BDBUF_STATE_SYNC:
+        z_bdbuf_wake (&bdbuf_cache.transfer_waiters);
+        /* Fall through */
+      case K_BDBUF_STATE_MODIFIED:
+        z_bdbuf_group_release (cur);
+        /* Fall through */
+      case K_BDBUF_STATE_CACHED:
+        sys_dlist_remove (&cur->link);
+        sys_dlist_append (purge_list, &cur->link);
+        break;
+      case K_BDBUF_STATE_TRANSFER:
+        z_bdbuf_set_state (cur, K_BDBUF_STATE_TRANSFER_PURGED);
+        break;
+      case K_BDBUF_STATE_ACCESS_CACHED:
+      case K_BDBUF_STATE_ACCESS_EMPTY:
+      case K_BDBUF_STATE_ACCESS_MODIFIED:
+        z_bdbuf_set_state (cur, K_BDBUF_STATE_ACCESS_PURGED);
+        break;
+      default:
+        z_bdbuf_fatal (K_BDBUF_FATAL_STATE_11);
       }
     }
-
-    if (cur->avl.left != NULL)
-    {
-      /* Left */
+    if (cur->avl.left != NULL) { /* Left */
       ++prev;
       *prev = cur;
       cur = cur->avl.left;
-    }
-    else if (cur->avl.right != NULL)
-    {
-      /* Right */
+    } else if (cur->avl.right != NULL) { /* Right */
       ++prev;
       *prev = cur;
       cur = cur->avl.right;
-    }
-    else
-    {
-      while (*prev != NULL
-             && (cur == (*prev)->avl.right || (*prev)->avl.right == NULL))
-      {
+    } else {
+      while (*prev != NULL && 
+             (cur == (*prev)->avl.right || (*prev)->avl.right == NULL)) {
         /* Up */
         cur = *prev;
         --prev;
       }
-      if (*prev != NULL)
-        /* Right */
-        cur = (*prev)->avl.right;
+      if (*prev != NULL) 
+        cur = (*prev)->avl.right; /* Right */
       else
-        /* Finished */
-        cur = NULL;
+        cur = NULL; /* Finished */
     }
   }
 }
 
-static void
-rtems_bdbuf_do_purge_dev (struct k_disk_device *dd)
-{
+static void z_bdbuf_do_purge_dev(struct k_disk_device *dd) {
   sys_dlist_t purge_list;
-
-  rtems_chain_initialize_empty (&purge_list);
-  rtems_bdbuf_read_ahead_reset (dd);
-  rtems_bdbuf_gather_for_purge (&purge_list, dd);
-  rtems_bdbuf_purge_list (&purge_list);
+  sys_dlist_init(&purge_list);
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+  z_bdbuf_read_ahead_reset(dd);
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
+  z_bdbuf_gather_for_purge(&purge_list, dd);
+  z_bdbuf_purge_list(&purge_list);
 }
 
-void
-rtems_bdbuf_purge_dev (struct k_disk_device *dd)
-{
-  z_bdbuf_lock_cache ();
-  rtems_bdbuf_do_purge_dev (dd);
-  z_bdbuf_unlock_cache ();
+void k_bdbuf_purge_dev (struct k_disk_device *dd) {
+  z_bdbuf_lock_cache();
+  z_bdbuf_do_purge_dev(dd);
+  z_bdbuf_unlock_cache();
 }
 
-rtems_status_code
-rtems_bdbuf_set_block_size (struct k_disk_device *dd,
-                            uint32_t           block_size,
-                            bool               sync)
-{
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-
-  /*
-   * We do not care about the synchronization status since we will purge the
-   * device later.
-   */
+int k_bdbuf_set_block_size(struct k_disk_device *dd,
+  uint32_t block_size, bool sync) {
+  int ret = 0;
   if (sync)
-    rtems_bdbuf_syncdev (dd);
-
-  z_bdbuf_lock_cache ();
-
-  if (block_size > 0)
-  {
-    size_t bds_per_group = z_bdbuf_bds_per_group (block_size);
-
-    if (bds_per_group != 0)
-    {
+    k_bdbuf_syncdev(dd);
+  z_bdbuf_lock_cache();
+  if (block_size > 0) {
+    size_t bds_per_group = z_bdbuf_bds_per_group(block_size);
+    if (bds_per_group != 0) {
       int block_to_media_block_shift = 0;
       uint32_t media_blocks_per_block = block_size / dd->media_block_size;
       uint32_t one = 1;
 
       while ((one << block_to_media_block_shift) < media_blocks_per_block)
-      {
         ++block_to_media_block_shift;
-      }
 
       if ((dd->media_block_size << block_to_media_block_shift) != block_size)
         block_to_media_block_shift = -1;
@@ -2632,93 +2133,69 @@ rtems_bdbuf_set_block_size (struct k_disk_device *dd,
       dd->media_blocks_per_block = media_blocks_per_block;
       dd->block_to_media_block_shift = block_to_media_block_shift;
       dd->bds_per_group = bds_per_group;
-
-      rtems_bdbuf_do_purge_dev (dd);
+      z_bdbuf_do_purge_dev(dd);
+    } else {
+      ret = -EINVAL;
     }
-    else
-    {
-      sc = RTEMS_INVALID_NUMBER;
-    }
+  } else {
+    ret = -EINVAL;
   }
-  else
-  {
-    sc = RTEMS_INVALID_NUMBER;
-  }
-
   z_bdbuf_unlock_cache ();
-
-  return sc;
+  return ret;
 }
 
-static void bdbuf_read_ahead_task(void *arg) {
+#if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
+static void z_bdbuf_read_ahead_task(void *arg) {
   sys_dlist_t *chain = &bdbuf_cache.read_ahead_chain;
 
   while (bdbuf_cache.read_ahead_enabled) {
     sys_dnode_t *node;
-    k_sem_take(&read_ahead_sem, K_FOREVER);
-    z_bdbuf_wait_for_event(RTEMS_BDBUF_READ_AHEAD_WAKE_UP);
+    z_bdbuf_wait_for_event(&read_ahead_sync.read_ahead_sem);
     z_bdbuf_lock_cache ();
-    while ((node = rtems_chain_get_unprotected (chain)) != NULL)
-    {
-      struct k_disk_device *dd =
-        RTEMS_CONTAINER_OF (node, struct k_disk_device, read_ahead.node);
+
+    while ((node = sys_dlist_get(chain)) != NULL) {
+      struct k_disk_device *dd = CONTAINER_OF(node, struct k_disk_device, 
+        read_ahead.node);
+      struct k_bdbuf_buffer *bd；
       blkdev_bnum_t block = dd->read_ahead.next;
       blkdev_bnum_t media_block = 0;
-      rtems_status_code sc =
-        rtems_bdbuf_get_media_block (dd, block, &media_block);
 
-      rtems_chain_set_off_chain (&dd->read_ahead.node);
-
-      if (sc == RTEMS_SUCCESSFUL)
-      {
-        struct k_bdbuf_buffer *bd =
-          rtems_bdbuf_get_buffer_for_read_ahead (dd, media_block);
-
-        if (bd != NULL)
-        {
-          uint32_t transfer_count = dd->read_ahead.nr_blocks;
-          uint32_t blocks_until_end_of_disk = dd->block_count - block;
-          uint32_t max_transfer_count = bdbuf_config.max_read_ahead_blocks;
-
-          if (transfer_count == RTEMS_DISK_READ_AHEAD_SIZE_AUTO) {
-            transfer_count = blocks_until_end_of_disk;
-
-            if (transfer_count >= max_transfer_count)
-            {
-              transfer_count = max_transfer_count;
-              dd->read_ahead.trigger = block + transfer_count / 2;
-              dd->read_ahead.next = block + transfer_count;
-            }
-            else
-            {
-              dd->read_ahead.trigger = RTEMS_DISK_READ_AHEAD_NO_TRIGGER;
-            }
-          } else {
-            if (transfer_count > blocks_until_end_of_disk) {
-              transfer_count = blocks_until_end_of_disk;
-            }
-
-            if (transfer_count > max_transfer_count) {
-              transfer_count = max_transfer_count;
-            }
-
-            ++dd->stats.read_ahead_peeks;
-          }
-
-          ++dd->stats.read_ahead_transfers;
-          rtems_bdbuf_execute_read_request (dd, bd, transfer_count);
-        }
+      int ret = z_bdbuf_get_media_block(dd, block, &media_block);
+      if (unlikely(ret != 0)) {
+        dd->read_ahead.trigger = K_DISK_READ_AHEAD_NO_TRIGGER;
+        continue;
       }
-      else
-      {
-        dd->read_ahead.trigger = RTEMS_DISK_READ_AHEAD_NO_TRIGGER;
+      bd = z_bdbuf_get_buffer_for_read_ahead(dd, media_block);
+      if (bd != NULL) {
+        uint32_t transfer_count = dd->read_ahead.nr_blocks;
+        uint32_t blocks_until_end_of_disk = dd->block_count - block;
+        uint32_t max_transfer_count = bdbuf_config.max_read_ahead_blocks;
+
+        if (transfer_count == K_DISK_READ_AHEAD_SIZE_AUTO) {
+          transfer_count = blocks_until_end_of_disk;
+          if (transfer_count >= max_transfer_count) {
+            transfer_count = max_transfer_count;
+            dd->read_ahead.trigger = block + transfer_count / 2;
+            dd->read_ahead.next = block + transfer_count;
+          } else {
+            dd->read_ahead.trigger = K_DISK_READ_AHEAD_NO_TRIGGER;
+          }
+        } else {
+          if (transfer_count > blocks_until_end_of_disk)
+            transfer_count = blocks_until_end_of_disk;
+          if (transfer_count > max_transfer_count)
+            transfer_count = max_transfer_count;
+          ++dd->stats.read_ahead_peeks;
+        }
+        ++dd->stats.read_ahead_transfers;
+        z_bdbuf_execute_read_request(dd, bd, transfer_count);
       }
     }
-
     z_bdbuf_unlock_cache ();
   }
   k_thread_abort();
 }
+#endif /* CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0 */
 
 void k_bdbuf_get_device_stats(const struct k_disk_device *dd,
   struct k_blkdev_stats *stats) {

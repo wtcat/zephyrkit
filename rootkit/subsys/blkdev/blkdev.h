@@ -6,6 +6,7 @@
 #ifndef _RTEMS_BLKDEV_H
 #define _RTEMS_BLKDEV_H
 
+#include <kernel.h>
 #include <sys/ioccom.h>
 #include <stdio.h>
 
@@ -15,20 +16,15 @@
 extern "C" {
 #endif
 
+struct k_blkdev_request;
+typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
+  int status);
+
 enum k_blkdev_request_op {
   RTEMS_BLKDEV_REQ_READ,       /* Read the requested blocks of data. */
   RTEMS_BLKDEV_REQ_WRITE,      /* Write the requested blocks of data. */
   RTEMS_BLKDEV_REQ_SYNC        /* Sync any data with the media. */
 };
-
-struct k_blkdev_request;
-
-/*
- * @brief Block device request done callback function type.
- */
-typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
-  int status);
-  
 
 struct k_blkdev_sg_buffer {
   blkdev_bnum_t block;
@@ -43,7 +39,7 @@ struct k_blkdev_request {
   void *done_arg; /* Argument to be passed to callback function. */
   int status; /* Last IO operation completion status. */
   uint32_t bufnum; /* Number of blocks for this request. */
-  rtems_id io_task;
+  struct k_sem *io_sync; //rtems_id io_task;
 
   /*
    * TODO: The use of these req blocks is not a great design. The req is a

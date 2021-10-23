@@ -1,0 +1,66 @@
+
+menuconfig BDBUF
+    bool "The Block Device Buffer Management"
+    help
+      The Block Device Buffer Management implements a cache between the disk
+      devices and file systems.  The code provides read-ahead and write queuing to
+      the drivers and fast cache look-up using an AVL tree.
+
+if BDBUF
+
+config BDBUF_CACHE_MEMORY_SIZE
+    hex "The size of memory allocated to the cache"
+    default 0x4000
+
+config BDBUF_BUFFER_MIN_SIZE
+    int "The minimum size of buffers"
+    default 512
+
+config BDBUF_BUFFER_MAX_SIZE
+    int "The maximum size of buffers"
+    default 4096
+
+config BDBUF_MAX_WRITE_BLOCKS
+    int "The maximum number of blocks to write at once"
+    default 16
+
+config BDBUF_SWAPOUT_TASK_PRIORITY
+    int "Swap-out task priority"
+    range 0 31
+    default 15
+
+config BDBUF_TASK_STACK_SIZE
+    int "Task stack size for swap-out and worker tasks"
+    default 512
+    
+config BDBUF_MAX_READ_AHEAD_BLOCKS
+    int "The maximum read-ahead blocks"
+    default 0
+    help
+      The value for the maximum read-ahead blocks disables the read-ahead
+      feature.
+
+config BDBUF_SWAPOUT_TASK_SWAP_PERIOD
+    int "Swap-out task swap period in milli seconds"
+    default 250
+
+config BDBUF_SWAPOUT_TASK_BLOCK_HOLD
+    int "Swap-out task block hold time in milli seconds"
+    default 1000
+
+config BDBUF_SWAPOUT_WORKER_TASKS
+    int "The maximum swap-out worker tasks"
+    range 0 4
+    default 0
+
+config BDBUF_SWAPOUT_WORKER_TASK_PRIORITY
+    int "Swap-out worker task priority"
+    default BDBUF_SWAPOUT_TASK_PRIORITY
+
+config BDBUF_READ_AHEAD_TASK_PRIORITY
+    int "Read-ahead task priority"
+    default BDBUF_SWAPOUT_TASK_PRIORITY
+
+config 
+      
+endif #BDBUF

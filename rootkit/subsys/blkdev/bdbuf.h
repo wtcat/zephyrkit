@@ -68,70 +68,6 @@ struct k_bdbuf_group {
 	struct k_bdbuf_buffer* bdbuf;      /* First BD this block covers. */
 };
 
-/**
- * The default value for the maximum read-ahead blocks disables the read-ahead
- * feature.
- */
-#define K_BDBUF_MAX_READ_AHEAD_BLOCKS_DEFAULT    0
-
-/**
- * Default maximum number of blocks to write at once.
- */
-#define K_BDBUF_MAX_WRITE_BLOCKS_DEFAULT         16
-
-/**
- * Default swap-out task priority.
- */
-#define K_BDBUF_SWAPOUT_TASK_PRIORITY_DEFAULT    15
-
-/**
- * Default swap-out task swap period in milli seconds.
- */
-#define K_BDBUF_SWAPOUT_TASK_SWAP_PERIOD_DEFAULT 250
-
-/**
- * Default swap-out task block hold time in milli seconds.
- */
-#define K_BDBUF_SWAPOUT_TASK_BLOCK_HOLD_DEFAULT  1000
-
-/**
- * Default swap-out worker tasks. Currently disabled.
- */
-#define K_BDBUF_SWAPOUT_WORKER_TASKS_DEFAULT     0
-
-/**
- * Default swap-out worker task priority. The same as the swap-out task.
- */
-#define K_BDBUF_SWAPOUT_WORKER_TASK_PRIORITY_DEFAULT \
-                             K_BDBUF_SWAPOUT_TASK_PRIORITY_DEFAULT
-
-/**
- * Default read-ahead task priority.  The same as the swap-out task.
- */
-#define K_BDBUF_READ_AHEAD_TASK_PRIORITY_DEFAULT \
-  K_BDBUF_SWAPOUT_TASK_PRIORITY_DEFAULT
-
-/**
- * Default task stack size for swap-out and worker tasks.
- */
-#define K_BDBUF_TASK_STACK_SIZE_DEFAULT RTEMS_MINIMUM_STACK_SIZE
-
-/**
- * Default size of memory allocated to the cache.
- */
-#define K_BDBUF_CACHE_MEMORY_SIZE_DEFAULT (64 * 512)
-
-/**
- * Default minimum size of buffers.
- */
-#define K_BDBUF_BUFFER_MIN_SIZE_DEFAULT (512)
-
-/**
- * Default maximum size of buffers.
- */
-#define K_BDBUF_BUFFER_MAX_SIZE_DEFAULT (4096)
-
-
 int k_bdbuf_init(void);
 int k_bdbuf_get(struct k_disk_device *dd, blkdev_bnum_t block, 
 	struct k_bdbuf_buffer** bd);
@@ -149,7 +85,6 @@ int k_bdbuf_set_block_size(struct k_disk_device *dd,
 void k_bdbuf_get_device_stats(const struct k_disk_device *dd,
 	rtems_blkdev_stats *stats);
 void k_bdbuf_reset_device_stats(struct k_disk_device *dd);
-
 
 #ifdef __cplusplus
 }
