@@ -10,10 +10,11 @@
  * Copyright (c) 2009-2012 embedded brains GmbH.
  */
 
-#ifndef SUBSYS_K_BDBUF_H_
-#define SUBSYS_K_BDBUF_H_
+#ifndef SUBSYS_BLKDEV_BDBUF_H_
+#define SUBSYS_BLKDEV_BDBUF_H_
 
 #include <sys/dlist.h>
+#include "blkdev/blkdev.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,13 +39,13 @@ enum k_bdbuf_buf_state {
 struct k_bdbuf_buffer {
 	sys_dnode_t link;       /* Link the BD onto a number of lists. */
 	struct k_bdbuf_avl_node {
-		struct struct k_bdbuf_buffer* left;   /* Left Child */
-		struct struct k_bdbuf_buffer* right;  /* Right Child */
-		signed char                cache;     /* Cache */
-		signed char                bal;       /* The balance of the sub-tree */
+		struct k_bdbuf_buffer* left;   /* Left Child */
+		struct k_bdbuf_buffer* right;  /* Right Child */
+		signed char            cache;     /* Cache */
+		signed char            bal;       /* The balance of the sub-tree */
 	} avl;
 	struct k_disk_device *dd;               /* disk device */
-	blkdev_bnum_t block;                /* block number on the device */
+	blkdev_bnum_t     block;                /* block number on the device */
 	unsigned char*    buffer;               /* Pointer to the buffer memory area */
 	enum k_bdbuf_buf_state state;               /* State of the buffer. */
 	uint32_t waiters;                       /* The number of threads waiting on this buffer. */                       
@@ -83,11 +84,11 @@ void k_bdbuf_purge_dev(struct k_disk_device *dd);
 int k_bdbuf_set_block_size(struct k_disk_device *dd,
 	uint32_t block_size, bool sync);           
 void k_bdbuf_get_device_stats(const struct k_disk_device *dd,
-	rtems_blkdev_stats *stats);
+	struct k_blkdev_stats *stats);
 void k_bdbuf_reset_device_stats(struct k_disk_device *dd);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SUBSYS_K_BDBUF_H_ */
+#endif /* SUBSYS_BLKDEV_BDBUF_H_ */

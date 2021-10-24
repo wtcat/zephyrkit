@@ -16,7 +16,7 @@ config SPM
 
 if SPM
 module=SPM
-source "${ZEPHYR_BASE}/../rootkit/subsys/partition_manager/Kconfig.template.build_strategy"
+#source "${ZEPHYR_BASE}/../rootkit/subsys/partition_manager/Kconfig.template.build_strategy"
 
 config SPM_NS_DEBUG_LOGS_DUMP
 	bool "Enable dumping non-secure logs on secure fault"

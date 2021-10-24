@@ -8,6 +8,10 @@ menuconfig BDBUF
 
 if BDBUF
 
+config BDBUF_TRACE
+    bool "Enable block device buffer trace log"
+    default n
+
 config BDBUF_CACHE_MEMORY_SIZE
     hex "The size of memory allocated to the cache"
     default 0x4000
@@ -61,6 +65,8 @@ config BDBUF_READ_AHEAD_TASK_PRIORITY
     int "Read-ahead task priority"
     default BDBUF_SWAPOUT_TASK_PRIORITY
 
-config 
-      
+config BDBUF_AVL_MAX_HEIGHT
+    int "The height of AVL tree"
+    range 8 32
+    default 32
 endif #BDBUF

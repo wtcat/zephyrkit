@@ -2,8 +2,8 @@
  * Copyright (C) 2001 OKTET Ltd., St.-Petersburg, Russia
  * Author: Victor V. Vengerov <vvv@oktet.ru>
  */
-#ifndef SUBSYS_DISKDEVS_H_
-#define SUBSYS_DISKDEVS_H_
+#ifndef SUBSYS_BLKDEV_DISKDEVS_H_
+#define SUBSYS_BLKDEV_DISKDEVS_H_
 
 #include <sys/dlist.h>
 #include <sys/types.h>
@@ -12,7 +12,9 @@
 extern "C" {
 #endif
 
+struct k_disk_device;
 typedef uint32_t blkdev_bnum_t;
+typedef uint32_t dev_t;
 
 typedef int (*blkdev_ioctrl_fn)(
   struct k_disk_device *dd,
@@ -103,4 +105,4 @@ int _k_disk_init_log(struct k_disk_device *dd, struct k_disk_device *phys_dd,
 #ifdef __cplusplus
 }
 #endif
-#endif /* SUBSYS_DISKDEVS_H_ */
+#endif /* SUBSYS_BLKDEV_DISKDEVS_H_ */
