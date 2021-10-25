@@ -1439,7 +1439,8 @@ int k_bdbuf_get(struct k_disk_device *dd, blkdev_bnum_t block,
 static void
 z_bdbuf_transfer_done(struct k_blkdev_request* req, int status) {
   req->status = status;
-  z_bdbuf_send_event(req->io_sync);
+  if (likely(req->io_sync))
+    z_bdbuf_send_event(req->io_sync);
 }
 
 static int
@@ -1452,7 +1453,7 @@ z_bdbuf_execute_transfer_request(struct k_disk_device *dd,
 
   if (cache_locked)
     z_bdbuf_unlock_cache();
-
+  k_sem_init(req->io_sync, 0, 1);
   dd->ioctl(dd->phys_dev, K_BLKIO_REQUEST, req);
   z_bdbuf_wait_for_transient_event(req->io_sync);
   ret = req->status;
@@ -1501,11 +1502,11 @@ static int z_bdbuf_execute_read_request(struct k_disk_device *dd,
   uint32_t media_blocks_per_block = dd->media_blocks_per_block;
   uint32_t block_size = dd->block_size;
   uint32_t transfer_index = 1;
+  int ret;
 
   //TODO: This type of request structure is wrong and should be removed.
 #define bdbuf_alloc(size) __builtin_alloca(size)
   req = bdbuf_alloc(z_bdbuf_read_request_size(transfer_count));
-  k_sem_init(&io_sem, 0, 1);
   req->io_sync = &io_sem; //req->io_task = rtems_task_self ();
   req->req = K_BLKDEV_REQ_READ;
   req->done = z_bdbuf_transfer_done;
@@ -1534,7 +1535,9 @@ static int z_bdbuf_execute_read_request(struct k_disk_device *dd,
     ++transfer_index;
   }
   req->bufnum = transfer_index;
-  return z_bdbuf_execute_transfer_request(dd, req, true);
+  ret = z_bdbuf_execute_transfer_request(dd, req, true);
+  req->io_sync = NULL;
+  return ret;
 }
 
 #if (CONFIG_BDBUF_MAX_READ_AHEAD_BLOCKS > 0)
