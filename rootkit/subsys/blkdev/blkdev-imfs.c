@@ -1,11 +1,3 @@
-/**
- * @file
- *
- * @ingroup libblock
- *
- * @brief Block Device IMFS
- */
-
 /*
  * Copyright (c) 2012, 2018 embedded brains GmbH.  All rights reserved.
  *
@@ -22,43 +14,35 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
+#include <device.h>
 
 struct k_blkdev_context {
   struct k_disk_device dd;
-  struct device *dev;
+  const struct device *dev;
 };
 
-static ssize_t rtems_blkdev_imfs_read(
-  rtems_libio_t *iop,
-  void *buffer,
-  size_t count
-)
-{
-  int rv;
-  rtems_blkdev_imfs_context *ctx = IMFS_generic_get_context_by_iop(iop);
+static ssize_t k_blkdev_read(rtems_libio_t *iop, void *buffer,
+  size_t count) {
+  struct k_blkdev_context *ctx = IMFS_generic_get_context_by_iop(iop);
   struct k_disk_device *dd = &ctx->dd;
-  ssize_t remaining = (ssize_t) count;
+  ssize_t remaining = (ssize_t)count;
   off_t offset = iop->offset;
-  ssize_t block_size = (ssize_t) rtems_disk_get_block_size(dd);
-  blkdev_bnum_t block = (blkdev_bnum_t) (offset / block_size);
-  ssize_t block_offset = (ssize_t) (offset % block_size);
+  ssize_t block_size = (ssize_t)k_disk_get_block_size(dd);
+  blkdev_bnum_t block = (blkdev_bnum_t)(offset / block_size);
+  ssize_t block_offset = (ssize_t)(offset % block_size);
   char *dst = buffer;
+  int rv;
 
   while (remaining > 0) {
-    rtems_bdbuf_buffer *bd;
-    rtems_status_code sc = k_bdbuf_read(dd, block, &bd);
-
-    if (sc == RTEMS_SUCCESSFUL) {
+    struct k_bdbuf_buffer *bd;
+    int ret = k_bdbuf_read(dd, block, &bd);
+    if (ret == 0) {
       ssize_t copy = block_size - block_offset;
-
-      if (copy > remaining) {
+      if (copy > remaining)
         copy = remaining;
-      }
-
-      memcpy(dst, (char *) bd->buffer + block_offset, (size_t) copy);
-
-      sc = k_bdbuf_release(bd);
-      if (sc == RTEMS_SUCCESSFUL) {
+      memcpy(dst, (char *)bd->buffer + block_offset, (size_t)copy);
+      ret = k_bdbuf_release(bd);
+      if (ret == 0) {
         block_offset = 0;
         remaining -= copy;
         dst += copy;
@@ -70,55 +54,42 @@ static ssize_t rtems_blkdev_imfs_read(
       remaining = -1;
     }
   }
-
   if (remaining >= 0) {
     iop->offset += count;
-    rv = (ssize_t) count;
+    rv = (ssize_t)count;
   } else {
     errno = EIO;
     rv = -1;
   }
-
   return rv;
 }
 
-static ssize_t rtems_blkdev_imfs_write(
-  rtems_libio_t *iop,
-  const void *buffer,
-  size_t count
-)
-{
-  int rv;
-  rtems_blkdev_imfs_context *ctx = IMFS_generic_get_context_by_iop(iop);
+static ssize_t k_blkdev_write(rtems_libio_t *iop, const void *buffer,
+  size_t count) {
+  struct k_blkdev_context *ctx = IMFS_generic_get_context_by_iop(iop);
   struct k_disk_device *dd = &ctx->dd;
-  ssize_t remaining = (ssize_t) count;
+  ssize_t remaining = (ssize_t)count;
   off_t offset = iop->offset;
-  ssize_t block_size = (ssize_t) rtems_disk_get_block_size(dd);
-  blkdev_bnum_t block = (blkdev_bnum_t) (offset / block_size);
-  ssize_t block_offset = (ssize_t) (offset % block_size);
+  ssize_t block_size = (ssize_t)k_disk_get_block_size(dd);
+  blkdev_bnum_t block = (blkdev_bnum_t)(offset / block_size);
+  ssize_t block_offset = (ssize_t)(offset % block_size);
   const char *src = buffer;
+  int rv;
 
   while (remaining > 0) {
-    rtems_status_code sc;
-    rtems_bdbuf_buffer *bd;
-
-    if (block_offset == 0 && remaining >= block_size) {
-       sc = k_bdbuf_get(dd, block, &bd);
-    } else {
-       sc = k_bdbuf_read(dd, block, &bd);
-    }
-
-    if (sc == RTEMS_SUCCESSFUL) {
+    struct k_bdbuf_buffer *bd;
+    int ret;
+    if (block_offset == 0 && remaining >= block_size) 
+       ret = k_bdbuf_get(dd, block, &bd);
+    else
+       ret = k_bdbuf_read(dd, block, &bd);
+    if (ret == 0) {
       ssize_t copy = block_size - block_offset;
-
-      if (copy > remaining) {
+      if (copy > remaining)
         copy = remaining;
-      }
-
-      memcpy((char *) bd->buffer + block_offset, src, (size_t) copy);
-
-      sc = k_bdbuf_release_modified(bd);
-      if (sc == RTEMS_SUCCESSFUL) {
+      memcpy((char *)bd->buffer + block_offset, src, (size_t)copy);
+      ret = k_bdbuf_release_modified(bd);
+      if (ret == 0) {
         block_offset = 0;
         remaining -= copy;
         src += copy;
@@ -130,40 +101,32 @@ static ssize_t rtems_blkdev_imfs_write(
       remaining = -1;
     }
   }
-
   if (remaining >= 0) {
     iop->offset += count;
-    rv = (ssize_t) count;
+    rv = (ssize_t)count;
   } else {
     errno = EIO;
     rv = -1;
   }
-
   return rv;
 }
 
-static int rtems_blkdev_imfs_ioctl(
-  rtems_libio_t *iop,
-  ioctl_command_t request,
-  void *buffer
-)
-{
-  int rv = 0;
-
+static int k_blkdev_ioctl(rtems_libio_t *iop, ioctl_command_t request,
+  void *buffer) {
+  int ret = 0;
   if (request != RTEMS_BLKIO_REQUEST) {
-    rtems_blkdev_imfs_context *ctx = IMFS_generic_get_context_by_iop(iop);
+    struct k_blkdev_context *ctx = IMFS_generic_get_context_by_iop(iop);
     struct k_disk_device *dd = &ctx->dd;
-
-    rv = (*dd->ioctl)(dd, request, buffer);
+    ret = (*dd->ioctl)(dd, request, buffer);
   } else {
     /*
      * It is not allowed to directly access the driver circumventing the cache.
      */
     errno = EINVAL;
-    rv = -1;
+    ret = -1;
   }
 
-  return rv;
+  return ret;
 }
 
 static int rtems_blkdev_imfs_fstat(
@@ -171,7 +134,7 @@ static int rtems_blkdev_imfs_fstat(
   struct stat *buf
 )
 {
-  rtems_blkdev_imfs_context *ctx;
+  struct k_blkdev_context *ctx;
   struct k_disk_device *dd;
   IMFS_jnode_t *node;
 
@@ -192,7 +155,7 @@ static int rtems_blkdev_imfs_fsync_or_fdatasync(
 )
 {
   int rv = 0;
-  rtems_blkdev_imfs_context *ctx = IMFS_generic_get_context_by_iop(iop);
+  struct k_blkdev_context *ctx = IMFS_generic_get_context_by_iop(iop);
   struct k_disk_device *dd = &ctx->dd;
   rtems_status_code sc = rtems_bdbuf_syncdev(dd);
 
@@ -208,109 +171,55 @@ static int rtems_blkdev_imfs_fsync_or_fdatasync(
 int k_blkdev_create(const char *device, uint32_t media_block_size,
   blkdev_bnum_t media_block_count, blkdev_ioctrl_fn handler,
   void *driver_data) {
-  rtems_blkdev_imfs_context *ctx;
+  struct k_blkdev_context *ctx;
   int ret;
 
   ret = k_bdbuf_init();
   if (ret) 
     return ret;
-
-
-  ctx = malloc(sizeof(*ctx));
-  if (ctx != NULL) {
-    sc = rtems_disk_init_phys(
-      &ctx->dd,
-      media_block_size,
-      media_block_count,
-      handler,
-      driver_data
-    );
-
-    ctx->fd = -1;
-
-    if (sc == RTEMS_SUCCESSFUL) {
-      int rv = IMFS_make_generic_node(
-        device,
-        S_IFBLK | S_IRWXU | S_IRWXG | S_IRWXO,
-        &rtems_blkdev_imfs_control,
-        ctx
-      );
-
-      if (rv != 0) {
-        free(ctx);
-        sc = RTEMS_UNSATISFIED;
-      }
-    } else {
-      free(ctx);
-    }
-  } else {
-    sc = RTEMS_NO_MEMORY;
+  ctx = k_malloc(sizeof(*ctx));
+  if (ctx == NULL)
+    return -ENOMEM;
+  ctx->dev = device_get_binding(device);
+  if (ctx->dev == NULL) {
+    ret = -ENODEV;
+    goto _freem;
   }
+  ret = k_disk_init_phys(&ctx->dd, media_block_size, media_block_count, 
+    handler, driver_data);
+  if (ret)
+    goto _freem;
+  return 0;
 
-  return sc;
+_freem:
+  k_free(ctx);
+  return ret;
 }
 
 int k_blkdev_create_partition(const char *partition,
   const char *parent_block_device, blkdev_bnum_t media_block_begin,
   blkdev_bnum_t media_block_count) {
+  struct k_disk_device *phys_dd;
+  struct k_blkdev_context *ctx;
+  struct device *dev;
+  int ret;
 
-
-  rtems_status_code sc = RTEMS_SUCCESSFUL;
-  int fd = open(parent_block_device, O_RDWR);
-
-  if (fd >= 0) {
-    int rv;
-    struct stat st;
-
-    rv = fstat(fd, &st);
-    if (rv == 0 && S_ISBLK(st.st_mode)) {
-      struct k_disk_device *phys_dd;
-
-      rv = rtems_disk_fd_get_disk_device(fd, &phys_dd);
-      if (rv == 0) {
-        rtems_blkdev_imfs_context *ctx = malloc(sizeof(*ctx));
-
-        if (ctx != NULL) {
-          sc = rtems_disk_init_log(
-            &ctx->dd,
-            phys_dd,
-            media_block_begin,
-            media_block_count
-          );
-
-          if (sc == RTEMS_SUCCESSFUL) {
-            ctx->fd = fd;
-
-            rv = IMFS_make_generic_node(
-              partition,
-              S_IFBLK | S_IRWXU | S_IRWXG | S_IRWXO,
-              &rtems_blkdev_imfs_control,
-              ctx
-            );
-
-            if (rv != 0) {
-              free(ctx);
-              sc = RTEMS_UNSATISFIED;
-            }
-          } else {
-            free(ctx);
-          }
-        } else {
-          sc = RTEMS_NO_MEMORY;
-        }
-      } else {
-        sc = RTEMS_NOT_IMPLEMENTED;
-      }
-    } else {
-      sc = RTEMS_INVALID_NODE;
-    }
-
-    if (sc != RTEMS_SUCCESSFUL) {
-      close(fd);
-    }
-  } else {
-    sc = RTEMS_INVALID_ID;
+  dev = device_get_binding(parent_block_device);
+  if (dev == NULL)
+    return -ENODEV;
+  ret = k_disk_fd_get_disk_device(fd, &phys_dd);
+  if (ret)
+    return -ESRCH;
+  ctx = k_malloc(sizeof(*ctx));
+  if (ctx == NULL）
+    return -ENOMEM;
+  ret = k_disk_init_log(&ctx->dd, phys_dd, media_block_begin, 
+    media_block_count);
+  if (ret) {
+    k_free(ctx);
+    goto _exit;
   }
-
-  return sc;
+  ctx->dev = dev;
+_exit:
+  return ret; 
 }
