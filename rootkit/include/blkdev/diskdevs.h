@@ -22,6 +22,15 @@ typedef int (*blkdev_ioctrl_fn)(
   void *argp
 );
 
+struct k_blkdev_partition {
+  const char *partition;
+  const char *devname;
+  uint32_t start;
+  size_t blksize;
+  size_t size;
+};
+
+
 /* Trigger value to disable further read-ahead requests. */
 #define K_DISK_READ_AHEAD_NO_TRIGGER ((blkdev_bnum_t) -1)
 
@@ -70,27 +79,27 @@ struct k_disk_device {
 };
 
 
-static inline void *rtems_disk_get_driver_data(
+static inline void *k_disk_get_driver_data(
   const struct k_disk_device *dd) {
   return dd->driver_data;
 }
 
-static inline uint32_t rtems_disk_get_media_block_size(
+static inline uint32_t k_disk_get_media_block_size(
   const struct k_disk_device *dd) {
   return dd->media_block_size;
 }
 
-static inline uint32_t rtems_disk_get_block_size(
+static inline uint32_t k_disk_get_block_size(
   const struct k_disk_device *dd) {
   return dd->block_size;
 }
 
-static inline blkdev_bnum_t rtems_disk_get_block_begin(
+static inline blkdev_bnum_t k_disk_get_block_begin(
   const struct k_disk_device *dd) {
   return dd->start;
 }
 
-static inline blkdev_bnum_t rtems_disk_get_block_count(
+static inline blkdev_bnum_t k_disk_get_block_count(
   const struct k_disk_device *dd) {
   return dd->size;
 }

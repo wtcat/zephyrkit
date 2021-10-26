@@ -20,6 +20,17 @@ struct k_blkdev_request;
 typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
   int status);
 
+struct k_blkdev_driver {
+  const struct device *dev;
+  const struct k_blkdev_partition *p;
+};
+
+struct k_blkdev_context {
+  struct k_disk_device dd;
+  struct k_blkdev_driver drv;
+  struct k_blkdev_context *next;
+};
+
 enum k_blkdev_request_op {
   K_BLKDEV_REQ_READ,       /* Read the requested blocks of data. */
   K_BLKDEV_REQ_WRITE,      /* Write the requested blocks of data. */

@@ -21,20 +21,25 @@
 struct k_blkdev_partition {
   const char *partition;
   const char *devname;
-  size_t start;
+  uint32_t start;
+  size_t blksize;
   size_t size;
+};
+
+struct k_blkdev_driver {
+  const struct device *dev;
+  const struct k_blkdev_partition *p;
 };
 
 struct k_blkdev_context {
   struct k_disk_device dd;
-  const struct device *dev;
+  struct k_blkdev_driver drv;
   atomic_t refcnt;
   struct k_blkdev_context *next;
-  const struct k_blkdev_partition *p;
 };
 
-extern char __blkdev_partition_start[];
-extern char __blkdev_partition_end[];
+extern struct k_blkdev_partition __blkdev_partition_start[];
+extern struct k_blkdev_partition __blkdev_partition_end[];
 
 static K_MUTEX_DEFINE(blkdev_lock);
 static struct k_blkdev_context *blkdev_list;
@@ -139,7 +144,7 @@ ssize_t k_blkdev_write(struct k_blkdev_context *ctx, const void *buffer,
 int k_blkdev_ioctl(struct k_blkdev_context *ctx, 
   ioctl_command_t request, void *buffer) {
   int ret = 0;
-  if (request != RTEMS_BLKIO_REQUEST) {
+  if (request != K_BLKIO_REQUEST) {
     struct k_disk_device *dd = &ctx->dd;
     ret = (*dd->ioctl)(dd, request, buffer);
   } else {
@@ -149,11 +154,12 @@ int k_blkdev_ioctl(struct k_blkdev_context *ctx,
   return ret;
 }
 
-
-static int k_blkdev_create(const char *device, uint32_t media_block_size,
-  blkdev_bnum_t media_block_count, blkdev_ioctrl_fn handler,
-  void *driver_data) {
+static int blkdev_create(const struct k_blkdev_partition *pt, 
+  blkdev_ioctrl_fn handler) {
   struct k_blkdev_context *ctx;
+  const struct device *dev;
+  uint32_t media_block_size;
+  blkdev_bnum_t media_block_count
   int ret;
 
   ret = k_bdbuf_init();
@@ -162,19 +168,42 @@ static int k_blkdev_create(const char *device, uint32_t media_block_size,
   ctx = k_malloc(sizeof(*ctx));
   if (ctx == NULL)
     return -ENOMEM;
-  ctx->dev = device_get_binding(device);
-  if (ctx->dev == NULL) {
+  dev = device_get_binding(pt->devname);
+  if (dev == NULL) {
     ret = -ENODEV;
     goto _freem;
   }
-  ret = k_disk_init_phys(&ctx->dd, media_block_size, media_block_count, 
-    handler, driver_data);
+  ret = k_disk_init_phys(&ctx->dd, pt->blksize, 
+    pt->size/pt->blksize, handler, &ctx->drv);
   if (ret)
     goto _freem;
+  ctx->drv.dev = dev;
+  ctx->drv.p = pt;
+  ctx->next = blkdev_list;
+  blkdev_list = ctx;
   return 0;
-
 _freem:
   k_free(ctx);
+  return ret;
+}
+
+int k_blkdev_partition_create(const struct k_blkdev_partition *pt,
+  blkdev_ioctrl_fn handle) {
+  if (pt->devname == NULL)
+    return -EINVAL;
+  if (pt->partition == NULL)
+    return -EINVAL;;
+  return blkdev_create(pt, handle);
+}
+
+static int blkdev_partition_register(void) {
+  struct k_blkdev_partition *pt;
+  struct k_blkdev_context *ctx;
+  int ret;
+  for (pt = __blkdev_partition_start;
+    pt < __blkdev_partition_end; pt++) {
+
+  }
   return ret;
 }
 
