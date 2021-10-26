@@ -13,6 +13,7 @@ static int flash_disk_read(struct k_blkdev_driver *drv,
         if (ret)
             break;
     }
+    k_blkdev_request_done(req, ret);
     return ret;
 }
 
@@ -32,7 +33,6 @@ static int flash_disk_write(struct k_blkdev_driver *drv,
         if (ret)
             break;
     }
-_exit:
     flash_write_protection_set(drv->dev, true);
     k_blkdev_request_done(req, ret);
     return ret;
