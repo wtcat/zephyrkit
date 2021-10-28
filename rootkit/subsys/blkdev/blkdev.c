@@ -22,14 +22,31 @@
 #include <kernel.h>
 #include <device.h>
 
+static K_MUTEX_DEFINE(lock)
 static struct k_blkdev_context *blkdev_list;
 
 struct k_blkdev_context *k_blkdev_acquire(const char *partition) {
-
+  struct k_blkdev_context *ctx;
+  if (partition == NULL）
+    return NULL;
+  k_mutex_lock(&lock, K_FOREVER);
+  for (ctx = blkdev_list; ctx != NULL; ctx = ctx->next) {
+    const struct k_blkdev_partition *pt = ctx->drv.p;
+    if (!strcmp(pt->partition, partition)) {
+      atomic_add(&ctx->refcnt, 1);
+      break;
+    }
+  }
+  k_mutex_unlock(&lock);
+  return ctx;
 }
 
 int k_blkdev_release(struct k_blkdev_context *ctx) {
-
+  if (ctx == NULL)
+    return -EINVAL;
+  
+  atomic_sub(&ctx->refcnt, 1);
+  return 0;
 }
 
 ssize_t k_blkdev_read(struct k_blkdev_context *ctx, void *buffer,
@@ -209,8 +226,10 @@ int k_blkdev_partition_create(const struct k_blkdev_partition *pt,
     goto _freem;
   ctx->drv.dev = dev;
   ctx->drv.p = pt;
+  k_mutex_lock(&lock, K_FOREVER);
   ctx->next = blkdev_list;
   blkdev_list = ctx;
+  k_mutex_unlock(&lock, K_FOREVER);
   return 0;
 _freem:
   k_free(ctx);

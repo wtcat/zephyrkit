@@ -29,6 +29,7 @@ struct k_blkdev_context {
   struct k_disk_device dd;
   struct k_blkdev_driver drv;
   struct k_blkdev_context *next;
+  atomic_t refcnt;
 };
 
 enum k_blkdev_request_op {

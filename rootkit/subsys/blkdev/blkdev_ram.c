@@ -3,6 +3,7 @@
  * Author: wtcat
  */
 #include <string.h>
+#include <device.h>
 
 #include "blkdev/blkdev.h"
 
@@ -52,3 +53,9 @@ int ram_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg) {
         return k_blkdev_default_ioctl(dd, r, arg);
     }
 }
+
+static int ram_device_init(const struct device *dev __unused) {
+    return 0;
+}
+DEVICE_DEFINE(ramdisk, "ram", ram_device_init, NULL,
+		      NULL, NULL, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, NULL);
