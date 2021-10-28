@@ -11,45 +11,24 @@
  * found in the file LICENSE in this distribution or at
  * http://www.rtems.org/license/LICENSE.
  */
-
+/*
+ * Copyright (C) 2021
+ * Author: wtcat
+ */
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <kernel.h>
 #include <device.h>
 
-struct k_blkdev_partition {
-  const char *partition;
-  const char *devname;
-  uint32_t start;
-  size_t blksize;
-  size_t size;
-};
-
-struct k_blkdev_driver {
-  const struct device *dev;
-  const struct k_blkdev_partition *p;
-};
-
-struct k_blkdev_context {
-  struct k_disk_device dd;
-  struct k_blkdev_driver drv;
-  atomic_t refcnt;
-  struct k_blkdev_context *next;
-};
-
-extern struct k_blkdev_partition __blkdev_partition_start[];
-extern struct k_blkdev_partition __blkdev_partition_end[];
-
-static K_MUTEX_DEFINE(blkdev_lock);
 static struct k_blkdev_context *blkdev_list;
 
-
-int k_blkdev_open(const char *partition, struct k_blkdev_context **ctx) {
+struct k_blkdev_context *k_blkdev_acquire(const char *partition) {
 
 }
 
-int k_blkdev_close(struct k_blkdev_context *ctx) {
+int k_blkdev_release(struct k_blkdev_context *ctx) {
 
 }
 
@@ -154,7 +133,54 @@ int k_blkdev_ioctl(struct k_blkdev_context *ctx,
   return ret;
 }
 
-static int blkdev_create(const struct k_blkdev_partition *pt, 
+int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
+  void *argp) {
+    int rc = 0;
+    switch (req) {
+    case K_BLKIO_GETMEDIABLKSIZE:
+        *(uint32_t *) argp = dd->media_block_size;
+        break;
+    case K_BLKIO_GETBLKSIZE:
+        *(uint32_t *) argp = dd->block_size;
+        break;
+    case K_BLKIO_SETBLKSIZE:
+        rc = k_bdbuf_set_block_size(dd, *(uint32_t *) argp, true);
+        if (rc != 0) {
+            errno = EIO;
+            rc = -1;
+        }
+        break;
+    case K_BLKIO_GETSIZE:
+        *(blkdev_bnum_t *)argp = dd->size;
+        break;
+    case K_BLKIO_SYNCDEV:
+        rc = k_bdbuf_syncdev(dd);
+        if (rc != 0) {
+            errno = EIO;
+            rc = -1;
+        }
+        break;
+    case K_BLKIO_GETDISKDEV:
+        *(struct k_disk_device **)argp = dd;
+        break;
+    case K_BLKIO_PURGEDEV:
+        k_bdbuf_purge_dev(dd);
+        break;
+    case K_BLKIO_GETDEVSTATS:
+        k_bdbuf_get_device_stats(dd, (struct k_blkdev_stats *)argp);
+        break;
+    case K_BLKIO_RESETDEVSTATS:
+        k_bdbuf_reset_device_stats(dd);
+        break;
+    default:
+        errno = EINVAL;
+        rc = -1;
+        break;
+    }
+    return rc;
+}
+
+int k_blkdev_partition_create(const struct k_blkdev_partition *pt, 
   blkdev_ioctrl_fn handler) {
   struct k_blkdev_context *ctx;
   const struct device *dev;
@@ -162,6 +188,10 @@ static int blkdev_create(const struct k_blkdev_partition *pt,
   blkdev_bnum_t media_block_count
   int ret;
 
+  if (pt->devname == NULL)
+    return -EINVAL;
+  if (pt->partition == NULL)
+    return -EINVAL;
   ret = k_bdbuf_init();
   if (ret) 
     return ret;
@@ -187,24 +217,20 @@ _freem:
   return ret;
 }
 
-int k_blkdev_partition_create(const struct k_blkdev_partition *pt,
-  blkdev_ioctrl_fn handle) {
-  if (pt->devname == NULL)
-    return -EINVAL;
-  if (pt->partition == NULL)
-    return -EINVAL;;
-  return blkdev_create(pt, handle);
-}
-
-static int blkdev_partition_register(void) {
-  struct k_blkdev_partition *pt;
-  struct k_blkdev_context *ctx;
-  int ret;
-  for (pt = __blkdev_partition_start;
-    pt < __blkdev_partition_end; pt++) {
-
+static int blkdev_static_partition_register(void) {
+  STRUCT_SECTION_FOREACH(k_blkdev_partition, iterator) {
+    int ret = k_blkdev_partition_create(iterator, NULL);
+    if (ret)
+      return ret;
   }
-  return ret;
+  return 0;
 }
 
-
+#define K_BLKDEV_PT(ptname, devname, start, size, pagesize) \
+  static const STRUCT_SECTION_ITERABLE(k_blkdev_partition, name) = { \
+    .partition = ptname, \
+    .devname = devname,  \
+    .start = start,      \
+    .blksize = pagesize, \
+    .size = size         \
+  }

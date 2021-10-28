@@ -164,38 +164,9 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
  */
 #define K_BLKDEV_CAP_SYNC (1 << 1)
 
-
-
-int rtems_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
-
-int rtems_blkdev_create(
-  const char *device,
-  uint32_t media_block_size,
-  blkdev_bnum_t media_block_count,
-  blkdev_ioctrl_fn handler,
-  void *driver_data
-);
-
-int rtems_blkdev_create_partition(
-  const char *partition,
-  const char *parent_block_device,
-  blkdev_bnum_t media_block_begin,
-  blkdev_bnum_t media_block_count
-);
-
-// void rtems_blkdev_print_stats(
-//   const struct k_blkdev_stats *stats,
-//   uint32_t media_block_size,
-//   uint32_t media_block_count,
-//   uint32_t block_size,
-//   const rtems_printer* printer
-// );
-
-// void rtems_blkstats(
-//   const rtems_printer *printer,
-//   const char *device,
-//   bool reset
-// );
+int k_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
+int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
+  void *argp)；
 
 #ifdef __cplusplus
 }

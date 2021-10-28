@@ -14,8 +14,9 @@
  * Copyright (c) 2009, 2017 embedded brains GmbH.
  */
 
-/**
- * Set to 1 to enable debug tracing.
+/*
+ * Copyright (C) 2021
+ * Author: wtcat
  */
 #include <errno.h>
 #include <string.h>

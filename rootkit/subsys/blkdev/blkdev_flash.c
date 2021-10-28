@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2021
+ * Author: wtcat
+ */
 #include <drivers/flash.h>
 #include "blkdev/blkdev.h"
 
@@ -53,7 +57,6 @@ int flash_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg) {
         }
     }
     default:
-        break;
+        return k_blkdev_default_ioctl(dd, r, arg);
     }
-    return 
 }
