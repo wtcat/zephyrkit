@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__..__bsps__drivers__zephyr__sensor__icm42607.a  CMakeFiles/..__..__bsps__drivers__zephyr__sensor__icm42607.dir/icm42607.c.obj CMakeFiles/..__..__bsps__drivers__zephyr__sensor__icm42607.dir/icm42607_setup.c.obj CMakeFiles/..__..__bsps__drivers__zephyr__sensor__icm42607.dir/icm42607_spi.c.obj CMakeFiles/..__..__bsps__drivers__zephyr__sensor__icm42607.dir/icm42607_trigger.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__..__bsps__drivers__zephyr__sensor__icm42607.a

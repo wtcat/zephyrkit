@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc libdrivers__pwm.a  CMakeFiles/drivers__pwm.dir/pwm_shell.c.obj CMakeFiles/drivers__pwm.dir/__/__/misc/empty_file.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib libdrivers__pwm.a

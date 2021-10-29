@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__..__bsps__boards__arm__iwatchv0.a  CMakeFiles/..__..__bsps__boards__arm__iwatchv0.dir/board.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__..__bsps__boards__arm__iwatchv0.a

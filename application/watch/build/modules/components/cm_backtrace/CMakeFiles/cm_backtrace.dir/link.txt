@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc libcm_backtrace.a  CMakeFiles/cm_backtrace.dir/cm_backtrace.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib libcm_backtrace.a

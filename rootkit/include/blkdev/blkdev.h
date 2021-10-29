@@ -167,7 +167,7 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
 
 int k_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
 int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
-  void *argp)；
+  void *argp);
 
 #ifdef __cplusplus
 }

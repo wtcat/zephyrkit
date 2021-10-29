@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__..__components__base__init.a  CMakeFiles/..__..__components__base__init.dir/fsinit.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__..__components__base__init.a

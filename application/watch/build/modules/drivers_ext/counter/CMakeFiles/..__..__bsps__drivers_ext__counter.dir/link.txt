@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__..__bsps__drivers_ext__counter.a  CMakeFiles/..__..__bsps__drivers_ext__counter.dir/counter_apollo3p.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__..__bsps__drivers_ext__counter.a

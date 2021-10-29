@@ -1,4 +1,0 @@
-osource "/home/wt/zephyr-kit/project_wkpace/../bsps/soc/$(ARCH)/Kconfig"
-osource "/home/wt/zephyr-kit/project_wkpace/../bsps/soc/$(ARCH)/*/Kconfig"
-osource "/home/wt/zephyr-kit/zephyr_pkg/zephyr/soc/$(ARCH)/Kconfig"
-osource "/home/wt/zephyr-kit/zephyr_pkg/zephyr/soc/$(ARCH)/*/Kconfig"

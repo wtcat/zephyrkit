@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__..__components__motion.a  CMakeFiles/..__..__components__motion.dir/cywee_motion.c.obj CMakeFiles/..__..__components__motion.dir/cywee_cmd.c.obj CMakeFiles/..__..__components__motion.dir/daily_sport_service/daily_sport_ctrl.c.obj CMakeFiles/..__..__components__motion.dir/daily_sport_service/gui_sport_cmd.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__..__components__motion.a

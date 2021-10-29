@@ -1,2 +1,0 @@
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ar qc lib..__littlefs.a  CMakeFiles/..__littlefs.dir/lfs.c.obj CMakeFiles/..__littlefs.dir/lfs_util.c.obj
-ccache /home/wt/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-ranlib lib..__littlefs.a
