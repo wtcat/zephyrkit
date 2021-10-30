@@ -18,7 +18,7 @@ static struct fs_mount_t fsmount_table[] = {
         .type = FS_LITTLEFS,
         .fs_data = &liitefs_storage,
         .storage_dev = (void *)LITTLE_FS_DEV,
-        .mnt_point = "/home"
+        .mnt_point = "/rootfs"
     },
 #endif
 };

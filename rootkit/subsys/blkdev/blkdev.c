@@ -245,11 +245,10 @@ static int blkdev_static_partition_register(void) {
   return 0;
 }
 
-#define K_BLKDEV_PT(ptname, devname, start, size, pagesize) \
+#define K_BLKDEV_PT(ptname, devname, start, size,) \
   static const STRUCT_SECTION_ITERABLE(k_blkdev_partition, name) = { \
     .partition = ptname, \
     .devname = devname,  \
     .start = start,      \
-    .blksize = pagesize, \
     .size = size         \
   }

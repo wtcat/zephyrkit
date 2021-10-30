@@ -1,13 +1,5 @@
 # Device driver configure menu
 
-menuconfig APOLLO3P_DEVICE
-	bool "Device Drivers"
-	help
-	  Enable options for apollo3p device drivers.
-
-
-if APOLLO3P_DEVICE
-
 rsource "adc/Kconfig"
 rsource "serial/Kconfig"
 rsource "gpio/Kconfig"
@@ -23,4 +15,3 @@ rsource "led/Kconfig"
 rsource "kscan/Kconfig"
 rsource "sensor/Kconfig"
 
-endif #APOLLO3P_DEVICE

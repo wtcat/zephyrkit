@@ -27,7 +27,6 @@ menuconfig  APOLLO_SOC_FLAH
 	bool "apollo3 flash driver"
 	select FLASH_HAS_PAGE_LAYOUT
 	select FLASH_HAS_DRIVER_ENABLED
-	default y
 	help
 	  Enable options for soc flash drivers.
 

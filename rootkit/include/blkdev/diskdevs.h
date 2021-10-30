@@ -14,7 +14,10 @@ extern "C" {
 
 struct k_disk_device;
 typedef uint32_t blkdev_bnum_t;
+
+#ifndef _DEV_T_DECLARED
 typedef uint32_t dev_t;
+#endif
 
 typedef int (*blkdev_ioctrl_fn)(
   struct k_disk_device *dd,
@@ -26,7 +29,6 @@ struct k_blkdev_partition {
   const char *partition;
   const char *devname;
   uint32_t start;
-  size_t blksize;
   size_t size;
 };
 

@@ -1,0 +1,3 @@
+config USER_FS_MOUNT
+  bool "Mount filesystem to disk"
+  depends on FILE_SYSTEM

@@ -21,7 +21,6 @@ rsource "drivers/Kconfig"
 rsource "drivers_ext/Kconfig"
 endif 
 
-
 #Libraries
 menuconfig  USER_LIBRARIES
   bool "Libraries (out of sourcetree)"
@@ -31,5 +30,13 @@ menuconfig  USER_LIBRARIES
 if USER_LIBRARIES
 rsource "lib/Kconfig"
 endif 
+
+#Initialization
+menuconfig  USER_SYSTEM_INIT
+  bool "User component initialize"
+
+if USER_SYSTEM_INIT
+rsource "init/Kconfig"
+endif
 
 

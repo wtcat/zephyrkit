@@ -3,6 +3,12 @@
 # Copyright (c) 2017 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+menuconfig DISPLAY
+	bool "Display Drivers"
+	help
+	  Enable display drivers
+
+if DISPLAY
 menuconfig RM69330
 	bool "RM69330 display driver"
 	#depends on MSPI
@@ -23,3 +29,4 @@ config RM69330_RGB565
 	bool "RGB565"
 
 endchoice
+endif #DISPLAY
