@@ -1,0 +1,8 @@
+
+#Application
+menu "Application configuration"
+rsource "component/Kconfig"
+endmenu
+
+# System
+source "Kconfig.zephyr"

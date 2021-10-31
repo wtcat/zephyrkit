@@ -3,7 +3,7 @@ define rst
 end
 
 define ld
-  target remote 192.168.199.175:2331
+  target remote 192.168.1.100:2331
   monitor reset
   load
 end

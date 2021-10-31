@@ -26,6 +26,11 @@
  * Created on: 2016-12-15
  */
 
+/*
+ * Copyright (c) 2021
+ * Author: wtcat
+ */
+
 #ifndef _CORTEXM_BACKTRACE_H_
 #define _CORTEXM_BACKTRACE_H_
 
@@ -83,6 +88,11 @@
 /* print information language, default is English */
 #ifndef CMB_PRINT_LANGUAGE
 #define CMB_PRINT_LANGUAGE CMB_PRINT_LANGUAGE_ENGLISH
+#endif
+
+#if (CMB_OS_PLATFORM_TYPE ==  CMB_OS_PLATFORM_ZEPHYR)
+#define CMB_CODE_SECTION_START __text_region_start
+#define CMB_CODE_SECTION_END   __text_region_end
 #endif
 
 #if defined(__CC_ARM) || defined(__CLANG_ARM)

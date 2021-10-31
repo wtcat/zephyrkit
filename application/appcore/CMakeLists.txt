@@ -1,16 +1,22 @@
-# SPDX-License-Identifier: Apache-2.0
+# Application
 
 cmake_minimum_required(VERSION 3.13.1)
 
 include(../cmake/modules.cmake)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(peripheral_hr)
+project(firmware)
 
 include(../cmake/debugger.cmake)
 
-FILE(GLOB app_sources src/*.c)
-target_sources(app PRIVATE
-  ${app_sources}
-  )
+# Global include path
+zephyr_include_directories(.)
 
-zephyr_library_include_directories(${ZEPHYR_BASE}/samples/bluetooth)
+add_subdirectory(component)
+target_sources(app PRIVATE
+  src/main.c
+)
+target_link_libraries(app 
+  PUBLIC 
+  component
+)
+
