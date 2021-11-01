@@ -41,3 +41,4 @@ endmacro()
 
 # Common interface library
 add_library(common_interface INTERFACE )
+target_link_libraries(common_interface INTERFACE zephyr_interface)
