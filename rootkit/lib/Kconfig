@@ -1,14 +1,6 @@
 # Components menu
 menu "Libraries"
 
-menuconfig GUIX
-	bool "GUIX for zephyr"
-	help
-	  Enable options for GUIX.
-if GUIX
-  rsource "gui/Kconfig"
-endif
-
 menuconfig XMODEM
 	bool "xmodem"
 	default n

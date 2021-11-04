@@ -1,0 +1,21 @@
+# Device driver configure menu
+
+menu "User drivers"
+
+rsource "adc/Kconfig"
+rsource "serial/Kconfig"
+rsource "gpio/Kconfig"
+rsource "i2c/Kconfig"
+rsource "misc/Kconfig"
+rsource "spi/Kconfig"
+rsource "flash/Kconfig"
+rsource "bluetooth/Kconfig"
+rsource "timer/Kconfig"
+rsource "display/Kconfig"
+rsource "pwm/Kconfig"
+rsource "led/Kconfig"
+rsource "kscan/Kconfig"
+rsource "sensor/Kconfig"
+
+endmenu
+

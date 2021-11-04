@@ -10,17 +10,6 @@ if USER_SUBSYSTEM
 rsource "subsys/Kconfig"
 endif 
 
-#Device drivers
-menuconfig  USER_DEVICE_DRIVER
-  bool "Device drivers (out of sourcetree)"
-  help
-    User extension for zephyr device drivers
-
-if USER_DEVICE_DRIVER
-rsource "drivers/Kconfig"
-rsource "drivers_ext/Kconfig"
-endif 
-
 #Libraries
 menuconfig  USER_LIBRARIES
   bool "Libraries (out of sourcetree)"
@@ -37,6 +26,14 @@ menuconfig  USER_SYSTEM_INIT
 
 if USER_SYSTEM_INIT
 rsource "init/Kconfig"
+endif
+
+menuconfig GUIX
+	bool "GUIX for zephyr"
+	help
+	  Enable options for GUIX.
+if GUIX
+  rsource "gui/Kconfig"
 endif
 
 
