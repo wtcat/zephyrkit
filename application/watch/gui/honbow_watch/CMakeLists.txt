@@ -125,23 +125,23 @@ zephyr_library_sources(
 	app_reminders/app_reminders_edit_page.c
 )
 
-zephyr_library_sources(
-	app_sports/app_sports_window.c 
-	app_sports/app_outdoor_run_window.c
-	app_sports/app_gps_connect.c
-	app_sports/app_sport_start_window.c
-	app_sports/app_sport_data_window.c
-	app_sports/app_sport_paused_window.c
-	app_sports/app_sport_summary_window.c
-	app_sports/sport_time_short_window.c
-	app_sports/sport_goal_set_window.c
-)
+# zephyr_library_sources(
+# 	app_sports/app_sports_window.c 
+# 	app_sports/app_outdoor_run_window.c
+# 	app_sports/app_gps_connect.c
+# 	app_sports/app_sport_start_window.c
+# 	app_sports/app_sport_data_window.c
+# 	app_sports/app_sport_paused_window.c
+# 	app_sports/app_sport_summary_window.c
+# 	app_sports/sport_time_short_window.c
+# 	app_sports/sport_goal_set_window.c
+# )
 
-zephyr_library_sources(
-	app_today/app_today_window.c 	
-	app_today/app_sleep_data_window.c
-	app_today/today_sport_data_window.c
-)
+# zephyr_library_sources(
+# 	app_today/app_today_window.c 	
+# 	app_today/app_sleep_data_window.c
+# 	app_today/today_sport_data_window.c
+# )
 
 # zephyr_library_sources(
 # 	app_heart/app_heart_window.c 

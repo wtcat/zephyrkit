@@ -10,17 +10,17 @@
 
 #include "drivers_ext/sensor_priv.h"
 
-#include "stp/stp.h"
-#include "stp/stp_core.h"
-#include "stp/opc_proto.h"
+// #include "stp/stp.h"
+// #include "stp/stp_core.h"
+// #include "stp/opc_proto.h"
 
-#include "base/vibration.h"
+// #include "base/vibration.h"
 
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(test);
 
-#include "services/magnet/magnet_svr.h"
+// #include "services/magnet/magnet_svr.h"
 
 //#define CONFIG_GPIO_GENERATE_PULSE
 //#define CONFIG_BUTTON_TEST

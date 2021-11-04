@@ -1,20 +1,14 @@
 # Cmake version require
 cmake_minimum_required(VERSION 3.13.1)
 
-# Select target board(optional)
-#set(BOARD apollo3p)
-
 # Modules path
-include(cmake/module.cmake) 
-
+include(../cmake/modules.cmake)
+list(APPEND ZEPHYR_EXTRA_MODULES 
+    ${ZEPHYR_BASE}/../rootkit/drivers
+#    ${ZEPHYR_BASE}/../rootkit/drivers_ext
+)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-# Add debugger command (optional)
-include(cmake/debugger.cmake)
-
-#Protocol generotor
-include(cmake/proto.cmake)
-               
 # Project name
 project(watch)
 

@@ -14,8 +14,7 @@
 #include "app_outdoor_run_window.h"
 #include "guix_language_resources_custom.h"
 #include "guix_api.h"
-#include "motion/cywee_motion.h"
-#include "motion/daily_sport_service/gui_sport_cmd.h"
+
 #include "windows_manager.h"
 
 extern GX_WIDGET sleep_data_widget;
@@ -23,8 +22,8 @@ extern GX_WIDGET today_main_page;
 extern GX_WIDGET no_sport_record_window;
 
 void today_child_widget_common_event(GX_WIDGET *widget, GX_EVENT *event_ptr);
-void app_sleep_data_window_init(GX_WINDOW *window, SLEEP_DATA_STRUCT_DEF *sleep_data);
-void init_sleep_data_test(int index, SLEEP_DATA_STRUCT_DEF *data);
+// void app_sleep_data_window_init(GX_WINDOW *window, SLEEP_DATA_STRUCT_DEF *sleep_data);
+// void init_sleep_data_test(int index, SLEEP_DATA_STRUCT_DEF *data);
 void app_no_sport_record_window_init(GX_WINDOW *window);
 
 typedef struct {
