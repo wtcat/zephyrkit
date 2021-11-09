@@ -11,6 +11,8 @@
 #include <logging/log.h>
 
 
+#define DT_DRV_COMPAT ambiq_apllo3p_usart
+
 //LOG_MODULE_REGISTER(apollo3p_uart);
 #define CONFIG_UART_DEFAULT_BAUD 115200
 
@@ -436,51 +438,28 @@ static const struct uart_driver_api apollo3p_uart_driver_api = {
 };
 #endif /* CONFIG_APOLLO3P_UART0 || CONFIG_APOLLO3P_UART1 */
 
-/* 
- * UART 0
- */
+#define UART_DEVICE(nr) \
+static struct apollo_uart apollo3p_uart##nr##_private;  \
+static const struct apollo_uart_config apollo3p_uart##nr##_config = { \
+    .reg = (volatile struct uart_regs *)UART##nr##_BASE, \
+    .irq = UART##nr##_IRQn,                           \
+    .priority = DT_IRQ(DT_NODELABEL(uart##nr), priority),  \
+    .intmask = UART_IER_RX | UART_IER_RX_TIMEOUT | UART_IER_TX, \
+    .pwren = BIT(nr+7), \
+};                              \
+DEVICE_DT_DEFINE(DT_DRV_INST(nr),   \
+	apollo3p_uart_init,       \
+	NULL, \
+	&apollo3p_uart##nr##_private,  \
+	&apollo3p_uart##nr##_config,   \
+	PRE_KERNEL_1,          \
+	CONFIG_KERNEL_INIT_PRIORITY_DEVICE, \
+	&apollo3p_uart_driver_api);
+
+
 #if UART_ENABLED(0)
-static struct apollo_uart apollo3p_uart0_private;
-static const struct apollo_uart_config apollo3p_uart0_config = {
-    .reg = (volatile struct uart_regs *)UART0_BASE,
-    .irq = UART0_IRQn,
-    .priority = DT_IRQ(DT_NODELABEL(uart0), priority),
-    .intmask = UART_IER_RX | UART_IER_RX_TIMEOUT | UART_IER_TX,
-    .pwren = BIT(7),
-};
-
-DEVICE_DEFINE(apollo3p_uart0, 
-                    DT_PROP(DT_NODELABEL(uart0), label),
-                    apollo3p_uart_init,
-					NULL,
-			        &apollo3p_uart0_private, 
-			        &apollo3p_uart0_config, 
-			        PRE_KERNEL_1, 
-			        CONFIG_KERNEL_INIT_PRIORITY_DEVICE, 
-			        &apollo3p_uart_driver_api);
-#endif /* CONFIG_APOLLO3P_UART0 */
-
-/* 
- * UART 1
- */
+UART_DEVICE(0)
+#endif
 #if UART_ENABLED(1)
-static struct apollo_uart apollo3p_uart1_private;
-static const struct apollo_uart_config apollo3p_uart1_config = {
-    .reg = (volatile struct uart_regs *)UART1_BASE,
-    .irq = UART1_IRQn,
-    .priority = DT_IRQ(DT_NODELABEL(uart1), priority),
-    .intmask = UART_IER_RX | UART_IER_RX_TIMEOUT | UART_IER_TX,
-    .pwren = BIT(8),
-};
-
-DEVICE_DEFINE(apollo3p_uart1, 
-                    DT_PROP(DT_NODELABEL(uart1), label),
-                    apollo3p_uart_init,
-					NULL,
-			        &apollo3p_uart1_private, 
-			        &apollo3p_uart1_config, 
-			        PRE_KERNEL_1, 
-			        CONFIG_KERNEL_INIT_PRIORITY_DEVICE, 
-			        &apollo3p_uart_driver_api);
-#endif /* CONFIG_APOLLO3P_UART1 */
-
+UART_DEVICE(1)
+#endif
