@@ -15,19 +15,12 @@
 
 LOG_MODULE_REGISTER(MMC5603, CONFIG_SENSOR_LOG_LEVEL);
 
-
-#if (KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(2,6,0))
+#if (KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(2,7,0))
 #include <pm/device_runtime.h>
 #define _device_pm_get(_dev) pm_device_get(_dev)
 #define _device_pm_put(_dev) pm_device_put(_dev)
 #define device_pm_enable(_dev) pm_device_enable(_dev)
-#define device_pm_cb pm_device_cb
-
-#define DEVICE_PM_SET_POWER_STATE  PM_DEVICE_STATE_SET
-#define DEVICE_PM_GET_POWER_STATE  PM_DEVICE_STATE_GET
-#define DEVICE_PM_ACTIVE_STATE     PM_DEVICE_STATE_ACTIVE
-#define DEVICE_PM_LOW_POWER_STATE  PM_DEVICE_STATE_LOW_POWER
-#define DEVICE_PM_SUSPEND_STATE    PM_DEVICE_STATE_SUSPEND
+#define device_pm_cb pm_device_control_callback_t
 #else
 #define _device_pm_get(_dev) device_pm_get_sync(_dev)
 #define _device_pm_put(_dev) device_pm_put(_dev)
@@ -420,56 +413,41 @@ static bool mmc5603_selftest_run(struct mmc5603_data *priv)
 }
 
 #ifdef CONFIG_PM_DEVICE
-static int mmc5603_pm_set(struct mmc5603_data *priv, uint32_t state)
+static int __unused mmc5603_pm_set(struct mmc5603_data *priv, uint32_t state)
 {
-    int ret = 0;
-
-    switch (state) {
-    case DEVICE_PM_ACTIVE_STATE:
-        priv->power_state = state;
-        break;
-    case DEVICE_PM_LOW_POWER_STATE:
-        break;
-    case DEVICE_PM_SUSPEND_STATE:
-        ret = mmc5603_soft_reset(priv);
-        if (!ret)
-            priv->power_state = state;
-        break;
-    }
-    return ret;
+    // int ret = 0;
+    // switch (state) {
+    // case DEVICE_PM_ACTIVE_STATE:
+    //     priv->power_state = state;
+    //     break;
+    // case DEVICE_PM_LOW_POWER_STATE:
+    //     break;
+    // case DEVICE_PM_SUSPEND_STATE:
+    //     ret = mmc5603_soft_reset(priv);
+    //     if (!ret)
+    //         priv->power_state = state;
+    //     break;
+    // }
+    // return ret;
+    return 0;
 }
 
-#if (KERNEL_VERSION_NUMBER < ZEPHYR_VERSION(2,6,0))
-static int mmc5603_pm_control(const struct device *dev, uint32_t command, 
-    void *context, device_pm_cb cb, void *arg) 
-#else
-static int mmc5603_pm_control(const struct device *dev, uint32_t command, 
-    uint32_t *context, device_pm_cb cb, void *arg) 
-#endif
-{
-    struct mmc5603_data *priv = dev->data;
-    uint32_t *state = context;
-    int ret;
-
-    switch (command) {
-    case DEVICE_PM_SET_POWER_STATE:
-        ret = mmc5603_pm_set(priv, *state);
+static int mmc5603_pm_control(const struct device *dev,
+    enum pm_device_action action) {
+    switch (action) {
+    case PM_DEVICE_ACTION_RESUME:
         break;
-    case DEVICE_PM_GET_POWER_STATE:
-        *state = priv->power_state;
-        ret = 0;
+    case PM_DEVICE_ACTION_SUSPEND:
         break;
     default:
-        ret = -EINVAL;
         break;
     }
-    if (cb != NULL)
-        cb(dev, ret, context, arg);
-    return ret;
+    return 0;
 }
+
 #else
 #define mmc5603_pm_control NULL
-#endif
+#endif /* CONFIG_PM_DEVICE */
 
 static int mmc5603_init(const struct device *dev)
 {

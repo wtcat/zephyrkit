@@ -15,15 +15,12 @@ LOG_MODULE_REGISTER(i2c_apollo3p);
 #include "i2c/i2c-message.h"
 
 
-
-#if (KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(2,6,0))
-#define device_pm_cb pm_device_cb
+#if (KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(2,7,0))
+#define device_pm_cb pm_device_control_callback_t
 #define DEVICE_PM_SET_POWER_STATE  PM_DEVICE_STATE_SET
 #define DEVICE_PM_GET_POWER_STATE  PM_DEVICE_STATE_GET
 #define DEVICE_PM_ACTIVE_STATE     PM_DEVICE_STATE_ACTIVE
 #define DEVICE_PM_LOW_POWER_STATE  PM_DEVICE_STATE_LOW_POWER
-#define DEVICE_PM_SUSPEND_STATE    PM_DEVICE_STATE_SUSPEND
-#define DEVICE_PM_FORCE_SUSPEND_STATE PM_DEVICE_STATE_FORCE_SUSPEND
 #endif
 
 #define I2C_DMABUF_SIZE (2*26)
@@ -336,40 +333,13 @@ static const struct i2c_driver_api i2c_apollo3p_compatible_driver_api = {
 */
 
 #ifdef CONFIG_PM_DEVICE
-
-static int i2c_pm_control(const struct device *dev, 
-                        uint32_t command,
-#if KERNEL_VERSION_NUMBER >= ZEPHYR_VERSION(2,6,0)
-                        uint32_t *context,
-#else
-                        void *context, 
-#endif
-                        pm_device_cb cb, 
-                        void *arg)
-{
-    uint32_t state = *(uint32_t *)context;
-    if (command == DEVICE_PM_SET_POWER_STATE) {
-        switch (state) {
-        case DEVICE_PM_ACTIVE_STATE:
-            break;
-        case DEVICE_PM_LOW_POWER_STATE:
-        case DEVICE_PM_SUSPEND_STATE:
-        case DEVICE_PM_FORCE_SUSPEND_STATE:
-            break;
-        }
-    } else {
-
-    }
-    return -ENOTSUP;
+static int i2c_pm_control(const struct device *dev,
+    enum pm_device_action action) {
+    return 0;
 }
 #else
 #define i2c_pm_control NULL
 #endif /* CONFIG_PM_DEVICE */
-
-#if defined(i2c_pm_control)
-#error "#####"
-#endif
-
 
 #define I2C_APOLLO3P(name, _driver_api) \
 	struct i2c_apollo3p_data i2c##name##_apollo3p_data = { \

@@ -424,7 +424,7 @@ static void lcd_sync_render(struct lcd_driver *lcd)
 		render->state(render);
 }
 
-static uint8_t value_test;
+//static uint8_t value_test;
 static void lcd_display_update(struct GX_CANVAS_STRUCT *canvas, GX_RECTANGLE *area)
 {
 	struct lcd_driver *lcd = canvas->gx_canvas_display->gx_display_driver_data;
@@ -587,6 +587,7 @@ int lcd_brightness_adjust(uint8_t value)
 	lcd_write_cmd(lcd->spi, 0x51, &bright, 1, false);
 	k_mutex_unlock(&lcd->render.mutex_op);
 	brightness = value;
+	return 0;
 #endif
 }
 
