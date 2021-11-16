@@ -197,17 +197,16 @@ int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req,
     return rc;
 }
 
-int k_blkdev_partition_create(const struct k_blkdev_partition *pt, 
+int k_blkdev_partition_create(const struct flash_area *fa, 
   blkdev_ioctrl_fn handler) {
+    const struct flash_pages_layout *layout;
+  const struct flash_driver_api *api;
   struct k_blkdev_context *ctx;
   const struct device *dev;
-  uint32_t media_block_size;
-  blkdev_bnum_t media_block_count
+  size_t layout_size;
   int ret;
 
-  if (pt->devname == NULL)
-    return -EINVAL;
-  if (pt->partition == NULL)
+  if (fa == NULL)
     return -EINVAL;
   ret = k_bdbuf_init();
   if (ret) 
@@ -215,17 +214,19 @@ int k_blkdev_partition_create(const struct k_blkdev_partition *pt,
   ctx = k_malloc(sizeof(*ctx));
   if (ctx == NULL)
     return -ENOMEM;
-  dev = device_get_binding(pt->devname);
+  dev = device_get_binding(fa->fa_dev_name);
   if (dev == NULL) {
     ret = -ENODEV;
     goto _freem;
   }
-  ret = k_disk_init_phys(&ctx->dd, pt->blksize, 
-    pt->size/pt->blksize, handler, &ctx->drv);
+  api = dev->api;
+  api->page_layout(dev, &layout, &layout_size);
+  ret = k_disk_init_phys(&ctx->dd, layout->pages_size, 
+    fa->fa_size/layout->pages_size, handler, &ctx->drv);
   if (ret)
     goto _freem;
   ctx->drv.dev = dev;
-  ctx->drv.p = pt;
+  ctx->drv.p = fa;
   k_mutex_lock(&lock, K_FOREVER);
   ctx->next = blkdev_list;
   blkdev_list = ctx;
@@ -236,19 +237,12 @@ _freem:
   return ret;
 }
 
-static int blkdev_static_partition_register(void) {
-  STRUCT_SECTION_FOREACH(k_blkdev_partition, iterator) {
-    int ret = k_blkdev_partition_create(iterator, NULL);
-    if (ret)
-      return ret;
-  }
-  return 0;
+static void blkdev_partition_iterator(const struct flash_area *fa,
+    void *user_data) {
+    k_blkdev_partition_create(fa, NULL);
 }
 
-#define K_BLKDEV_PT(ptname, devname, start, size,) \
-  static const STRUCT_SECTION_ITERABLE(k_blkdev_partition, name) = { \
-    .partition = ptname, \
-    .devname = devname,  \
-    .start = start,      \
-    .size = size         \
-  }
+static int blkdev_static_partition_register(void) {
+  flash_area_foreach(blkdev_partition_iterator, NULL);
+  return 0;
+}

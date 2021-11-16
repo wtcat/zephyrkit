@@ -6,8 +6,10 @@
 #ifndef SUBSYS_BLKDEV_BLKDEV_H_
 #define SUBSYS_BLKDEV_BLKDEV_H_
 
-#include <kernel.h>
 #include <stdio.h>
+#include <atomic.h>
+#include <kernel.h>
+#include <storage/flash_map.h>
 
 #include "sys/iocom.h"
 #include "blkdev/diskdevs.h"
@@ -22,7 +24,7 @@ typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req,
 
 struct k_blkdev_driver {
   const struct device *dev;
-  const struct k_blkdev_partition *p;
+  const struct flash_area *p;
 };
 
 struct k_blkdev_context {
