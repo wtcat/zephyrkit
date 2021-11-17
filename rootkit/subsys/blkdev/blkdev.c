@@ -21,18 +21,21 @@
 
 #include <kernel.h>
 #include <device.h>
+#include <init.h>
+
+#include "blkdev/blkdev.h"
+
+#include <storage/flash_map.h>
 
 static K_MUTEX_DEFINE(lock)
 static struct k_blkdev_context *blkdev_list;
 
-struct k_blkdev_context *k_blkdev_acquire(const char *partition) {
+struct k_blkdev_context *k_blkdev_acquire(int partition) {
   struct k_blkdev_context *ctx;
-  if (partition == NULL）
-    return NULL;
   k_mutex_lock(&lock, K_FOREVER);
   for (ctx = blkdev_list; ctx != NULL; ctx = ctx->next) {
     const struct k_blkdev_partition *pt = ctx->drv.p;
-    if (!strcmp(pt->partition, partition)) {
+    if (pt->fa_id == partition) {
       atomic_add(&ctx->refcnt, 1);
       break;
     }
@@ -197,7 +200,7 @@ int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req,
     return rc;
 }
 
-int k_blkdev_partition_create(const struct flash_area *fa, 
+static int blkdev_partition_create(const struct flash_area *fa, 
   blkdev_ioctrl_fn handler) {
     const struct flash_pages_layout *layout;
   const struct flash_driver_api *api;
@@ -239,10 +242,13 @@ _freem:
 
 static void blkdev_partition_iterator(const struct flash_area *fa,
     void *user_data) {
-    k_blkdev_partition_create(fa, NULL);
+    blkdev_partition_create(fa, flash_disk_ioctl);
 }
 
-static int blkdev_static_partition_register(void) {
+static int blkdev_partition_register(const struct device *dev __unused) {
   flash_area_foreach(blkdev_partition_iterator, NULL);
   return 0;
 }
+
+SYS_INIT(blkdev_partition_register,
+  POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);

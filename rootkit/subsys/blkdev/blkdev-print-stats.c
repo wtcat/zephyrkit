@@ -1,11 +1,3 @@
-/**
- * @file
- *
- * @ingroup rtems_blkdev Block Device Management
- *
- * @brief Prints the Block Device Statistics
- */
-
 /*
  * Copyright (c) 2012 embedded brains GmbH.  All rights reserved.
  *
@@ -20,15 +12,11 @@
  * http://www.rtems.org/license/LICENSE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <rtems/blkdev.h>
 
 #include <inttypes.h>
 
-void rtems_blkdev_print_stats(
+void k_blkdev_print_stats(
   const rtems_blkdev_stats *stats,
   uint32_t media_block_size,
   uint32_t media_block_count,

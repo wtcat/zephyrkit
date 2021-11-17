@@ -7,7 +7,6 @@
 #define SUBSYS_BLKDEV_BLKDEV_H_
 
 #include <stdio.h>
-#include <atomic.h>
 #include <kernel.h>
 #include <storage/flash_map.h>
 
@@ -31,7 +30,7 @@ struct k_blkdev_context {
   struct k_disk_device dd;
   struct k_blkdev_driver drv;
   struct k_blkdev_context *next;
-  atomic_t refcnt;
+  //atomic_t refcnt;
 };
 
 enum k_blkdev_request_op {
@@ -170,6 +169,8 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
 int k_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
 int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
   void *argp);
+
+int flash_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg);
 
 #ifdef __cplusplus
 }
