@@ -26,10 +26,10 @@ struct k_blkdev_driver {
   const struct flash_area *p;
 };
 
-struct k_blkdev_context {
+struct k_blkdev {
   struct k_disk_device dd;
   struct k_blkdev_driver drv;
-  struct k_blkdev_context *next;
+  struct k_blkdev *next;
   //atomic_t refcnt;
 };
 
@@ -96,60 +96,6 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
 #define K_BLKIO_RESETDEVSTATS   _IO('B', 12)
 
 
-// static inline int rtems_disk_fd_get_media_block_size(int fd,
-//   uint32_t *media_block_size) {
-//   return ioctl(fd, K_BLKIO_GETMEDIABLKSIZE, media_block_size);
-// }
-
-// static inline int rtems_disk_fd_get_block_size(int fd, uint32_t *block_size)
-// {
-//   return ioctl(fd, K_BLKIO_GETBLKSIZE, block_size);
-// }
-
-// static inline int rtems_disk_fd_set_block_size(int fd, uint32_t block_size)
-// {
-//   return ioctl(fd, K_BLKIO_SETBLKSIZE, &block_size);
-// }
-
-// static inline int rtems_disk_fd_get_block_count(
-//   int fd,
-//   blkdev_bnum_t *block_count
-// )
-// {
-//   return ioctl(fd, K_BLKIO_GETSIZE, block_count);
-// }
-
-// static inline int rtems_disk_fd_get_disk_device(
-//   int fd,
-//   struct k_disk_device **dd_ptr
-// )
-// {
-//   return ioctl(fd, K_BLKIO_GETDISKDEV, dd_ptr);
-// }
-
-// static inline int rtems_disk_fd_sync(int fd)
-// {
-//   return ioctl(fd, K_BLKIO_SYNCDEV);
-// }
-
-// static inline int rtems_disk_fd_purge(int fd)
-// {
-//   return ioctl(fd, K_BLKIO_PURGEDEV);
-// }
-
-// static inline int rtems_disk_fd_get_device_stats(
-//   int fd,
-//   struct k_blkdev_stats *stats
-// )
-// {
-//   return ioctl(fd, K_BLKIO_GETDEVSTATS, stats);
-// }
-
-// static inline int rtems_disk_fd_reset_device_stats(int fd)
-// {
-//   return ioctl(fd, K_BLKIO_RESETDEVSTATS);
-// }
-
 /**
  * @brief Only consecutive multi-sector buffer requests are supported.
  *
@@ -165,6 +111,13 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
  * A sync call is made to a driver after a bdbuf cache sync has finished.
  */
 #define K_BLKDEV_CAP_SYNC (1 << 1)
+
+struct k_blkdev *k_blkdev_get(int partition);
+int k_blkdev_put(struct k_blkdev *ctx);
+ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
+  size_t count, off_t offset);
+ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
+  size_t count, off_t offset);
 
 int k_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
 int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 

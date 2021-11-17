@@ -28,10 +28,10 @@
 #include <storage/flash_map.h>
 
 static K_MUTEX_DEFINE(lock)
-static struct k_blkdev_context *blkdev_list;
+static struct k_blkdev *blkdev_list;
 
-struct k_blkdev_context *k_blkdev_acquire(int partition) {
-  struct k_blkdev_context *ctx;
+struct k_blkdev *k_blkdev_get(int partition) {
+  struct k_blkdev *ctx;
   k_mutex_lock(&lock, K_FOREVER);
   for (ctx = blkdev_list; ctx != NULL; ctx = ctx->next) {
     const struct k_blkdev_partition *pt = ctx->drv.p;
@@ -44,7 +44,7 @@ struct k_blkdev_context *k_blkdev_acquire(int partition) {
   return ctx;
 }
 
-int k_blkdev_release(struct k_blkdev_context *ctx) {
+int k_blkdev_put(struct k_blkdev *ctx) {
   if (ctx == NULL)
     return -EINVAL;
   
@@ -52,11 +52,10 @@ int k_blkdev_release(struct k_blkdev_context *ctx) {
   return 0;
 }
 
-ssize_t k_blkdev_read(struct k_blkdev_context *ctx, void *buffer,
-  size_t count) {
+ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
+  size_t count, off_t offset) {
   struct k_disk_device *dd = &ctx->dd;
   ssize_t remaining = (ssize_t)count;
-  off_t offset = iop->offset;
   ssize_t block_size = (ssize_t)k_disk_get_block_size(dd);
   blkdev_bnum_t block = (blkdev_bnum_t)(offset / block_size);
   ssize_t block_offset = (ssize_t)(offset % block_size);
@@ -85,7 +84,6 @@ ssize_t k_blkdev_read(struct k_blkdev_context *ctx, void *buffer,
     }
   }
   if (remaining >= 0) {
-    iop->offset += count;
     rv = (ssize_t)count;
   } else {
     errno = EIO;
@@ -94,11 +92,10 @@ ssize_t k_blkdev_read(struct k_blkdev_context *ctx, void *buffer,
   return rv;
 }
 
-ssize_t k_blkdev_write(struct k_blkdev_context *ctx, const void *buffer,
-  size_t count) {
+ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
+  size_t count, off_t offset) {
   struct k_disk_device *dd = &ctx->dd;
   ssize_t remaining = (ssize_t)count;
-  off_t offset = iop->offset;
   ssize_t block_size = (ssize_t)k_disk_get_block_size(dd);
   blkdev_bnum_t block = (blkdev_bnum_t)(offset / block_size);
   ssize_t block_offset = (ssize_t)(offset % block_size);
@@ -131,7 +128,6 @@ ssize_t k_blkdev_write(struct k_blkdev_context *ctx, const void *buffer,
     }
   }
   if (remaining >= 0) {
-    iop->offset += count;
     rv = (ssize_t)count;
   } else {
     errno = EIO;
@@ -140,8 +136,8 @@ ssize_t k_blkdev_write(struct k_blkdev_context *ctx, const void *buffer,
   return rv;
 }
 
-int k_blkdev_ioctl(struct k_blkdev_context *ctx, 
-  ioctl_command_t request, void *buffer) {
+int k_blkdev_ioctl(struct k_blkdev *ctx, ioctl_command_t request,
+   void *buffer) {
   int ret = 0;
   if (request != K_BLKIO_REQUEST) {
     struct k_disk_device *dd = &ctx->dd;
@@ -204,7 +200,7 @@ static int blkdev_partition_create(const struct flash_area *fa,
   blkdev_ioctrl_fn handler) {
     const struct flash_pages_layout *layout;
   const struct flash_driver_api *api;
-  struct k_blkdev_context *ctx;
+  struct k_blkdev *ctx;
   const struct device *dev;
   size_t layout_size;
   int ret;
