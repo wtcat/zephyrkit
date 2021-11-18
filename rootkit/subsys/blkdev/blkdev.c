@@ -23,20 +23,24 @@
 #include <device.h>
 #include <init.h>
 
-#include "blkdev/blkdev.h"
-
+#include <drivers/flash.h>
 #include <storage/flash_map.h>
 
-static K_MUTEX_DEFINE(lock)
+#include "blkdev/blkdev.h"
+#include "blkdev/bdbuf.h"
+#include "blkdev/diskdevs.h"
+
+
+static K_MUTEX_DEFINE(lock);
 static struct k_blkdev *blkdev_list;
 
 struct k_blkdev *k_blkdev_get(int partition) {
   struct k_blkdev *ctx;
   k_mutex_lock(&lock, K_FOREVER);
   for (ctx = blkdev_list; ctx != NULL; ctx = ctx->next) {
-    const struct k_blkdev_partition *pt = ctx->drv.p;
+    const struct flash_area *pt = ctx->drv.p;
     if (pt->fa_id == partition) {
-      atomic_add(&ctx->refcnt, 1);
+      //atomic_add(&ctx->refcnt, 1);
       break;
     }
   }
@@ -48,7 +52,7 @@ int k_blkdev_put(struct k_blkdev *ctx) {
   if (ctx == NULL)
     return -EINVAL;
   
-  atomic_sub(&ctx->refcnt, 1);
+  //atomic_sub(&ctx->refcnt, 1);
   return 0;
 }
 
@@ -136,7 +140,7 @@ ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
   return rv;
 }
 
-int k_blkdev_ioctl(struct k_blkdev *ctx, ioctl_command_t request,
+int k_blkdev_ioctl(struct k_blkdev *ctx, uint32_t request,
    void *buffer) {
   int ret = 0;
   if (request != K_BLKIO_REQUEST) {
@@ -149,7 +153,7 @@ int k_blkdev_ioctl(struct k_blkdev *ctx, ioctl_command_t request,
   return ret;
 }
 
-int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
+int k_disk_default_ioctl(struct k_disk_device *dd, uint32_t req, 
   void *argp) {
     int rc = 0;
     switch (req) {
@@ -229,7 +233,7 @@ static int blkdev_partition_create(const struct flash_area *fa,
   k_mutex_lock(&lock, K_FOREVER);
   ctx->next = blkdev_list;
   blkdev_list = ctx;
-  k_mutex_unlock(&lock, K_FOREVER);
+  k_mutex_unlock(&lock);
   return 0;
 _freem:
   k_free(ctx);

@@ -34,7 +34,11 @@
 
 		filesystem_partition: partition@0 {
 			label = "fs";
-			reg = <0x0 DT_SIZE_K(8192)>;
+			reg = <0x0 DT_SIZE_K(7168)>;
+		};
+		blkdev_partition: partition@1 {
+			label = "blkdev";
+			reg = <0x700000 DT_SIZE_K(1024)>;
 		};
 	};
 };

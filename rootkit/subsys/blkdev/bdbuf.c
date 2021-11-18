@@ -296,7 +296,7 @@ static int z_bdbuf_avl_insert(struct k_bdbuf_buffer** root,
   blkdev_bnum_t block = node->block;
 
   struct k_bdbuf_buffer*  p = *root;
-  struct k_bdbuf_buffer*  q;
+  struct k_bdbuf_buffer*  q = NULL;
   struct k_bdbuf_buffer*  p1;
   struct k_bdbuf_buffer*  p2;
   struct k_bdbuf_buffer*  buf_stack[K_BDBUF_AVL_MAX_HEIGHT];

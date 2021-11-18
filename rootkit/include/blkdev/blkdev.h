@@ -17,6 +17,8 @@
 extern "C" {
 #endif
 
+#define BLKDEV(name) FLASH_AREA_ID(name)
+
 struct k_blkdev_request;
 typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
   int status);
@@ -62,7 +64,7 @@ struct k_blkdev_request {
    *       packs the structs. Why not just place on a list ? The BD has a
    *       node that can be used.
    */
-  struct k_blkdev_sg_buffer bufs[0];
+  struct k_blkdev_sg_buffer bufs[];
 };
 
 
@@ -119,8 +121,8 @@ ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
 ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
   size_t count, off_t offset);
 
-int k_blkdev_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
-int k_blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
+int k_blkdev_ioctl(struct k_blkdev *dd, uint32_t req, void *argp);
+int k_disk_default_ioctl(struct k_disk_device *dd, uint32_t req, 
   void *argp);
 
 int flash_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg);

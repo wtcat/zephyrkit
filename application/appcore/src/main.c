@@ -22,6 +22,7 @@
 #include "component/bt/bthost_init.h"
 #include "blkdev/bdbuf.h"
 
+
 LOG_MODULE_REGISTER(main);
 
 static void bas_notify(void) {
@@ -46,9 +47,22 @@ static void keyboard_notify(const struct device *dev, uint32_t row,
     printk("Key(%u): %s\n", row, pressed? "Pressed": "Released");
 }
 
+static void blkdev_test(void) {
+	struct k_blkdev *bdev;
+	char buffer[32] = {"Hello, world!"};
+	bdev = k_blkdev_get(BLKDEV(blkdev));
+	if (!bdev)
+		return;
+
+	k_blkdev_write(bdev, buffer, strlen(buffer), 0);
+	memset(buffer, 0, sizeof(buffer));
+	k_blkdev_read(bdev, buffer, 13, 0);
+}
+
 int main(void) {
 	int err;
 
+	blkdev_test();
 	bt_host_startup();
 	/* Implement notification. At the moment there is no suitable way
 	 * of starting delayed work so we do it here
@@ -63,7 +77,6 @@ int main(void) {
 	if (err != 0) {
 		LOG_ERR("Failed to enable USB");
 	}
-
 	for ( ; ; ) {
 		k_sleep(K_SECONDS(1));
 
