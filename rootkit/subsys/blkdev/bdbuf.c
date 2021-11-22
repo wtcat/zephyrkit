@@ -2005,6 +2005,7 @@ static void z_bdbuf_swapout_task(void *arg) {
   struct k_bdbuf_swapout_transfer* transfer = arg;
   k_timeout_t period_in_ticks;
   uint32_t timer_delta;
+  int ret;
 
   period_in_ticks = K_USEC(period_in_msecs * 1000);
   //TODO: This is temporary. Needs to be changed to use the real time clock.
@@ -2020,9 +2021,10 @@ static void z_bdbuf_swapout_task(void *arg) {
       }
       update_timers = false;
     } while (transfered_buffers);
-    
-    z_bdbuf_wait_for_sync(&bdbuf_cache.swapout_task_sync, period_in_ticks, 
-      K_BDBUF_FATAL_SWAPOUT_RE);
+  
+    ret = k_sem_take(&bdbuf_cache.swapout_task_sync, period_in_ticks);
+    if (ret && ret != -EAGAIN)
+      z_bdbuf_fatal(K_BDBUF_FATAL_SWAPOUT_RE);
   }
 #if (CONFIG_BDBUF_SWAPOUT_WORKER_TASKS > 0)
   z_bdbuf_swapout_workers_close();

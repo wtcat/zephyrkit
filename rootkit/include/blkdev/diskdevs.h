@@ -99,13 +99,11 @@ static inline blkdev_bnum_t k_disk_get_block_count(
   return dd->size;
 }
 
-/* Internal function, do not use */
-int k_disk_init_phys(struct k_disk_device *dd, uint32_t block_size, 
-  blkdev_bnum_t block_count, blkdev_ioctrl_fn handler, void *driver_data);
 
 /* Internal function, do not use */
-int k_disk_init_log(struct k_disk_device *dd, struct k_disk_device *phys_dd,
-  blkdev_bnum_t block_begin, blkdev_bnum_t block_count);
+int _k_disk_init(struct k_disk_device *dd, uint32_t block_size, 
+  blkdev_bnum_t block_count, blkdev_ioctrl_fn handler, void *driver_data);
+
 #ifdef __cplusplus
 }
 #endif

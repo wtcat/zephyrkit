@@ -57,6 +57,7 @@ static void blkdev_test(void) {
 	k_blkdev_write(bdev, buffer, strlen(buffer), 0);
 	memset(buffer, 0, sizeof(buffer));
 	k_blkdev_read(bdev, buffer, 13, 0);
+    printk("%s\n", buffer);
 }
 
 int main(void) {

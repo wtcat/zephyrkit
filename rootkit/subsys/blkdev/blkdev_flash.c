@@ -8,7 +8,7 @@
 static int flash_disk_read(struct k_blkdev_driver *drv, 
     struct k_blkdev_request *req) {
     uint32_t start = drv->p->fa_off;
-    uint32_t blksize = drv->p->fa_size;
+    uint32_t blksize = drv->blksize;
     struct k_blkdev_sg_buffer *sg = req->bufs;
     int ret = 0;
     for (int i = 0; i < req->bufnum; i++, sg++) {
@@ -16,6 +16,7 @@ static int flash_disk_read(struct k_blkdev_driver *drv,
         ret = flash_read(drv->dev, offset, sg->buffer, sg->length);
         if (ret)
             break;
+        sg++;
     }
     k_blkdev_request_done(req, ret);
     return ret;
@@ -24,7 +25,7 @@ static int flash_disk_read(struct k_blkdev_driver *drv,
 static int flash_disk_write(struct k_blkdev_driver *drv, 
     struct k_blkdev_request *req) {
     uint32_t start = drv->p->fa_off;
-    uint32_t blksize = drv->p->fa_size;
+    uint32_t blksize = drv->blksize;
     struct k_blkdev_sg_buffer *sg = req->bufs;;
     int ret = 0;
 
@@ -36,6 +37,7 @@ static int flash_disk_write(struct k_blkdev_driver *drv,
         ret = flash_write(drv->dev, offset, sg->buffer, sg->length);
         if (ret)
             break;
+        sg++;
     }
     k_blkdev_request_done(req, ret);
     return ret;

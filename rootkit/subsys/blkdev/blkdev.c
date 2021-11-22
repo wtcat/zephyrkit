@@ -224,12 +224,13 @@ static int blkdev_partition_create(const struct flash_area *fa,
   }
   api = dev->api;
   api->page_layout(dev, &layout, &layout_size);
-  ret = k_disk_init_phys(&ctx->dd, layout->pages_size, 
-    fa->fa_size/layout->pages_size, handler, &ctx->drv);
+  ret = _k_disk_init(&ctx->dd, layout->pages_size, 
+    fa->fa_size / layout->pages_size, handler, &ctx->drv);
   if (ret)
     goto _freem;
   ctx->drv.dev = dev;
   ctx->drv.p = fa;
+  ctx->drv.blksize = layout->pages_size;
   k_mutex_lock(&lock, K_FOREVER);
   ctx->next = blkdev_list;
   blkdev_list = ctx;
@@ -251,4 +252,4 @@ static int blkdev_partition_register(const struct device *dev __unused) {
 }
 
 SYS_INIT(blkdev_partition_register,
-  POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
+  POST_KERNEL, 99);

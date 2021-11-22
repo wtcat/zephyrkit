@@ -26,6 +26,7 @@ typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req,
 struct k_blkdev_driver {
   const struct device *dev;
   const struct flash_area *p;
+  size_t blksize;
 };
 
 struct k_blkdev {
