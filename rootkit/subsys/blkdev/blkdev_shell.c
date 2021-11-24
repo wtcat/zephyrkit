@@ -1,31 +1,31 @@
-/*
- * Copyright (c) 2012 embedded brains GmbH.  All rights reserved.
- *
- *  embedded brains GmbH
- *  Obere Lagerstr. 30
- *  82178 Puchheim
- *  Germany
- *  <rtems@embedded-brains.de>
- *
- * The license and distribution terms for this file may be
- * found in the file LICENSE in this distribution or at
- * http://www.rtems.org/license/LICENSE.
- */
-
-#include <rtems/blkdev.h>
-
+#include <shell/shell.h>
 #include <inttypes.h>
 
-void k_blkdev_print_stats(
-  const rtems_blkdev_stats *stats,
-  uint32_t media_block_size,
-  uint32_t media_block_count,
-  uint32_t block_size,
-  const rtems_printer* printer
-)
-{
-  rtems_printf(
-     printer,
+#include "blkdev/blkdev.h"
+
+static int blkdev_statistics(const struct shell *shell,
+  size_t argc, char **argv) {
+  const struct k_blkdev_stats *stats;
+  struct k_blkdev *bdev;
+  uint32_t media_block_size;
+  uint32_t media_block_count;
+  uint32_t block_size;
+
+  if (argc != 2) {
+    shell_fprintf(shell, SHELL_ERROR, "Invalid format\n");
+    return -EINVAL;
+  }
+  bdev = k_blkdev_get(argv[1]);
+  if (bdev == NULL) {
+    shell_fprintf(shell, SHELL_ERROR, "(%s) partition is not exist\n", argv[1]);
+    return -EEXIST;
+  }
+  media_block_size = bdev->dd.media_block_size;
+  media_block_count = bdev->dd.media_blocks_per_block *
+    bdev->dd.block_count;
+  block_size = bdev->dd.block_size;
+  stats = &bdev->dd.stats;
+  shell_fprintf(shell, SHELL_NORMAL,
      "-------------------------------------------------------------------------------\n"
      "                               DEVICE STATISTICS\n"
      "----------------------+--------------------------------------------------------\n"
@@ -55,4 +55,13 @@ void k_blkdev_print_stats(
      stats->write_blocks,
      stats->write_errors
   );
+  return 0;
 }
+
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_command,
+    SHELL_CMD(stats, NULL, 
+      "Block device statistics information\n blkdev stats [partition name]", 
+      blkdev_statistics),
+    SHELL_SUBCMD_SET_END
+);
+SHELL_CMD_REGISTER(blkdev, &sub_command, "Block device", NULL);

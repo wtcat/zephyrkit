@@ -50,10 +50,9 @@ static void keyboard_notify(const struct device *dev, uint32_t row,
 static void blkdev_test(void) {
 	struct k_blkdev *bdev;
 	char buffer[32] = {"Hello, world!"};
-	bdev = k_blkdev_get(BLKDEV(blkdev));
+	bdev = k_blkdev_get("blkdev");
 	if (!bdev)
 		return;
-
 	k_blkdev_write(bdev, buffer, strlen(buffer), 0);
 	memset(buffer, 0, sizeof(buffer));
 	k_blkdev_read(bdev, buffer, 13, 0);

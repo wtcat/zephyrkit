@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <kernel.h>
-#include <storage/flash_map.h>
 
 #include "sys/iocom.h"
 #include "blkdev/diskdevs.h"
@@ -17,15 +16,20 @@
 extern "C" {
 #endif
 
-#define BLKDEV(name) FLASH_AREA_ID(name)
-
 struct k_blkdev_request;
 typedef void (*blkdev_request_cb_t)(struct k_blkdev_request *req, 
   int status);
 
+struct blkdev_partition {
+  const char *devname;
+  const char *partition;
+	off_t offset;
+	size_t size;
+};
+
 struct k_blkdev_driver {
   const struct device *dev;
-  const struct flash_area *p;
+  const struct blkdev_partition *p;
   size_t blksize;
 };
 
@@ -115,7 +119,11 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
  */
 #define K_BLKDEV_CAP_SYNC (1 << 1)
 
-struct k_blkdev *k_blkdev_get(int partition);
+void blkdev_partition_foreach(
+    void (*user_cb)(const struct blkdev_partition *, void *), 
+    void *user_data);
+
+struct k_blkdev *k_blkdev_get(const char *partition);
 int k_blkdev_put(struct k_blkdev *ctx);
 ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
   size_t count, off_t offset);

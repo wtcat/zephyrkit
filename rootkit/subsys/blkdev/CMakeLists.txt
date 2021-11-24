@@ -5,5 +5,7 @@ zephyr_library_sources(
     bdbuf.c
     blkdev.c
     blkdev_flash.c
-    diskdevs-init.c
+    blkdev_partition.c
+    diskdevs.c
+    blkdev_shell.c
 )

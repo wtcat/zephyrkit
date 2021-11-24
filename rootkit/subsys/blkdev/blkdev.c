@@ -34,12 +34,12 @@
 static K_MUTEX_DEFINE(lock);
 static struct k_blkdev *blkdev_list;
 
-struct k_blkdev *k_blkdev_get(int partition) {
+struct k_blkdev *k_blkdev_get(const char *partition) {
   struct k_blkdev *ctx;
   k_mutex_lock(&lock, K_FOREVER);
   for (ctx = blkdev_list; ctx != NULL; ctx = ctx->next) {
-    const struct flash_area *pt = ctx->drv.p;
-    if (pt->fa_id == partition) {
+    const struct blkdev_partition *pt = ctx->drv.p;
+    if (!strcmp(pt->partition, partition)) {
       //atomic_add(&ctx->refcnt, 1);
       break;
     }
@@ -200,7 +200,7 @@ int k_disk_default_ioctl(struct k_disk_device *dd, uint32_t req,
     return rc;
 }
 
-static int blkdev_partition_create(const struct flash_area *fa, 
+static int blkdev_partition_create(const struct blkdev_partition *p, 
   blkdev_ioctrl_fn handler) {
     const struct flash_pages_layout *layout;
   const struct flash_driver_api *api;
@@ -209,7 +209,7 @@ static int blkdev_partition_create(const struct flash_area *fa,
   size_t layout_size;
   int ret;
 
-  if (fa == NULL)
+  if (p == NULL)
     return -EINVAL;
   ret = k_bdbuf_init();
   if (ret) 
@@ -217,7 +217,7 @@ static int blkdev_partition_create(const struct flash_area *fa,
   ctx = k_malloc(sizeof(*ctx));
   if (ctx == NULL)
     return -ENOMEM;
-  dev = device_get_binding(fa->fa_dev_name);
+  dev = device_get_binding(p->devname);
   if (dev == NULL) {
     ret = -ENODEV;
     goto _freem;
@@ -225,11 +225,11 @@ static int blkdev_partition_create(const struct flash_area *fa,
   api = dev->api;
   api->page_layout(dev, &layout, &layout_size);
   ret = _k_disk_init(&ctx->dd, layout->pages_size, 
-    fa->fa_size / layout->pages_size, handler, &ctx->drv);
+    p->size / layout->pages_size, handler, &ctx->drv);
   if (ret)
     goto _freem;
   ctx->drv.dev = dev;
-  ctx->drv.p = fa;
+  ctx->drv.p = p;
   ctx->drv.blksize = layout->pages_size;
   k_mutex_lock(&lock, K_FOREVER);
   ctx->next = blkdev_list;
@@ -241,13 +241,13 @@ _freem:
   return ret;
 }
 
-static void blkdev_partition_iterator(const struct flash_area *fa,
+static void blkdev_partition_iterator(const struct blkdev_partition *p,
     void *user_data) {
-    blkdev_partition_create(fa, flash_disk_ioctl);
+    blkdev_partition_create(p, flash_disk_ioctl);
 }
 
 static int blkdev_partition_register(const struct device *dev __unused) {
-  flash_area_foreach(blkdev_partition_iterator, NULL);
+  blkdev_partition_foreach(blkdev_partition_iterator, NULL);
   return 0;
 }
 
