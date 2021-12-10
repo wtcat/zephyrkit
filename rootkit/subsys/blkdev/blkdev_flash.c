@@ -58,6 +58,6 @@ int flash_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg) {
         }
     }
     default:
-        return k_disk_default_ioctl(dd, r->req, arg);
+        return blkdev_default_ioctl(dd, r->req, arg);
     }
 }

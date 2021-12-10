@@ -122,7 +122,6 @@ static inline void k_blkdev_request_done(struct k_blkdev_request *req,
 void blkdev_partition_foreach(
     void (*user_cb)(const struct blkdev_partition *, void *), 
     void *user_data);
-
 struct k_blkdev *k_blkdev_get(const char *partition);
 int k_blkdev_put(struct k_blkdev *ctx);
 ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
@@ -130,11 +129,16 @@ ssize_t k_blkdev_read(struct k_blkdev *ctx, void *buffer,
 ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
   size_t count, off_t offset);
 
-int k_blkdev_ioctl(struct k_blkdev *dd, uint32_t req, void *argp);
-int k_disk_default_ioctl(struct k_disk_device *dd, uint32_t req, 
-  void *argp);
-
 int flash_disk_ioctl(struct k_disk_device *dd, uint32_t req, void *arg);
+int blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, void *argp);
+
+static inline int k_blkdev_ioctl(struct k_blkdev *ctx, uint32_t req, 
+  void *argp) {
+  struct k_disk_device *dd = &ctx->dd;
+  if (req == K_BLKIO_REQUEST) 
+    return (*dd->ioctl)(dd, req, argp);
+  return blkdev_default_ioctl(dd, req, argp);
+}
 
 #ifdef __cplusplus
 }

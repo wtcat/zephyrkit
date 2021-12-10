@@ -26,10 +26,13 @@
 #include <drivers/flash.h>
 #include <storage/flash_map.h>
 
+#include <logging/log.h>
+
 #include "blkdev/blkdev.h"
 #include "blkdev/bdbuf.h"
 #include "blkdev/diskdevs.h"
 
+LOG_MODULE_REGISTER(blkdev);
 
 static K_MUTEX_DEFINE(lock);
 static struct k_blkdev *blkdev_list;
@@ -140,20 +143,7 @@ ssize_t k_blkdev_write(struct k_blkdev *ctx, const void *buffer,
   return rv;
 }
 
-int k_blkdev_ioctl(struct k_blkdev *ctx, uint32_t request,
-   void *buffer) {
-  int ret = 0;
-  if (request != K_BLKIO_REQUEST) {
-    struct k_disk_device *dd = &ctx->dd;
-    ret = (*dd->ioctl)(dd, request, buffer);
-  } else {
-    errno = EINVAL;
-    ret = -1;
-  }
-  return ret;
-}
-
-int k_disk_default_ioctl(struct k_disk_device *dd, uint32_t req, 
+int blkdev_default_ioctl(struct k_disk_device *dd, uint32_t req, 
   void *argp) {
     int rc = 0;
     switch (req) {
@@ -212,8 +202,10 @@ static int blkdev_partition_create(const struct blkdev_partition *p,
   if (p == NULL)
     return -EINVAL;
   ret = k_bdbuf_init();
-  if (ret) 
+  if (ret) {
+    LOG_ERR("bdbuf initialize failed(%d)\n", ret);
     return ret;
+  }
   ctx = k_malloc(sizeof(*ctx));
   if (ctx == NULL)
     return -ENOMEM;
