@@ -52,6 +52,15 @@ static void auth_cancel(struct bt_conn *conn) {
 	LOG_INF("Pairing cancelled: %s\n", addr);
 }
 
+static void auth_passkey_display(struct bt_conn *conn, 
+	unsigned int passkey) {
+	char addr[BT_ADDR_LE_STR_LEN];
+	char passkey_str[7];
+	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+	snprintk(passkey_str, 7, "%06u", passkey);
+	printk("Passkey for %s: %s\n", addr, passkey_str);
+}
+
 static struct bt_conn_cb conn_callbacks = {
 	.connected = bt_connected,
 	.disconnected = bt_disconnected,
@@ -59,6 +68,7 @@ static struct bt_conn_cb conn_callbacks = {
 
 static struct bt_conn_auth_cb auth_cb_display = {
 	.cancel = auth_cancel,
+	.passkey_display = auth_passkey_display
 };
 
 int bt_host_startup(void) {
