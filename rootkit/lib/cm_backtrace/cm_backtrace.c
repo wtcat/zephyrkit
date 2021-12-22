@@ -30,7 +30,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "base/system_fatal.h"
 #include "cm_backtrace/cm_backtrace.h"
+
 
 #if (CMB_OS_PLATFORM_TYPE != CMB_OS_PLATFORM_ZEPHYR)
 #define __public_api 
@@ -729,12 +731,13 @@ int cm_backtrace_init(const struct cm_printplugin *printer,
 }
 
 #if (CMB_OS_PLATFORM_TYPE == CMB_OS_PLATFORM_ZEPHYR)
-void k_sys_fatal_error_handler(unsigned int reason,
+static void cm_backtrace_error_handler(unsigned int reason,
 	const z_arch_esf_t *esf) {
-	extern void arch_system_halt(unsigned int);
 	cm_backtrace_fault(esf->extra_info.exc_return, esf->extra_info.msp);
-	arch_system_halt(reason); 
 }
+SYS_FATAL_DEFINE(cm_backtrace) = {
+	.fatal = cm_backtrace_error_handler
+};
 
 static int zephyr_iostream_out(void *ctx, const char *fmt, va_list ap) {
 	(void) ctx;

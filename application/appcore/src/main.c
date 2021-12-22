@@ -22,8 +22,16 @@
 #include "component/bt/bthost_init.h"
 #include "blkdev/bdbuf.h"
 
+#include "debugger/core_debug.h"
+
 
 LOG_MODULE_REGISTER(main);
+
+#define USE_BREAKPOINT_TEST
+
+#if defined(USE_BREAKPOINT_TEST)
+volatile int __test_var = 1;
+#endif 
 
 static void bas_notify(void) {
 	uint8_t battery_level = bt_bas_get_battery_level();
@@ -62,8 +70,12 @@ static void blkdev_test(void) {
 int main(void) {
 	int err;
 
+#if defined(USE_BREAKPOINT_TEST)
+	core_watchpoint_init(1);
+	core_watchpoint_install(3, &__test_var, MEM_WRITE|MEM_SIZE_1);
+#endif
 	blkdev_test();
-	bt_host_startup();
+	//bt_host_startup();
 	/* Implement notification. At the moment there is no suitable way
 	 * of starting delayed work so we do it here
 	 */
@@ -73,6 +85,11 @@ int main(void) {
         kscan_enable_callback(key);
     }
 
+#if defined(USE_BREAKPOINT_TEST)
+	if (__test_var == 1)
+		__test_var = 2;
+	core_watchpoint_uninstall(3);
+#endif
 	err = usb_enable(NULL);
 	if (err != 0) {
 		LOG_ERR("Failed to enable USB");

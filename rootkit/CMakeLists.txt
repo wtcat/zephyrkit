@@ -1,5 +1,8 @@
 
-zephyr_include_directories(include)
+zephyr_include_directories(
+    include
+    .
+)
 
 add_subdirectory(base)
 add_subdirectory_ifdef(CONFIG_USER_SUBSYSTEM     subsys)
