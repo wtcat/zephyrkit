@@ -27,7 +27,7 @@
 
 LOG_MODULE_REGISTER(main);
 
-#define USE_BREAKPOINT_TEST
+//#define USE_BREAKPOINT_TEST
 
 #if defined(USE_BREAKPOINT_TEST)
 volatile int __test_var = 1;
