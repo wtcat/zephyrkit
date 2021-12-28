@@ -1,5 +1,9 @@
 # Components menu
-menu "Libraries"
+menuconfig  USER_LIBRARIES
+  bool "Libraries (out of sourcetree)"
+  help
+    User extension for zephyr libraries
+if USER_LIBRARIES
 
 menuconfig XMODEM
 	bool "xmodem"
@@ -10,7 +14,6 @@ menuconfig XMODEM
 rsource "stp/Kconfig"
 rsource "protobuf-c/Kconfig"
 rsource "services/Kconfig"
-rsource "cm_backtrace/Kconfig"
 rsource "rpmsg_hci/Kconfig"
 
 rsource "agps/Kconfig"
@@ -42,5 +45,4 @@ rsource "hw_unique_key/Kconfig"
 rsource "pelion/Kconfig"
 rsource "modem_jwt/Kconfig"
 rsource "modem_attest_token/Kconfig"
-#rsource "multicell_location/Kconfig"
-endmenu
+endif #USER_LIBRARIES

@@ -20,7 +20,6 @@ zephyr_include_directories(.)
 # Subdirectories and target
 #===========================
 add_subdirectory(component)
-add_subdirectory(debugger)
 target_sources(app PRIVATE
   src/main.c
 )

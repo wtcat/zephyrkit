@@ -8,11 +8,12 @@ extern "C"{
 #endif
 
 struct printer {
-    void (*print)(void *context, const char *fmt, va_list ap_list);
+    int (*print)(void *context, const char *fmt, va_list ap_list);
     void *context;
 };
 
-static inline int virt_print(struct printer *printer, const char *fmt, ...) {
+static inline int virt_print(const struct printer *printer, 
+    const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     int len = printer->print(printer->context, fmt, ap);

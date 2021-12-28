@@ -1,3 +1,9 @@
+menuconfig  USER_SYSTEM_INIT
+  bool "User component initialize"
+
+if USER_SYSTEM_INIT
+
 config USER_FS_MOUNT
   bool "Mount filesystem to disk"
   depends on FILE_SYSTEM
+endif #USER_SYSTEM_INIT

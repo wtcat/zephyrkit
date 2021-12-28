@@ -27,7 +27,7 @@
  */
 
 /*
- * Copyright (c) 2021
+ * Copyright (c) 2021-12
  * Author: wtcat
  */
 
@@ -36,8 +36,6 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdarg.h>
-
 
 /* 
  * Platform Definitions 
@@ -464,17 +462,7 @@ static inline uint32_t cmb_get_sp(void)
 extern "C" {
 #endif
 
-struct cm_printplugin {
-	int (*printer)(void *ctx, const char *fmt, va_list ap);
-	void *context;
-};
 size_t cm_backtrace_call_stack(uint32_t *buffer, size_t size, uint32_t sp);
-#if (CMB_OS_PLATFORM_TYPE != CMB_OS_PLATFORM_ZEPHYR)
-int cm_backtrace_init(struct cm_printplugin *printer, const char *firmware_name, 
-	const char *hardware_ver, const char *software_ver);
-void cm_backtrace_fault(uint32_t fault_handler_lr, uint32_t fault_handler_sp);
-#endif
-
 #ifdef CONFIG_CM_BACKTRACE_ASSERT
 void cm_backtrace_assert(uint32_t sp);
 #endif

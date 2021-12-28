@@ -56,9 +56,10 @@ struct _cpu_exception {
 #define core_watchpoint_uninstall(_nr) \
 	_core_debug_watchpoint_disable(_nr)
 
+#if !defined(__ZEPHYR__)
 #define core_watchpoint_init(_cb) \
 	_core_debug_setup((cpu_debug_handler_t)_cb)
-
+#endif
 
 /*
  * Protected interface
@@ -67,66 +68,30 @@ int _core_debug_watchpoint_enable(int nr, void *addr, unsigned int mode,
 	const char *file, int line);
 int _core_debug_watchpoint_disable(int nr);
 int _core_debug_watchpoint_busy(int nr);
+
+#if !defined(__ZEPHYR__)
 int _core_debug_setup(cpu_debug_handler_t cb);
 void _core_debug_exception_handler(uintptr_t msp, uintptr_t psp, 
 	uintptr_t exec_return);
+#endif
 
 /*
  * Private interface
  */
-static inline void
-_arm_core_debug_access(int ena) {
-#if defined(__CORE_CM7_H_GENERIC)
-	uint32_t lsr = DWT->LSR;
-	if ((lsr & DWT_LSR_Present_Msk) != 0) {
-		if (!!ena) {
-			if ((lsr & DWT_LSR_Access_Msk) != 0) 
-				DWT->LAR = 0xC5ACCE55; /* unlock it */
-		} else {
-			if ((lsr & DWT_LSR_Access_Msk) == 0) 
-				DWT->LAR = 0; /* Lock it */
-		}
-	}
-#endif
-}
-
-static inline int 
-_arm_core_debug_init(void) {
-	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-	_arm_core_debug_access(1);
-	return 0;
-}
-
-static inline int 
-_arm_core_debug_init_cycle_counter(void) {
+static inline int _core_debug_init_cycle_counter(void) {
 	DWT->CYCCNT = 0;
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 	return (DWT->CTRL & DWT_CTRL_NOCYCCNT_Msk) != 0;
 }
 
-static inline uint32_t 
-_arm_core_debug_get_cycles(void) {
+static inline uint32_t _core_debug_get_cycles(void) {
 	return DWT->CYCCNT;
 }
 
-static inline void 
-_arm_core_debug_cycle_count_start(void) {
+static inline void _core_debug_cycle_count_start(void) {
 	DWT->CYCCNT = 0;
 	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
-
-static inline int 
-_arm_core_debug_enable_monitor_exception(void) {
-	 if (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
-	 	return -EBUSY;
-#if defined(CONFIG_ARMV8_M_SE) && !defined(CONFIG_ARM_NONSECURE_FIRMWARE)
-	if (!(CoreDebug->DEMCR & DCB_DEMCR_SDME_Msk))
-		return -EBUSY;
-#endif
-	CoreDebug->DEMCR |= CoreDebug_DEMCR_MON_EN_Msk;
-	return 0;
-}
-
 
 #ifdef __cplusplus
 }

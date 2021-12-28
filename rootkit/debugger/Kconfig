@@ -1,0 +1,23 @@
+
+menuconfig CORTEXM_DEBUGGER
+  bool "Enable debug component for Cortex-M"
+  depends on CPU_CORTEX_M
+  select EXTRA_EXCEPTION_INFO
+
+if CORTEXM_DEBUGGER
+
+config CM_WATCHPOINT
+  bool "Enable data watchpoint"
+  default y
+
+config CM_BACKTRACE
+  bool "Enable backtrace for call stack"
+  default y
+
+config CM_BACKTRACE_DUMPSTACK
+  bool "Dump thread stack"
+
+config CM_BACKTRACE_ASSERT
+  bool "Enable assert interface"
+
+endif #CORTEXM_DEBUGGER

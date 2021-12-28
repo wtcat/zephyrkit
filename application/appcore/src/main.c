@@ -71,7 +71,6 @@ int main(void) {
 	int err;
 
 #if defined(USE_BREAKPOINT_TEST)
-	core_watchpoint_init(1);
 	core_watchpoint_install(3, &__test_var, MEM_WRITE|MEM_SIZE_1);
 #endif
 	blkdev_test();

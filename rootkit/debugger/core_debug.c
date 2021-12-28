@@ -3,8 +3,10 @@
  * Author: wtcat
  */
 #include <stddef.h>
+#include <init.h>
 #include <arch/cpu.h>
 
+#include "base/fatal.h"
 #include "debugger/core_debug.h"
 
 
@@ -49,8 +51,10 @@ struct breakpoint_info {
 	((DWT->CTRL & DWT_CTRL_NUMCOMP_Msk) >> DWT_CTRL_NUMCOMP_Pos)
 #define WATCHPOINT_REG() WATCHPOINT_REGADDR(COMP0)
 
-static int _watchpoint_nums;
+#if !defined(__ZEPHYR__)
 static cpu_debug_handler_t _debug_cb_handler;
+#endif
+static int _watchpoint_nums;
 static struct breakpoint_info _breakpoint[MAX_BREAKPOINT_NR];
 
 static int core_watchpoint_match(void) {
@@ -62,6 +66,7 @@ static int core_watchpoint_match(void) {
 	return -1;
 }
 
+#if !defined(__ZEPHYR__)
 void _core_debug_exception_handler(uintptr_t msp, uintptr_t psp, 
 	uintptr_t exec_return) {
 	if (_debug_cb_handler) {
@@ -89,11 +94,42 @@ void __attribute__((naked)) _debug_mointor_exception(void) {
 void __attribute__((naked)) _debug_mointor_exception(void) {
 
 }
-
 #else
 #error "Unknown compiler"
-
 #endif /* __GNUC__ */
+#endif /* !__ZEPHYR__ */
+
+static void __core_debug_access(int ena) {
+#if defined(__CORE_CM7_H_GENERIC)
+	uint32_t lsr = DWT->LSR;
+	if ((lsr & DWT_LSR_Present_Msk) != 0) {
+		if (!!ena) {
+			if ((lsr & DWT_LSR_Access_Msk) != 0) 
+				DWT->LAR = 0xC5ACCE55; /* unlock it */
+		} else {
+			if ((lsr & DWT_LSR_Access_Msk) == 0) 
+				DWT->LAR = 0; /* Lock it */
+		}
+	}
+#endif
+}
+
+static int __core_debug_init(void) {
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	__core_debug_access(1);
+	return 0;
+}
+
+static int __core_debug_enable_monitor_exception(void) {
+	 if (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
+	 	return -EBUSY;
+#if defined(CONFIG_ARMV8_M_SE) && !defined(CONFIG_ARM_NONSECURE_FIRMWARE)
+	if (!(CoreDebug->DEMCR & DCB_DEMCR_SDME_Msk))
+		return -EBUSY;
+#endif
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_MON_EN_Msk;
+	return 0;
+}
 
 int _core_debug_watchpoint_enable(int nr, void *addr, unsigned int mode, 
 	const char *file, int line) {
@@ -148,14 +184,41 @@ int _core_debug_watchpoint_busy(int nr) {
 	return func != 0;
 }
 
+#if !defined(__ZEPHYR__)
 int _core_debug_setup(cpu_debug_handler_t cb) {
 	_watchpoint_nums = WATCHPOINT_MAX_NR;
-	_arm_core_debug_init();
+	__core_debug_init();
 	for (int i = 0; i < _watchpoint_nums; i++)
 		_core_debug_watchpoint_disable(i);
 	if (cb) {
 		_debug_cb_handler = cb;
-		return _arm_core_debug_enable_monitor_exception();
+		return __core_debug_enable_monitor_exception();
 	}
 	return 0;
 }
+#else /* __ZEPHYR__ */
+
+static int _core_debugger_setup(const struct device *dev __unused) {
+	_watchpoint_nums = WATCHPOINT_MAX_NR;
+	__core_debug_init();
+	for (int i = 0; i < _watchpoint_nums; i++)
+		_core_debug_watchpoint_disable(i);
+	__core_debug_enable_monitor_exception();
+	return 0;
+}
+
+static void _core_debugger_exception_entry(const struct printer *printer, 
+	unsigned int reason, const z_arch_esf_t *esf) {
+	int nr = core_watchpoint_match();
+	if (nr >= 0) {
+		struct breakpoint_info *bkpt = &_breakpoint[nr];
+		virt_print(printer, "Hit Breakpoint: %s : %d\n", bkpt->file, bkpt->line);
+	}
+}
+
+SYS_FATAL_DEFINE(watchpoint) = {
+	.fatal = _core_debugger_exception_entry
+};
+SYS_INIT(_core_debugger_setup, 
+	PRE_KERNEL_2, 0);
+#endif /* __ZEPHYR__ */

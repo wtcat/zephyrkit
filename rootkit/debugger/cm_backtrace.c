@@ -25,13 +25,19 @@
  * Function: Initialize function and other general function.
  * Created on: 2016-12-15
  */
+/*
+ * CopyRight (c) 2021-12
+ * Author: wtcat
+ */
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
-#include "base/system_fatal.h"
-#include "cm_backtrace/cm_backtrace.h"
+#include "base/fatal.h"
+#include "base/printer.h"
+
+#include "debugger/cm_backtrace.h"
 
 
 #if (CMB_OS_PLATFORM_TYPE != CMB_OS_PLATFORM_ZEPHYR)
@@ -114,6 +120,10 @@ enum {
 	PRINT_BFAR,
 };
 
+#define cmb_println(fmt, ...) \
+	virt_print(cm_iostream, fmt, ##__VA_ARGS__)
+
+
 static const char *const print_info[] = {
 	[PRINT_MAIN_STACK_CFG_ERROR]  = "ERROR: Unable to get the main stack information, please check the configuration of the main stack\n",
 	[PRINT_FIRMWARE_INFO]         = "Firmware name: %s, hardware version: %s, software version: %s\n",
@@ -158,7 +168,7 @@ static const char *const print_info[] = {
 	[PRINT_BFAR]                  = "The bus fault occurred address is %08x\n",
 };
 
-static const struct cm_printplugin *cm_iostream;
+static const struct printer  *cm_iostream;
 static char fw_name[CMB_NAME_MAX] = {0};
 static char hw_ver[CMB_NAME_MAX] = {0};
 static char sw_ver[CMB_NAME_MAX] = {0};
@@ -177,15 +187,6 @@ static struct cmb_hard_fault_regs regs;
 static bool statck_has_fpu_regs = false;
 #endif
 static bool on_thread_before_fault = false;
-
-static int cmb_println(const char *fmt, ...) {
-	va_list ap;
-	int ret;
-	va_start(ap, fmt);
-	ret = cm_iostream->printer(cm_iostream->context, fmt, ap);
-	va_end(ap);
-	return ret;
-}
 
 static void cm_backtrace_firmware_info(void)
 {
@@ -670,7 +671,7 @@ void cm_backtrace_fault(uint32_t fault_handler_lr, uint32_t fault_handler_sp)
 }
 
 __public_api
-int cm_backtrace_init(const struct cm_printplugin *printer, 
+int cm_backtrace_init(const struct printer  *printer, 
 	const char *firmware_name, 
 	const char *hardware_ver, 
 	const char *software_ver)
@@ -731,9 +732,12 @@ int cm_backtrace_init(const struct cm_printplugin *printer,
 }
 
 #if (CMB_OS_PLATFORM_TYPE == CMB_OS_PLATFORM_ZEPHYR)
-static void cm_backtrace_error_handler(unsigned int reason,
-	const z_arch_esf_t *esf) {
+static void cm_backtrace_error_handler(const struct printer *printer,
+	unsigned int reason, const z_arch_esf_t *esf) {
+	const struct printer *old = cm_iostream;
+	cm_iostream = printer;
 	cm_backtrace_fault(esf->extra_info.exc_return, esf->extra_info.msp);
+	cm_iostream = old;
 }
 SYS_FATAL_DEFINE(cm_backtrace) = {
 	.fatal = cm_backtrace_error_handler
@@ -745,8 +749,8 @@ static int zephyr_iostream_out(void *ctx, const char *fmt, va_list ap) {
 	return 0;
 }
 
-static const struct cm_printplugin zephyr_printer = {
-	.printer = zephyr_iostream_out
+static const struct printer zephyr_printer = {
+	.print = zephyr_iostream_out
 };
 
 static int zephyr_cm_backtrace_init(const struct device *dev __unused) {
