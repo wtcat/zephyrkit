@@ -1,0 +1,29 @@
+if(CONFIG_KALLSYMS)
+  set(KALLSYMS_PARAM --fbin=ksym.bin)
+  if(CONFIG_KALLSYMS_NO_NAME)
+    set(KALLSYMS_PARAM  --no_symbols_name)
+  endif() 
+  if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+   MESSAGE(STATUS "operation system is  Windows")
+   set(KALLSYMS_APP ${ZEPHYR_BASE}/scripts/kallsyms_win.exe)
+  else()
+   MESSAGE(STATUS "operation system is linux ")
+   set(KALLSYMS_APP ${ZEPHYR_BASE}/scripts/kallsyms)
+  endif() 
+  add_custom_command(
+    OUTPUT ksyms.S
+    POST_BUILD
+    COMMAND ${CMAKE_NM}
+            -n
+            ${ZEPHYR_PREBUILT_EXECUTABLE}.elf
+            > k_syms.map
+    COMMAND ${KALLSYMS_APP}
+            ${KALLSYMS_PARAM}
+            < k_syms.map
+            > ksyms.S
+    DEPENDS ${ZEPHYR_PREBUILT_EXECUTABLE}
+    COMMAND_EXPAND_LISTS
+    )
+    add_custom_target(output_ksyms  DEPENDS  ksyms.S)
+    set_property(GLOBAL APPEND PROPERTY GENERATED_KERNEL_SOURCE_FILES ksyms.S)
+endif()
