@@ -7,6 +7,8 @@
 zephyr_sources_ifdef(CONFIG_BT_ANCS_CLIENT ancs_client.c
                                            ancs_attr_parser.c
                                            ancs_app_attr_get.c)
+zephyr_sources_ifdef(CONFIG_BT_AMS_CLIENT ams_client.c)
+zephyr_sources_ifdef(CONFIG_BT_GATTS_CLIENT gatts_client.c)
 zephyr_sources_ifdef(CONFIG_BT_BAS_CLIENT bas_client.c)
 zephyr_sources_ifdef(CONFIG_BT_BMS bms.c)
 zephyr_sources_ifdef(CONFIG_BT_CTS_CLIENT cts_client.c)

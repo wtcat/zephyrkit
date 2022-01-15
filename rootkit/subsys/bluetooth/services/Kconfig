@@ -13,11 +13,13 @@ config BT_NRF_SERVICES
 	  Services.
 
 rsource "Kconfig.ancs_client"
+rsource "Kconfig.ams_client"
+rsource "Kconfig.gatts_client"
+rsource "Kconfig.gattp"
 rsource "Kconfig.bas_client"
 rsource "Kconfig.bms"
 rsource "Kconfig.cts_client"
 rsource "Kconfig.dfu_smp"
-rsource "Kconfig.gattp"
 rsource "Kconfig.hids"
 rsource "Kconfig.hogp"
 rsource "Kconfig.lbs"

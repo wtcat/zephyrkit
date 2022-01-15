@@ -5,7 +5,7 @@
 extern "C"{
 #endif
 
-int bt_host_startup(void);
+void bt_host_default_ready_cb(int err);
 
 #ifdef __cplusplus
 }
