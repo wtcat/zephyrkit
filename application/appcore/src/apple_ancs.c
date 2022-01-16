@@ -16,9 +16,13 @@
 #include <bluetooth/services/ancs_client.h>
 #include <bluetooth/services/gattp.h>
 
+#include <logging/log.h>
 #include <settings/settings.h>
 
-#include <dk_buttons_and_leds.h>
+LOG_MODULE_REGISTER(ancs_client);
+
+#define DEBUG_ANCS
+
 
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
@@ -59,9 +63,7 @@ static uint8_t attr_posaction[ATTR_DATA_SIZE];
 static uint8_t attr_negaction[ATTR_DATA_SIZE];
 static uint8_t attr_disp_name[ATTR_DATA_SIZE];
 
-/* String literals for the iOS notification categories.
- * Used then printing to UART.
- */
+#if defined(DEBUG_ANCS)
 static const char *lit_catid[BT_ANCS_CATEGORY_ID_COUNT] = {
 	"Other",
 	"Incoming Call",
@@ -77,16 +79,10 @@ static const char *lit_catid[BT_ANCS_CATEGORY_ID_COUNT] = {
 	"Entertainment"
 };
 
-/* String literals for the iOS notification event types.
- * Used then printing to UART.
- */
-static const char *lit_eventid[BT_ANCS_EVT_ID_COUNT] = { "Added",
-							 "Modified",
-							 "Removed" };
-
-/* String literals for the iOS notification attribute types.
- * Used when printing to UART.
- */
+const char *lit_eventid[BT_ANCS_EVT_ID_COUNT] = { 
+	"Added", "Modified", "Removed" 
+};
+							 
 static const char *lit_attrid[BT_ANCS_NOTIF_ATTR_COUNT] = {
 	"App Identifier",
 	"Title",
@@ -97,79 +93,86 @@ static const char *lit_attrid[BT_ANCS_NOTIF_ATTR_COUNT] = {
 	"Positive Action Label",
 	"Negative Action Label"
 };
+#endif
 
-/* String literals for the iOS notification attribute types.
- * Used When printing to UART.
- */
 static const char *lit_appid[BT_ANCS_APP_ATTR_COUNT] = { "Display Name" };
-
 static void discover_ancs_first(struct bt_conn *conn);
 static void discover_ancs_again(struct bt_conn *conn);
-static void bt_ancs_notification_source_handler(struct bt_ancs_client *ancs_c,
+static void bt_ancs_notification_source_handler(struct bt_ancs_client *ancs,
 		int err, const struct bt_ancs_evt_notif *notif);
-static void bt_ancs_data_source_handler(struct bt_ancs_client *ancs_c,
+static void bt_ancs_data_source_handler(struct bt_ancs_client *ancs,
 		const struct bt_ancs_attr_response *response);
 
-static void enable_ancs_notifications(struct bt_ancs_client *ancs_c)
-{
-	int err;
+#if defined(DEBUG_ANCS)
+static void notif_print(const struct bt_ancs_evt_notif *notif) {
+	LOG_INF("\nNotification\n");
+	LOG_INF("Event:       %s\n", lit_eventid[notif->evt_id]);
+	LOG_INF("Category ID: %s\n", lit_catid[notif->category_id]);
+	LOG_INF("Category Cnt:%u\n", (unsigned int)notif->category_count);
+	LOG_INF("UID:         %u\n", (unsigned int)notif->notif_uid);
+	LOG_INF("Flags:\n");
+	if (notif->evt_flags.silent) 
+		LOG_INF(" Silent\n");
+	if (notif->evt_flags.important) 
+		LOG_INF(" Important\n");
+	if (notif->evt_flags.pre_existing) 
+		LOG_INF(" Pre-existing\n");
+	if (notif->evt_flags.positive_action) 
+		LOG_INF(" Positive Action\n");
+	if (notif->evt_flags.negative_action) 
+		LOG_INF(" Negative Action\n");
+}
+#else
+#define notif_print(info) (void)info
+#endif
 
-	err = bt_ancs_subscribe_notification_source(ancs_c,
+static void enable_ancs_notifications(struct bt_ancs_client *ancs) {
+	int err = bt_ancs_subscribe_notification_source(ancs,
 			bt_ancs_notification_source_handler);
 	if (err) {
-		printk("Failed to enable Notification Source notification (err %d)\n",
-		       err);
+		LOG_ERR("Failed to enable Notification "
+			"Source notification (err %d)\n", err);
 	}
-
-	err = bt_ancs_subscribe_data_source(ancs_c,
+	err = bt_ancs_subscribe_data_source(ancs,
 			bt_ancs_data_source_handler);
 	if (err) {
-		printk("Failed to enable Data Source notification (err %d)\n",
-		       err);
+		LOG_ERR("Failed to enable Data Source notification (err %d)\n", err); 
 	}
 }
 
-static void discover_ancs_completed_cb(struct bt_gatt_dm *dm, void *ctx)
-{
+static void discover_ancs_completed_cb(struct bt_gatt_dm *dm, 
+	void *ctx) {
 	int err;
-	struct bt_ancs_client *ancs_c = (struct bt_ancs_client *)ctx;
+	struct bt_ancs_client *ancs = (struct bt_ancs_client *)ctx;
 	struct bt_conn *conn = bt_gatt_dm_conn_get(dm);
 
-	printk("The discovery procedure for ANCS succeeded\n");
-
 	bt_gatt_dm_data_print(dm);
-
-	err = bt_ancs_handles_assign(dm, ancs_c);
+	err = bt_ancs_handles_assign(dm, ancs);
 	if (err) {
-		printk("Could not init ANCS client object, error: %d\n", err);
+		LOG_ERR("Could not init ANCS client object, error: %d\n", err);
 	} else {
 		atomic_set_bit(&discovery_flags, DISCOVERY_ANCS_SUCCEEDED);
-		enable_ancs_notifications(ancs_c);
+		enable_ancs_notifications(ancs);
 	}
-
 	err = bt_gatt_dm_data_release(dm);
 	if (err) {
-		printk("Could not release the discovery data, error "
-		       "code: %d\n",
-		       err);
+		LOG_ERR("Could not release the discovery data, error "
+		       "code: %d\n", err);
 	}
-
 	atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 	discover_ancs_again(conn);
 }
 
-static void discover_ancs_not_found_cb(struct bt_conn *conn, void *ctx)
-{
-	printk("ANCS could not be found during the discovery\n");
-
+static void discover_ancs_not_found_cb(struct bt_conn *conn, 
+	void *ctx) {
+	LOG_WRN("ANCS could not be found during the discovery\n");
 	atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 	discover_ancs_again(conn);
 }
 
-static void discover_ancs_error_found_cb(struct bt_conn *conn, int err, void *ctx)
-{
-	printk("The discovery procedure for ANCS failed, err %d\n", err);
-
+static void discover_ancs_error_found_cb(struct bt_conn *conn, 
+	int err, void *ctx) {
+	LOG_WRN("The discovery procedure for ANCS failed, err %d\n", err);
 	atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 	discover_ancs_again(conn);
 }
@@ -181,64 +184,49 @@ static const struct bt_gatt_dm_cb discover_ancs_cb = {
 };
 
 static void indicate_sc_cb(struct bt_gattp *gattp,
-			   const struct bt_gattp_handle_range *handle_range,
-			   int err)
-{
+	const struct bt_gattp_handle_range *handle_range,
+	int err) {
 	if (!err) {
 		atomic_set_bit(&discovery_flags, SERVICE_CHANGED_INDICATED);
 		discover_ancs_again(gattp->conn);
 	}
 }
 
-static void enable_gattp_indications(struct bt_gattp *gattp)
-{
-	int err;
-
-	err = bt_gattp_subscribe_service_changed(gattp, indicate_sc_cb);
+static void enable_gattp_indications(struct bt_gattp *gattp) {
+	int err = bt_gattp_subscribe_service_changed(gattp, indicate_sc_cb);
 	if (err) {
-		printk("Cannot subscribe to Service Changed indication (err %d)\n",
-		       err);
+		LOG_ERR("Cannot subscribe to "
+			"Service Changed indication (err %d)\n", err);
 	}
 }
 
-static void discover_gattp_completed_cb(struct bt_gatt_dm *dm, void *ctx)
-{
-	int err;
+static void discover_gattp_completed_cb(struct bt_gatt_dm *dm, void *ctx) {
 	struct bt_gattp *gattp = (struct bt_gattp *)ctx;
 	struct bt_conn *conn = bt_gatt_dm_conn_get(dm);
-
-	printk("The discovery procedure for GATT Service succeeded\n");
-
+	LOG_DBG("The discovery procedure for GATT Service succeeded\n");
 	bt_gatt_dm_data_print(dm);
-
-	err = bt_gattp_handles_assign(dm, gattp);
+	int err = bt_gattp_handles_assign(dm, gattp);
 	if (err) {
-		printk("Could not init GATT Service client object, error: %d\n", err);
+		LOG_ERR("Could not init GATT Service client object, error: %d\n", err);
 	} else {
 		enable_gattp_indications(gattp);
 	}
-
 	err = bt_gatt_dm_data_release(dm);
 	if (err) {
-		printk("Could not release the discovery data, error "
-		       "code: %d\n",
-		       err);
+		LOG_ERR("Could not release the discovery data, error "
+		       "code: %d\n", err);
 	}
-
 	discover_ancs_first(conn);
 }
 
-static void discover_gattp_not_found_cb(struct bt_conn *conn, void *ctx)
-{
-	printk("GATT Service could not be found during the discovery\n");
-
+static void discover_gattp_not_found_cb(struct bt_conn *conn, void *ctx) {
+	LOG_WRN("GATT Service could not be found during the discovery\n");
 	discover_ancs_first(conn);
 }
 
-static void discover_gattp_error_found_cb(struct bt_conn *conn, int err, void *ctx)
-{
-	printk("The discovery procedure for GATT Service failed, err %d\n", err);
-
+static void discover_gattp_error_found_cb(struct bt_conn *conn, 
+	int err, void *ctx) {
+	LOG_WRN("The discovery procedure for GATT Service failed, err %d\n", err);
 	discover_ancs_first(conn);
 }
 
@@ -248,325 +236,240 @@ static const struct bt_gatt_dm_cb discover_gattp_cb = {
 	.error_found = discover_gattp_error_found_cb,
 };
 
-static void discover_gattp(struct bt_conn *conn)
-{
-	int err;
-
-	err = bt_gatt_dm_start(conn, BT_UUID_GATT, &discover_gattp_cb, &gattp);
-	if (err) {
-		printk("Failed to start discovery for GATT Service (err %d)\n", err);
-	}
+static void discover_gattp(struct bt_conn *conn) {
+	int err = bt_gatt_dm_start(conn, BT_UUID_GATT, 
+		&discover_gattp_cb, &gattp);
+	if (err) 
+		LOG_ERR("Failed to start discovery for GATT Service (err %d)\n", err);
 }
 
-static void discover_ancs(struct bt_conn *conn, bool retry)
-{
-	int err;
-
+static void discover_ancs(struct bt_conn *conn, bool retry) {
 	/* 1 Service Discovery at a time */
-	if (atomic_test_and_set_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING)) {
+	if (atomic_test_and_set_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING)) 
 		return;
-	}
-
 	/* If ANCS is found, do not discover again. */
 	if (atomic_test_bit(&discovery_flags, DISCOVERY_ANCS_SUCCEEDED)) {
 		atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 		return;
 	}
-
 	/* Check that Service Changed indication is received before discovering ANCS again. */
 	if (retry) {
-		if (!atomic_test_and_clear_bit(&discovery_flags, SERVICE_CHANGED_INDICATED)) {
+		if (!atomic_test_and_clear_bit(&discovery_flags, 
+			SERVICE_CHANGED_INDICATED)) {
 			atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 			return;
 		}
 	}
-
-	err = bt_gatt_dm_start(conn, BT_UUID_ANCS, &discover_ancs_cb, &ancs_c);
+	int err = bt_gatt_dm_start(conn, BT_UUID_ANCS,
+		 &discover_ancs_cb, &ancs_c);
 	if (err) {
-		printk("Failed to start discovery for ANCS (err %d)\n", err);
+		LOG_ERR("Failed to start discovery for ANCS (err %d)\n", err);
 		atomic_clear_bit(&discovery_flags, DISCOVERY_ANCS_ONGOING);
 	}
 }
 
-static void discover_ancs_first(struct bt_conn *conn)
-{
+static inline void discover_ancs_first(struct bt_conn *conn) {
 	discover_ancs(conn, false);
 }
 
-static void discover_ancs_again(struct bt_conn *conn)
-{
+static inline void discover_ancs_again(struct bt_conn *conn) {
 	discover_ancs(conn, true);
 }
 
-static void connected(struct bt_conn *conn, uint8_t err)
-{
+static void connected(struct bt_conn *conn, uint8_t err) {
 	int sec_err;
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	if (err) {
-		printk("Connection failed (err 0x%02x)\n", err);
+		LOG_ERR("Connection failed (err 0x%02x)\n", err);
 		return;
 	}
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 	sec_err = bt_conn_set_security(conn, BT_SECURITY_L2);
 	if (sec_err) {
-		printk("Failed to set security (err %d)\n",
+		LOG_ERR("Failed to set security (err %d)\n",
 		       sec_err);
 	}
 }
 
-static void disconnected(struct bt_conn *conn, uint8_t reason)
-{
+static void disconnected(struct bt_conn *conn, uint8_t reason) {
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-	printk("Disconnected from %s (reason 0x%02x)\n", addr, reason);
+	LOG_INF("Disconnected from %s (reason 0x%02x)\n", addr, reason);
 }
 
 static void security_changed(struct bt_conn *conn, bt_security_t level,
-			     enum bt_security_err err)
-{
+	enum bt_security_err err) {
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-
 	if (!err) {
-		printk("Security changed: %s level %u\n", addr, level);
-
+		LOG_INF("Security changed: %s level %u\n", addr, level);
 		if (bt_conn_get_security(conn) >= BT_SECURITY_L2) {
 			discovery_flags = ATOMIC_INIT(0);
 			discover_gattp(conn);
 		}
 	} else {
-		printk("Security failed: %s level %u err %d\n", addr, level,
-		       err);
+		LOG_ERR("Security failed: %s level %u err %d\n", 
+			addr, level, err);  
 	}
 }
 
-static void auth_cancel(struct bt_conn *conn)
-{
+static void auth_cancel(struct bt_conn *conn) {
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-
-	printk("Pairing cancelled: %s\n", addr);
-
+	LOG_INF("Pairing cancelled: %s\n", addr);
 	bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 }
 
-static void pairing_complete(struct bt_conn *conn, bool bonded)
-{
+static void pairing_complete(struct bt_conn *conn, bool bonded) {
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-
-	printk("Pairing completed: %s, bonded: %d\n", addr, bonded);
+	LOG_INF("Pairing completed: %s, bonded: %d\n", addr, bonded);
 }
 
-static void pairing_failed(struct bt_conn *conn, enum bt_security_err reason)
-{
+static void pairing_failed(struct bt_conn *conn, 
+	enum bt_security_err reason) {
 	char addr[BT_ADDR_LE_STR_LEN];
-
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-
-	printk("Pairing failed conn: %s, reason %d\n", addr, reason);
-
+	LOG_ERR("Pairing failed conn: %s, reason %d\n", addr, reason);
 	bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 }
 
-/**@brief Function for printing an iOS notification.
- *
- * @param[in] notif  Pointer to the iOS notification.
- */
-static void notif_print(const struct bt_ancs_evt_notif *notif)
-{
-	printk("\nNotification\n");
-	printk("Event:       %s\n", lit_eventid[notif->evt_id]);
-	printk("Category ID: %s\n", lit_catid[notif->category_id]);
-	printk("Category Cnt:%u\n", (unsigned int)notif->category_count);
-	printk("UID:         %u\n", (unsigned int)notif->notif_uid);
-
-	printk("Flags:\n");
-	if (notif->evt_flags.silent) {
-		printk(" Silent\n");
-	}
-	if (notif->evt_flags.important) {
-		printk(" Important\n");
-	}
-	if (notif->evt_flags.pre_existing) {
-		printk(" Pre-existing\n");
-	}
-	if (notif->evt_flags.positive_action) {
-		printk(" Positive Action\n");
-	}
-	if (notif->evt_flags.negative_action) {
-		printk(" Negative Action\n");
-	}
-}
-
-/**@brief Function for printing iOS notification attribute data.
- *
- * @param[in] attr Pointer to an iOS notification attribute.
- */
 static void notif_attr_print(const struct bt_ancs_attr *attr)
 {
 	if (attr->attr_len != 0) {
-		printk("%s: %s\n", lit_attrid[attr->attr_id],
+		LOG_INF("%s: %s\n", lit_attrid[attr->attr_id],
 		       (char *)attr->attr_data);
 	} else if (attr->attr_len == 0) {
-		printk("%s: (N/A)\n", lit_attrid[attr->attr_id]);
+		LOG_INF("%s: (N/A)\n", lit_attrid[attr->attr_id]);
 	}
 }
 
-/**@brief Function for printing iOS notification attribute data.
- *
- * @param[in] attr Pointer to an iOS App attribute.
- */
-static void app_attr_print(const struct bt_ancs_attr *attr)
-{
+static void app_attr_print(const struct bt_ancs_attr *attr) {
 	if (attr->attr_len != 0) {
-		printk("%s: %s\n", lit_appid[attr->attr_id],
+		LOG_INF("%s: %s\n", lit_appid[attr->attr_id],
 		       (char *)attr->attr_data);
 	} else if (attr->attr_len == 0) {
-		printk("%s: (N/A)\n", lit_appid[attr->attr_id]);
+		LOG_INF("%s: (N/A)\n", lit_appid[attr->attr_id]);
 	}
 }
 
-/**@brief Function for printing out errors that originated from the Notification Provider (iOS).
- *
- * @param[in] err_code_np Error code received from NP.
- */
-static void err_code_print(uint8_t err_code_np)
-{
+static void err_code_print(uint8_t err_code_np) {
 	switch (err_code_np) {
 	case BT_ATT_ERR_ANCS_NP_UNKNOWN_COMMAND:
-		printk("Error: Command ID was not recognized by the Notification Provider.\n");
+		LOG_ERR("Error: Command ID was not recognized by "
+			"the Notification Provider.\n");
 		break;
-
 	case BT_ATT_ERR_ANCS_NP_INVALID_COMMAND:
-		printk("Error: Command failed to be parsed on the Notification Provider.\n");
+		LOG_ERR("Error: Command failed to be parsed on the "
+			"Notification Provider.\n");
 		break;
-
 	case BT_ATT_ERR_ANCS_NP_INVALID_PARAMETER:
-		printk("Error: Parameter does not refer to an existing object on the Notification Provider.\n");
+		LOG_ERR("Error: Parameter does not refer to an existing "
+			"object on the Notification Provider.\n");
 		break;
-
 	case BT_ATT_ERR_ANCS_NP_ACTION_FAILED:
-		printk("Error: Perform Notification Action Failed on the Notification Provider.\n");
+		LOG_ERR("Error: Perform Notification Action Failed on "
+			"the Notification Provider.\n");
 		break;
-
 	default:
 		break;
 	}
 }
 
-static void bt_ancs_write_done(struct bt_ancs_client *ancs_c,
+static void bt_ancs_write_done(struct bt_ancs_client *ancs,
 				 uint8_t err) {
-    printk("handle_ns = %d\n", ancs_c->handle_ns);
+	if (err != 0)
+    	LOG_ERR("ANCS request attributes failed(%d)\n", err);
 }
-static void bt_ancs_notification_source_handler(struct bt_ancs_client *ancs_c,
-		int err, const struct bt_ancs_evt_notif *notif)
-{
-	if (!err) {
-		notification_latest = *notif;
-		notif_print(&notification_latest);
-        bt_ancs_request_attrs(ancs_c, &notification_latest, bt_ancs_write_done);
 
+static void bt_ancs_notification_source_handler(struct bt_ancs_client *ancs,
+		int err, const struct bt_ancs_evt_notif *notif) {
+	if (err != 0)
+		LOG_ERR("ANCS notification error(%d)\n", err);
+	notif_print(notif);
+	notification_latest = *notif;
+	switch (notif->evt_id) {
+	case BT_ANCS_EVENT_ID_NOTIFICATION_ADDED:
+		if (!notif->evt_flags.pre_existing)
+			bt_ancs_request_attrs(ancs, notif, bt_ancs_write_done);
+		break;
+	case BT_ANCS_EVENT_ID_NOTIFICATION_MODIFIED:
+		break;
+	case BT_ANCS_EVENT_ID_NOTIFICATION_REMOVED:
+		break;
+	default:
+		break;
 	}
 }
 
-static void bt_ancs_data_source_handler(struct bt_ancs_client *ancs_c,
-		const struct bt_ancs_attr_response *response)
-{
-	switch (response->command_id) {
+static void bt_ancs_data_source_handler(struct bt_ancs_client *ancs,
+	const struct bt_ancs_attr_response *rsp) {
+	switch (rsp->command_id) {
 	case BT_ANCS_COMMAND_ID_GET_NOTIF_ATTRIBUTES:
-		notif_attr_latest = response->attr;
+		notif_attr_latest = rsp->attr;
 		notif_attr_print(&notif_attr_latest);
-		if (response->attr.attr_id ==
+		if (rsp->attr.attr_id ==
 		    BT_ANCS_NOTIF_ATTR_ID_APP_IDENTIFIER) {
-			notif_attr_app_id_latest = response->attr;
+			notif_attr_app_id_latest = rsp->attr;
 		}
 		break;
-
 	case BT_ANCS_COMMAND_ID_GET_APP_ATTRIBUTES:
-		app_attr_print(&response->attr);
+		app_attr_print(&rsp->attr);
 		break;
-
+	case BT_ANCS_COMMAND_ID_PERFORM_NOTIF_ACTION:
 	default:
-		/* No implementation needed. */
 		break;
 	}
 }
 
-static int ancs_c_init(void)
-{
-	int err;
-
-	err = bt_ancs_client_init(&ancs_c);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+static int bt_ancs_service_init(struct bt_ancs_client *ancs) {
+	int err = bt_ancs_client_init(ancs);
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_APP_IDENTIFIER,
 		attr_appid, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_app_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_app_attr(ancs,
 		BT_ANCS_APP_ATTR_ID_DISPLAY_NAME,
 		attr_disp_name, sizeof(attr_disp_name));
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_TITLE,
 		attr_title, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_MESSAGE,
 		attr_message, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_SUBTITLE,
 		attr_subtitle, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_MESSAGE_SIZE,
 		attr_message_size, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_DATE,
 		attr_date, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_POSITIVE_ACTION_LABEL,
 		attr_posaction, ATTR_DATA_SIZE);
-	if (err) {
-		return err;
-	}
-
-	err = bt_ancs_register_attr(&ancs_c,
+	if (err) 
+		goto _out;
+	err = bt_ancs_register_attr(ancs,
 		BT_ANCS_NOTIF_ATTR_ID_NEGATIVE_ACTION_LABEL,
 		attr_negaction, ATTR_DATA_SIZE);
-
+_out:
 	return err;
 }
 
@@ -585,30 +488,28 @@ static struct bt_conn_auth_cb conn_auth_callbacks = {
 
 
 static void apple_ancs_init(void) {
-	int err;
-	
-	err = ancs_c_init();
+	int err = bt_ancs_service_init(&ancs_c);
 	if (err) {
-		printk("ANCS client init failed (err %d)\n", err);
+		LOG_ERR("ANCS client init failed (err %d)\n", err);
 		return;
 	}
 	err = bt_gattp_init(&gattp);
 	if (err) {
-		printk("GATT Service client init failed (err %d)\n", err);
+		LOG_ERR("GATT Service client init failed (err %d)\n", err);
 		return;
 	}
 }
 
 void bt_apple_ancs_ready(int err) {
 	if (err != 0)
-		printk("Bluetooth initialize failed(%d)\n", err);
+		LOG_ERR("Bluetooth initialize failed(%d)\n", err);
 	apple_ancs_init();
 	err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), NULL, 0);
 	if (err) {
-		printk("Advertising failed to start (err %d)\n", err);
+		LOG_ERR("Advertising failed to start (err %d)\n", err);
 		return;
 	}
 	err = bt_conn_auth_cb_register(&conn_auth_callbacks);
 	if (err) 
-		printk("Failed to register authorization callbacks\n");
+		LOG_ERR("Failed to register authorization callbacks\n");
 }
