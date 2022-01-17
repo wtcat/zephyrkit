@@ -23,6 +23,8 @@ add_subdirectory(component)
 target_sources(app PRIVATE
   src/main.c
   src/apple_ancs.c
+  src/apple_ams.c
+  src/bt_disc.c
 )
 collect_link_libraries(applibs app)
 target_link_libraries(app PUBLIC ${applibs})
