@@ -145,9 +145,9 @@ int _core_debug_watchpoint_enable(int nr, void *addr, unsigned int mode,
 	defined(__CORE_CM4_H_GENERIC) || \
 	defined(__CORE_CM7_H_GENERIC)
 	if (mode & MEM_READ)
-		func |= (0x5 << DWT_FUNCTION_FUNCTION_Pos);
+		func |= (0x6 << DWT_FUNCTION_FUNCTION_Pos);
 	if (mode & MEM_WRITE)
-		func |= (0x6 << DWT_FUNCTION_FUNCTION_Pos);	
+		func |= (0x5 << DWT_FUNCTION_FUNCTION_Pos);	
 	wp_regs[nr].comp = (uint32_t)addr;
 	wp_regs[nr].mask = 0;
 	wp_regs[nr].function = func;
