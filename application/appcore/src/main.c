@@ -77,9 +77,9 @@ int main(void) {
 #endif
   // blkdev_test();
   //err = bt_enable(bt_host_default_ready_cb);
-  err = bt_enable(bt_apple_ancs_ready);
+   err = bt_enable(bt_apple_ancs_ready);
   if (err)
-    LOG_ERR("Bluetooth initialize failed(%d)\n", err);
+     LOG_ERR("Bluetooth initialize failed(%d)\n", err);
     
   /* Implement notification. At the moment there is no suitable way
    * of starting delayed work so we do it here

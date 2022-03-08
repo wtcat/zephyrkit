@@ -44,6 +44,7 @@ static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_SOLICIT128, BT_UUID_ANCS_VAL)
 };
 
+
 static struct bt_ancs_client ancs_c;
 
 /* Local copy to keep track of the newest arriving notifications. */
@@ -415,7 +416,7 @@ void bt_apple_ancs_ready(int err) {
 	if (IS_ENABLED(CONFIG_SETTINGS)) 
 		settings_load();
 	apple_ancs_init(NULL, NULL);
-	err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), NULL, 0);
+	err = bt_le_adv_start(BT_LE_ADV_CONN_NAME, ad, ARRAY_SIZE(ad), NULL, 0);
 	if (err) {
 		LOG_ERR("Advertising failed to start (err %d)\n", err);
 		return;

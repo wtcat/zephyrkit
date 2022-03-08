@@ -30,8 +30,8 @@ config BDBUF_MAX_WRITE_BLOCKS
 
 config BDBUF_SWAPOUT_TASK_PRIORITY
     int "Swap-out task priority"
-    range 0 31
-    default 15
+    range 0 15
+    default 14
 
 config BDBUF_TASK_STACK_SIZE
     int "Task stack size for swap-out and worker tasks"

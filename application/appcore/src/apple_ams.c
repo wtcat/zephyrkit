@@ -94,7 +94,7 @@ static void ams_entity_updated_notify(struct bt_ams_client *ams_c,
 	/* Read truncated song title. */
 	if (notif->ent_attr.entity == BT_AMS_ENTITY_ID_TRACK &&
 		notif->ent_attr.attribute.track == BT_AMS_TRACK_ATTRIBUTE_ID_TITLE &&
-		(notif->flags & (0x1U << BT_AMS_ENTITY_UPDATE_FLAG_TRUNCATED))) {
+		(notif->flags & BIT(BT_AMS_ENTITY_UPDATE_FLAG_TRUNCATED))) {
 		err = bt_ams_write_entity_attribute(ams_c, &notif->ent_attr, 
 			ams_write_entity_update_cb);
 		if (err) 

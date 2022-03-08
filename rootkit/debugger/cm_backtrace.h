@@ -43,8 +43,11 @@
 #ifdef CONFIG_CM_BACKTRACE_DUMPSTACK
 #define CMB_USING_DUMP_STACK_INFO
 #endif
+
+#if defined(__ZEPHYR__)
 #define CMB_USING_OS_PLATFORM
 #define CMB_OS_PLATFORM_TYPE   CMB_OS_PLATFORM_ZEPHYR
+#endif
 
 #if defined(CONFIG_CPU_CORTEX_M0)
 #define CMB_CPU_PLATFORM_TYPE  CMB_CPU_ARM_CORTEX_M0
@@ -332,13 +335,16 @@ struct cmb_hard_fault_regs {
 };
 
 /* assert for developer. */
+#if !defined(__ZEPHYR__)
 #define CMB_ASSERT(EXPR)                                                                                               \
 	if (!(EXPR)) {                                                                                                     \
 		cmb_println("(%s) has assert failed at %s.", #EXPR, __FUNCTION__);                                             \
 		while (1)                                                                                                      \
 			;                                                                                                          \
 	}
-
+#else
+#define CMB_ASSERT(EXPR) __ASSERT(EXPR, "")
+#endif
 /* ELF(Executable and Linking Format) file extension name for each compiler */
 #if defined(__CC_ARM) || defined(__CLANG_ARM)
 #define CMB_ELF_FILE_EXTENSION_NAME ".axf"
