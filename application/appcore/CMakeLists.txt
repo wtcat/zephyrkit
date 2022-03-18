@@ -25,6 +25,9 @@ target_sources(app PRIVATE
   src/apple_ancs.c
   src/apple_ams.c
   src/bt_disc.c
+  src/timer_ii.c
+  src/timer_ii_zephyr.c
+  src/timer_ii_test.c
 )
 collect_link_libraries(applibs app)
 target_link_libraries(app PUBLIC ${applibs})

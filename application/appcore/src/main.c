@@ -75,6 +75,7 @@ int main(void) {
 #if defined(USE_BREAKPOINT_TEST)
   core_watchpoint_install(3, &__test_var, MEM_WRITE | MEM_SIZE_1);
 #endif
+  malloc(16);
   // blkdev_test();
   //err = bt_enable(bt_host_default_ready_cb);
    err = bt_enable(bt_apple_ancs_ready);
