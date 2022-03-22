@@ -5,10 +5,11 @@
 #include "timer_ii.h"
 
 static struct k_timer root_timer;
+static int tick_resolution = 1;
 
 static void variable_period_cb(struct k_timer *timer) {
     (void) timer;
-    long next_expired = timer_ii_dispatch();
+    long next_expired = timer_ii_dispatch(tick_resolution);
     if (next_expired > 0) {
         k_timer_start(&root_timer, K_MSEC(next_expired), 
             K_NO_WAIT);
@@ -17,12 +18,14 @@ static void variable_period_cb(struct k_timer *timer) {
 
 static void fixed_period_cb(struct k_timer *timer) {
     (void) timer;
-    timer_ii_dispatch();
+    long next_expired;
+    next_expired = timer_ii_dispatch(tick_resolution);
+    printk("Next Expired**: %ld\n", next_expired);
 }
 
 void root_timer_restart(int tick_res, bool fixed_period) {
     k_timer_stop(&root_timer);
-    timer_ii_change_resolution(tick_res);
+    tick_resolution = tick_res;
     if (fixed_period) {
         k_timer_init(&root_timer, fixed_period_cb, NULL);
         k_timer_start(&root_timer, K_MSEC(tick_res), K_MSEC(tick_res));

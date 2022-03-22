@@ -1,43 +1,32 @@
 /*
  * CopyRight 2022 wtcat
  */
-#include <stddef.h>
 #include <errno.h>
 
 #include "timer_ii.h"
 
-#define TIMER_TICK_VALUE  timer_resolution
-#define TIMER_TICK_WRITE(v) *(volatile int *)&timer_resolution = (v)
+#define TIMER_ENTRY(node_ptr) \
+	(struct timer_struct *)((char *)(node_ptr) - \
+		offsetof(struct timer_struct, node))
 
 #if defined(__ZEPHYR__)
 #include <spinlock.h>
 #include <toolchain.h>
-#include <sys/util.h>
 
-#define TIMER_ENTRY(node_ptr) \
-	CONTAINER_OF(node_ptr, struct timer_struct, node)
 #define TIMER_LOCK_DECLARE k_spinlock_key_t __key;
 #define TIMER_LOCK()   __key = k_spin_lock(&timer_spinlock)
 #define TIMER_UNLOCK() k_spin_unlock(&timer_spinlock, __key)
 static struct k_spinlock timer_spinlock;
-
 #else
 #define TIMER_LOCK_DECLARE
 #define TIMER_LOCK() 
 #define TIMER_UNLOCK()
 #endif //__ZEPHYR__
 
-
 #ifndef unlikely
 #define unlikely(x) (x)
 #endif
-#ifndef TIMER_ENTRY
-#define TIMER_ENTRY(node_ptr) \
-	(struct timer_struct *)((char *)(node_ptr) - \
-		offsetof(struct timer_struct, node))
-#endif
 
-static int timer_resolution = 1;
 static struct timer_node timer_list = {
     &timer_list, &timer_list
 };
@@ -115,7 +104,7 @@ static int timer_remove_locked(struct timer_struct* timer) {
 	return 1;
 }
 
-long timer_ii_dispatch(void) {
+long timer_ii_dispatch(long expires) {
 	TIMER_LOCK_DECLARE
 	struct timer_struct* timer;
 	struct timer_node *next;
@@ -127,24 +116,24 @@ long timer_ii_dispatch(void) {
 		goto _unlock;
 	}
 	timer = TIMER_ENTRY(timer_list.next);
-	if (timer->expires > 0) {
-		timer->expires -= TIMER_TICK_VALUE;
-		if (timer->expires > 0) {
-            next_expired = timer->expires;
-			goto _unlock;
-        }
+	if (timer->expires > expires) {
+		timer->expires -= expires;
+		next_expired = timer->expires;
+		goto _unlock;
 	}
 	do {
 		void (*fn)(struct timer_struct*);
 		next = timer->node.next;
 		list_del(&timer->node);
 		fn = timer->handler;
+		expires -= timer->expires;
 		timer->state = DOUI_TIMER_IDLE;
 		TIMER_UNLOCK();
 		fn(timer);
 		TIMER_LOCK();
+		
 	} while (next != &timer_list && 
-            (timer = TIMER_ENTRY(next))->expires <= 0);
+            (timer = TIMER_ENTRY(next))->expires <= expires);
     next_expired = timer->expires;
 _unlock:
 	TIMER_UNLOCK();
@@ -174,11 +163,6 @@ int timer_ii_remove(struct timer_struct* timer) {
 	int pending = timer_remove_locked(timer);
 	TIMER_UNLOCK();
 	return pending;
-}
-
-int timer_ii_change_resolution(int tick_res) {
-    TIMER_TICK_WRITE(tick_res);
-    return 0;
 }
 
 int timer_ii_foreach(void (*iterator)(struct timer_struct *)) {

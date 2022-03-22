@@ -4,6 +4,8 @@
 #ifndef TIMER_II_H_
 #define TIMER_II_H_
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -31,11 +33,18 @@ struct timer_struct {
         .state = DOUI_TIMER_IDLE \
     } 
 
-long timer_ii_dispatch(void);
+static inline void TIMER_II_INIT(struct timer_struct *timer, 
+    void (*handler)(struct timer_struct*)) {
+    timer->handler = handler;
+    timer->expires = 0;
+    timer->state = DOUI_TIMER_IDLE;
+    timer->node.next = timer->node.prev = NULL;
+}
+
+long timer_ii_dispatch(long expires);
 int timer_ii_remove(struct timer_struct* timer);
 int timer_ii_mod(struct timer_struct* timer, long expires);
 int timer_ii_add(struct timer_struct* timer, long expires);
-int timer_ii_change_resolution(int res);
 int timer_ii_foreach(void (*iterator)(struct timer_struct *));
 
 #ifdef __cplusplus
