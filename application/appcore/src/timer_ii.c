@@ -116,11 +116,8 @@ long timer_ii_dispatch(long expires) {
 		goto _unlock;
 	}
 	timer = TIMER_ENTRY(timer_list.next);
-	if (timer->expires > expires) {
-		timer->expires -= expires;
-		next_expired = timer->expires;
-		goto _unlock;
-	}
+	if (timer->expires > expires) 
+		goto _out;
 	do {
 		void (*fn)(struct timer_struct*);
 		next = timer->node.next;
@@ -131,10 +128,14 @@ long timer_ii_dispatch(long expires) {
 		TIMER_UNLOCK();
 		fn(timer);
 		TIMER_LOCK();
-		
-	} while (next != &timer_list && 
-            (timer = TIMER_ENTRY(next))->expires <= expires);
-    next_expired = timer->expires;
+		if (list_empty(&timer_list)) {
+			next_expired = 0;
+			goto _unlock;
+		}
+	} while ((timer = TIMER_ENTRY(next))->expires <= expires);
+_out:
+	next_expired = timer->expires - expires;
+	timer->expires = next_expired;
 _unlock:
 	TIMER_UNLOCK();
 	return next_expired;

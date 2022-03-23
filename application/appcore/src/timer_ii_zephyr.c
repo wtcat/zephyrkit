@@ -9,9 +9,11 @@ static int tick_resolution = 1;
 
 static void variable_period_cb(struct k_timer *timer) {
     (void) timer;
-    long next_expired = timer_ii_dispatch(tick_resolution);
-    if (next_expired > 0) {
-        k_timer_start(&root_timer, K_MSEC(next_expired), 
+    long next_expires = timer_ii_dispatch(tick_resolution);
+    if (next_expires > 0) {
+        printk("Next Expires: %ld\n", next_expires);
+        tick_resolution = next_expires;
+        k_timer_start(&root_timer, K_MSEC(next_expires), 
             K_NO_WAIT);
     }
 }
