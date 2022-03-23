@@ -1,6 +1,7 @@
 #include <init.h>
 
 #include "timer_ii.h"
+#include "app_timer.h"
 
 extern void root_timer_restart(int res, bool fixed_period);
 
