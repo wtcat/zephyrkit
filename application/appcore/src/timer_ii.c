@@ -28,6 +28,11 @@ static struct k_spinlock timer_spinlock;
 #define unlikely(x) (x)
 #endif
 
+#define WRITE_ONCE(x, val)						\
+do {									\
+	*(volatile __typeof__(x) *)&(x) = (val);				\
+} while (0)
+
 static struct timer_node timer_list = {
     &timer_list, &timer_list
 };
@@ -43,13 +48,13 @@ static inline void __list_add(struct timer_node *newnd,
 	next->prev = newnd;
 	newnd->next = next;
 	newnd->prev = prev;
-	prev->next = newnd;
+	WRITE_ONCE(prev->next, newnd);
 }
 
 static inline void __list_del(struct timer_node * prev, 
 	struct timer_node * next) {
 	next->prev = prev;
-	prev->next = next;
+	WRITE_ONCE(prev->next, next);
 }
 
 static inline void list_insert_before(struct timer_node *newnd, 
