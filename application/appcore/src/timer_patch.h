@@ -58,6 +58,7 @@ static inline void timer_ii_hrtimer_cb(struct k_timer *timer) {
 	(void) timer;
 	long next_expires = timer_ii_dispatch(timer_ii_res);
 	if (next_expires > 0) {
+		printk("Next Timeout: %ld\n", next_expires);
 		timer_ii_res = (int)next_expires;
         k_timer_start(&timer_ii_root, K_MSEC(next_expires), K_NO_WAIT);
 		//hrtimer_start(&timer_ii_root, HRTIMER_MSEC(next_expires), 0);

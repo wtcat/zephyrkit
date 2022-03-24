@@ -1,6 +1,7 @@
 /*
  * CopyRight 2022 wtcat
  */
+#include <stdbool.h>
 #include <errno.h>
 
 #include "timer_ii.h"
@@ -69,6 +70,11 @@ static inline int list_empty(const struct timer_node *head)  {
 /*
  * Timer implementiton
  */
+static inline struct timer_struct *timer_first(void) {
+	return !list_empty(&timer_list)? 
+		TIMER_ENTRY(timer_list.next): NULL;
+}
+
 static int timer_add_locked(struct timer_struct* timer,
 	unsigned long expires) {
 	struct timer_node* ptr;
@@ -107,20 +113,17 @@ static int timer_remove_locked(struct timer_struct* timer) {
 long timer_ii_dispatch(long expires) {
 	TIMER_LOCK_DECLARE
 	struct timer_struct* timer;
-	struct timer_node *next;
 	long next_expired;
 
 	TIMER_LOCK();
-	if (unlikely(list_empty(&timer_list))) {
+	if (unlikely((timer = timer_first()) == NULL)) {
 		next_expired = 0;
 		goto _unlock;
 	}
-	timer = TIMER_ENTRY(timer_list.next);
 	if (timer->expires > expires) 
 		goto _out;
 	do {
 		void (*fn)(struct timer_struct*);
-		next = timer->node.next;
 		list_del(&timer->node);
 		fn = timer->handler;
 		expires -= timer->expires;
@@ -128,11 +131,11 @@ long timer_ii_dispatch(long expires) {
 		TIMER_UNLOCK();
 		fn(timer);
 		TIMER_LOCK();
-		if (list_empty(&timer_list)) {
+		if (unlikely((timer = timer_first()) == NULL)) {
 			next_expired = 0;
 			goto _unlock;
 		}
-	} while ((timer = TIMER_ENTRY(next))->expires <= expires);
+	} while (timer->expires <= expires);
 _out:
 	next_expired = timer->expires - expires;
 	timer->expires = next_expired;
