@@ -707,8 +707,8 @@ int cm_backtrace_init(const struct printer  *printer,
 		code_start_addr;
 #elif defined(__GNUC__)
 #if (CMB_OS_PLATFORM_TYPE == CMB_OS_PLATFORM_ZEPHYR)
-	extern char z_main_stack[];
-    main_stack_start_addr = (uint32_t)z_main_stack;
+	extern char z_interrupt_stacks[];
+    main_stack_start_addr = (uint32_t)z_interrupt_stacks;
     main_stack_size = CONFIG_MAIN_STACK_SIZE;
 #else
     main_stack_start_addr = 
