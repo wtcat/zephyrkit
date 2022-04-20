@@ -29,17 +29,15 @@
  /*
   * Copyright (C) 2022 wtcat
   */
-  
 #include <kernel.h>
-#include <kernel_internal.h>
+#include <soc.h>
+
 #include <linker/sections.h>
 #include <linker/linker-defs.h>
 #include <logging/log.h>
-#include <arch/arm/aarch32/cortex_m/cmsis.h>
-#include <kallsyms.h>
-#include <soc.h>
 
-#include "zephyr_unwind.h"
+#include "base/fatal.h"
+#include "debugger/unwind.h"
 
 LOG_MODULE_REGISTER(unwind, LOG_LEVEL_INF);
 
@@ -417,18 +415,23 @@ static int unwind_frame(struct stackframe *frame) {
 	return 0;
 }
 
+static const char *unwind_symbol(unsigned long addr) {
+#define SYMBOL_MAGIC 0xFF000000ul
+	unsigned long *ptr= (unsigned long *)(addr - 4);
+	unsigned long ofs;
+	if (*ptr & SYMBOL_MAGIC) {
+		ofs = *ptr & ~SYMBOL_MAGIC;
+		return (char *)ptr - ofs;
+	}
+	return "Unkown";
+}
+
 static void unwind_print_backtrace(struct printer *printer, 
 	unsigned long where, unsigned long pc) {
-#ifdef CONFIG_KALLSYMS
-	char buffer[KSYM_SYMBOL_LEN+1];
-	sprint_backtrace(buffer, where);
-	virt_print(printer, "[<%08lx>](%s) <- ", where, buffer);
-	sprint_backtrace(buffer, pc);
-	virt_print(printer, "[<%08lx>](%s)\n", pc, buffer);
-#else
-	virt_print(printer, "[PC <%08lx>] <- [PC <%08lx>]\n", 
-		where, pc);
-#endif
+	const char *sym_where = unwind_symbol(where);
+	const char *sym_pc = unwind_symbol(pc);
+	virt_print(printer, "[PC <%08lx>(%s)] <- [PC <%08lx>(%s)]\n", 
+		where, sym_where, pc, sym_pc);
 }
 
 static void unwind_backtrace_print(struct printer *printer, 
@@ -483,6 +486,7 @@ static void unwind_backtrace_cur(struct printer *printer) {
 	unwind_dump_mem(printer, "sp=", sp, 256);
 }
 
+#if defined(CONFIG_ARCH_HAS_NESTED_EXCEPTION_DETECTION)
 static void unwind_backtrace_irq(struct printer *printer, 
 	const z_arch_esf_t *esf) {
 	int i;
@@ -508,6 +512,7 @@ static void unwind_backtrace_irq(struct printer *printer,
 	unwind_backtrace_print(printer, &frame);
 	unwind_dump_mem(printer, "sp=", sp-32, 256);
 }
+#endif
 
 void unwind_backtrace(struct printer *printer, struct k_thread *th) {
 	struct stackframe frame;
@@ -545,11 +550,21 @@ void unwind_backtrace(struct printer *printer, struct k_thread *th) {
 	unwind_dump_mem(printer, "sp=", sp-32, 256); 
 }
 
-void system_backtrace(struct printer *printer, const void *esf, 
-	bool wait_forever) {
-	if ((esf != NULL) && arch_is_in_nested_exception(esf))
-		unwind_backtrace_irq(printer, esf);
+void backtrace_dump(struct printer *printer, const void *esf) {
+	const z_arch_esf_t *context = (const z_arch_esf_t *)esf;
+#if defined(CONFIG_ARCH_HAS_NESTED_EXCEPTION_DETECTION)
+	if ((context != NULL) && (context->basic.xpsr & IPSR_ISR_Msk))
+		unwind_backtrace_irq(printer, context);
+#endif
 	unwind_backtrace(printer, k_current_get());
-	jtag_set();
-	while(wait_forever);
 }
+
+static void unwind_backtrace_handler(const struct printer *printer,
+	unsigned int reason, const z_arch_esf_t *esf) {
+	(void) reason;
+	backtrace_dump((struct printer *)printer, esf);
+}
+
+SYS_FATAL_DEFINE(cm_unwind) = {
+	.fatal = unwind_backtrace_handler
+};

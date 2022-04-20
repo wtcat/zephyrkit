@@ -20,4 +20,7 @@ config CM_BACKTRACE_DUMPSTACK
 config CM_BACKTRACE_ASSERT
   bool "Enable assert interface"
 
+config CM_UNWIND_BACKTRACE
+  bool "Enable unwind backtrace for cortext"
+
 endif #CORTEXM_DEBUGGER
