@@ -4,11 +4,17 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menuconfig SHELL_BT_NUS
+menuconfig SHELL_EXT
+	bool
+	prompt "Shell user extentions"
+	depends on SHELL
+	help
+	  	Enable shell extension for user.
+
+config SHELL_BT_NUS
 	bool
 	prompt "Shell Bluetooth NUS transport"
 	depends on BT
-	select SHELL
 	select BT_NUS
 	select RING_BUFFER
 	help
@@ -77,3 +83,29 @@ config SHELL_BT_NUS_RX_RING_BUFFER_SIZE
 	  required to increase it.
 
 endif #SHELL_BT_NUS
+
+config CMD_MEMORY
+	bool "Memory operation command"
+	default y
+	help
+	  Memory operation command
+
+config CMD_SPINOR
+	bool "Norflash operation command"
+	help
+	  Norflash operation command
+
+config CMD_SPINAND
+	bool "Nandflash operation command"
+	help
+	  Nandflash operation command
+
+config PM_DIRECT_FORCE_MODE
+	bool "Power manage force mode"
+	help
+	  Power manage force mode
+
+config TRACING_IRQ_PROFILER
+	bool "Interrupt information"
+	help
+	  Interrupt information
